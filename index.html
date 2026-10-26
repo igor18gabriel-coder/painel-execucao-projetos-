@@ -137,7 +137,7 @@ body.lock .tabs,body.lock #ovView,body.lock #evView,body.lock #logout,body.lock 
 
 body.pub .wrap{display:none!important}
 .pw{max-width:640px;margin:0 auto;padding:18px max(16px,env(safe-area-inset-left,0px)) 40px}
-.pw h1{color:#fff;font-size:26px;margin:6px 0 4px}.pw .pd{color:var(--mut);font-size:16px;margin:0 0 18px;white-space:pre-line}
+.pw h1{color:#fff;font-size:clamp(32px,9.4vw,50px);line-height:1.08;font-weight:800;letter-spacing:-.5px;margin:10px 0 18px}.pw h1 em{font-style:normal;color:var(--yl)}.pw .pd{color:var(--mut);font-size:18px;line-height:1.5;margin:0 0 20px;white-space:pre-line}.pf .fh{font-size:26px;font-weight:800;color:#fff;margin:2px 0 18px;padding-bottom:8px;border-bottom:3px solid var(--yl)}
 .pf{background:var(--card);border:1px solid var(--bd);border-top:6px solid var(--yl);border-radius:16px;padding:18px}
 .pf .q{margin-bottom:16px}.pf .q>label,.pf .q>.ql{display:block;font-weight:700;font-size:16px;margin-bottom:6px}.pf .q .req{color:var(--yl)}
 .pf input[type=text],.pf input[type=tel],.pf input[type=email],.pf input[type=number],.pf input[type=date],.pf select,.pf textarea{width:100%;box-sizing:border-box;font:inherit;font-size:16px;padding:12px;border-radius:10px;border:1px solid var(--bd);background:var(--inp);color:var(--tx)}
@@ -913,6 +913,7 @@ async function pubRpc(fn,args){
   const t=await r.text();let j=null;try{j=t?JSON.parse(t):null}catch(e){}
   if(!r.ok){const e=new Error((j&&j.message)||String(r.status));e.msg=(j&&j.message)||"";throw e}return j;
 }
+const fmtT=t=>esc(t).replace(/\*\*(.+?)\*\*/g,"<em>$1</em>");
 const fmtB=t=>esc(t).replace(/\*\*(.+?)\*\*/g,"<b style=\"color:#fff\">$1</b>");
 const fmtL=t=>esc(t).replace(/\*\*(.+?)\*\*/g,"<mark>$1</mark>");
 function pubMsgL(icon,msg,defTitle){const m=String(msg||"").trim(),i=m.indexOf("\n");if(!m)return pubMsg(icon,defTitle,"");pubMsg(icon,i<0?m:m.slice(0,i),i<0?"":m.slice(i+1).trim())}
@@ -922,10 +923,10 @@ async function startPublic(){
   let f;
   try{f=await pubRpc("form_publico",{p_slug:PUBSLUG})}
   catch(e){pubMsg(e.msg==="form_nao_encontrado"?"🔎":"⚠️",e.msg==="form_nao_encontrado"?"Formulário não encontrado":"Não foi possível carregar","Confira o link ou tente de novo em instantes.");return}
-  try{document.title=(f.title||"Inscrição")}catch(_){}
-  if(f.open===false){pubMsg("⛔","Inscrições encerradas",(f.title||"")+"\nObrigado pelo interesse!");return}
+  try{document.title=String(f.title||"Inscrição").replace(/\*\*/g,"")}catch(_){}
+  if(f.open===false){pubMsg("⛔","Inscrições encerradas",String(f.title||"").replace(/\*\*/g,"")+"\nObrigado pelo interesse!");return}
   const fs=f.fields||[];
-  let h='<h1>'+esc(f.title||"Inscrição")+'</h1>'+(f.desc?'<p class="pd">'+fmtB(f.desc)+'</p>':'<p class="pd"></p>')+'<form class="pf" id="pForm" novalidate>';
+  let h='<h1>'+fmtT(f.title||"Inscrição")+'</h1>'+(f.desc?'<p class="pd">'+fmtB(f.desc)+'</p>':'<p class="pd"></p>')+'<form class="pf" id="pForm" novalidate><h2 class="fh">Faça sua pré-inscrição</h2>';
   fs.forEach(q=>{
     if(q.type==="section"){h+='<div class="sec" data-q="'+esc(q.id)+'" data-t="section"><h2>'+fmtL(q.label)+'</h2></div>';return}
     const lab=fmtL(q.label)+(q.req?' <span class="req">*</span>':''),id="pq-"+esc(q.id),opts=Array.isArray(q.opts)?q.opts:[];
