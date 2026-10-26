@@ -928,7 +928,7 @@ async function startPublic(){
   fs.forEach(q=>{
     if(q.type==="section"){h+='<div class="sec" data-q="'+esc(q.id)+'" data-t="section"><h2>'+fmtL(q.label)+'</h2></div>';return}
     const lab=fmtL(q.label)+(q.req?' <span class="req">*</span>':''),id="pq-"+esc(q.id),opts=Array.isArray(q.opts)?q.opts:[];
-    h+='<div class="q" data-q="'+esc(q.id)+'" data-t="'+esc(q.type)+'" data-r="'+(q.req?1:0)+'"'+(q.if?' data-if="'+esc(JSON.stringify(q.if))+'"':'')+(q.end?' data-end="'+esc(JSON.stringify(q.end))+'" data-em="'+esc(q.endMsg||"")+'"':'')+'>';
+    h+='<div class="q" data-q="'+esc(q.id)+'" data-t="'+esc(q.type)+'" data-r="'+(q.req?1:0)+'"'+(q.if?' data-if="'+esc(JSON.stringify(q.if))+'"':'')+(q.end?' data-end="'+esc(JSON.stringify(q.end))+'" data-em="'+esc(q.endMsg||"")+'"':'')+(q.pass?' data-pass="'+esc(JSON.stringify(q.pass))+'"':'')+'>';
     const hp=q.help?'<div class="hl">'+esc(q.help)+'</div>':'';
     if(q.type==="long")h+='<label for="'+id+'">'+lab+'</label>'+hp+'<textarea id="'+id+'" rows="4"></textarea>';
     else if(q.type==="select")h+='<label for="'+id+'">'+lab+'</label>'+hp+'<select id="'+id+'"><option value="">Selecione…</option>'+opts.map(o=>'<option>'+esc(o)+'</option>').join("")+'</select>';
@@ -942,14 +942,19 @@ async function startPublic(){
   const getV=q=>{const t=q.dataset.t;if(t==="multi")return [...q.querySelectorAll("input:checked")].map(x=>x.value);if(t==="choice"){const c=q.querySelector("input:checked");return c?c.value:""}return q.querySelector("input,textarea,select").value.trim()};
   let endMsg=null;
   function refresh(){
-    const ans={};let ended=false;endMsg=null;
+    const ans={};let ended=false,hold=false;endMsg=null;
     document.querySelectorAll("#pForm [data-q]").forEach(q=>{
-      let vis=!ended;
+      let vis=!ended&&!hold;
       if(vis&&q.dataset.if){try{const c=JSON.parse(q.dataset.if),v=ans[c.q];vis=typeof v==="string"&&c.in.includes(v)}catch(_){vis=true}}
       q.hidden=!vis;
-      if(vis&&q.dataset.t!=="section"){const v=getV(q);ans[q.dataset.q]=v;if(q.dataset.end&&typeof v==="string"){try{if(JSON.parse(q.dataset.end).includes(v)){ended=true;endMsg=q.dataset.em||"Obrigado pelo interesse!"}}catch(_){}}}
+      if(vis&&q.dataset.t!=="section"){
+        const v=getV(q);ans[q.dataset.q]=v;
+        if(q.dataset.end&&typeof v==="string"){try{if(JSON.parse(q.dataset.end).includes(v)){ended=true;endMsg=q.dataset.em||"Obrigado pelo interesse!"}}catch(_){}}
+        if(q.dataset.pass&&!ended){try{if(!(typeof v==="string"&&JSON.parse(q.dataset.pass).includes(v)))hold=true}catch(_){}}
+      }
     });
     const eb=$("pEnd");eb.hidden=!ended;eb.innerHTML=ended?'<b>'+esc(String(endMsg).split("\n")[0])+'</b><br>'+esc(String(endMsg).split("\n").slice(1).join(" ").trim()):"";
+    $("pGo").hidden=hold&&!ended;
   }
   $("pForm").addEventListener("change",refresh);$("pForm").addEventListener("input",refresh);refresh();
   $("pForm").addEventListener("submit",async ev=>{
