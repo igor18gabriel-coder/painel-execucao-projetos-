@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Execução de Projetos</title><script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script></head><body style="margin:0">
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0"><title>Execução de Projetos</title><script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script></head><body style="margin:0">
 <style>
 /* Layout: barra de abas (Visão geral + um evento por aba); cada aba de evento tem indicadores, filtros e tarefas editáveis */
 :root{--bg:#10296a;--card:#183a85;--tx:#eef2fb;--mut:#b8c5e4;--bd:#2f55a8;--ac:#8db4ff;--yl:#ffac03;--yltx:#0a2a6b;--band:#ffffff;--red:#ff8a80;--amb:#ffc46b;--grn:#6ee7a0;--redbg:#4a1f1b;--ambbg:#4a3512;--grnbg:#123d28;--bluebg:#214a9c;--inp:#122f72;color-scheme:dark}
@@ -937,7 +937,7 @@ async function startPublic(){
     h+='</div>';
   });
   h+='<div class="endbox" id="pEnd" hidden></div>';
-  h+='<input class="hp" id="pHp" tabindex="-1" autocomplete="off" aria-hidden="true"><div class="err" id="pErr" role="alert"></div><button class="go" id="pGo" type="submit">Enviar inscrição</button></form>';
+  h+='<input class="hp" id="pHp" tabindex="-1" autocomplete="off" aria-hidden="true"><div class="err" id="pErr" role="alert"></div><button class="go" id="pGo" type="submit">Enviar inscrição</button></form><div style="text-align:center;opacity:.35;font-size:11px;margin-top:14px">v2</div>';
   $("pubView").innerHTML=h;
   const getV=q=>{const t=q.dataset.t;if(t==="multi")return [...q.querySelectorAll("input:checked")].map(x=>x.value);if(t==="choice"){const c=q.querySelector("input:checked");return c?c.value:""}return q.querySelector("input,textarea,select").value.trim()};
   let endMsg=null;
