@@ -1025,7 +1025,9 @@ function logout(msg){
   tasks={};events={};team=[];tLoaded=eLoaded=false;db=null;canWrite=false;fail=null;
   setLock(true);$("gErr").textContent=msg||"";render();
 }
+const normCode=v=>String(v||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/\s+/g,"").toLowerCase();
 async function login(c,name,silent){
+  c=normCode(c);
   $("gBtn").disabled=true;$("gErr").textContent="";
   try{
     const r=await rpc("painel_ler",{p_code:c});
@@ -1046,7 +1048,7 @@ async function login(c,name,silent){
   }finally{$("gBtn").disabled=false}
 }
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)poll()});
-$("gForm").addEventListener("submit",e=>{e.preventDefault();login($("gCode").value.trim().toLowerCase(),$("gName").value.trim())});
+$("gForm").addEventListener("submit",e=>{e.preventDefault();login(normCode($("gCode").value),$("gName").value.trim())});
 $("logout").addEventListener("click",()=>logout(""));
 function boot(){
   try{const h=(location.hash||"").replace("#","");if(h)cur=h}catch(e){}
