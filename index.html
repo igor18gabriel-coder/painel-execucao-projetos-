@@ -913,6 +913,7 @@ async function pubRpc(fn,args){
   const t=await r.text();let j=null;try{j=t?JSON.parse(t):null}catch(e){}
   if(!r.ok){const e=new Error((j&&j.message)||String(r.status));e.msg=(j&&j.message)||"";throw e}return j;
 }
+const fmtB=t=>esc(t).replace(/\*\*(.+?)\*\*/g,"<b style=\"color:#fff\">$1</b>");
 const fmtL=t=>esc(t).replace(/\*\*(.+?)\*\*/g,"<mark>$1</mark>");
 function pubMsgL(icon,msg,defTitle){const m=String(msg||"").trim(),i=m.indexOf("\n");if(!m)return pubMsg(icon,defTitle,"");pubMsg(icon,i<0?m:m.slice(0,i),i<0?"":m.slice(i+1).trim())}
 function pubMsg(icon,title,txt){$("pubView").innerHTML='<div class="pend"><div class="big">'+icon+'</div><h2>'+esc(title)+'</h2><p style="color:var(--mut);font-size:16px;white-space:pre-line">'+esc(txt||"")+'</p></div>'}
@@ -924,7 +925,7 @@ async function startPublic(){
   try{document.title=(f.title||"Inscrição")}catch(_){}
   if(f.open===false){pubMsg("⛔","Inscrições encerradas",(f.title||"")+"\nObrigado pelo interesse!");return}
   const fs=f.fields||[];
-  let h='<h1>'+esc(f.title||"Inscrição")+'</h1>'+(f.desc?'<p class="pd">'+esc(f.desc)+'</p>':'<p class="pd"></p>')+'<form class="pf" id="pForm" novalidate>';
+  let h='<h1>'+esc(f.title||"Inscrição")+'</h1>'+(f.desc?'<p class="pd">'+fmtB(f.desc)+'</p>':'<p class="pd"></p>')+'<form class="pf" id="pForm" novalidate>';
   fs.forEach(q=>{
     if(q.type==="section"){h+='<div class="sec" data-q="'+esc(q.id)+'" data-t="section"><h2>'+fmtL(q.label)+'</h2></div>';return}
     const lab=fmtL(q.label)+(q.req?' <span class="req">*</span>':''),id="pq-"+esc(q.id),opts=Array.isArray(q.opts)?q.opts:[];
