@@ -2,27 +2,28 @@
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0">
-<title>Trilha de Treinamento · Líder</title>
+<link rel="icon" href="logo-unifm.png">
+<title>UNIFM · Trilha de Treinamento (Líder)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@600;700&family=Barlow:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Barlow:wght@400;500;600;700&display=swap">
 <style>
 /* Layout: barra superior azul + abas (Colaboradores, Conteúdos, Calendário). Colaboradores = linhas com progresso e senha; Conteúdos = trilha numerada por dia, por função; painéis de edição em diálogo. */
 :root{
-  --bg:#eef1f6;--surface:#fff;--surface2:#f6f8fb;--tx:#18213a;--mut:#5f6b85;--line:#dbe1ec;
-  --navy:#1d3f91;--navy2:#16306f;--orange:#e46f1f;--amber:#ef9a1e;--green:#2a8a3e;--on:#fff;
-  --ok:#23843a;--okbg:#dcf3e2;--warn:#a96400;--warnbg:#fff0cf;--idle:#6b7690;--idlebg:#e7ebf2;--bad:#c4321f;--badbg:#fde3de;--info:#1d3f91;--infobg:#e1e9fb;
-  --focus:#2f6df0;--inp:#fff;
-  --f-disp:"Barlow Semi Condensed",system-ui,"Segoe UI",Roboto,sans-serif;
+  --bg:#edf0f6;--surface:#fff;--surface2:#f6f8fb;--tx:#18213a;--mut:#5f6b85;--line:#dbe1ec;
+  --navy:#0b2257;--navy2:#061a45;--orange:#f2a81d;--gold:#f2a81d;--gold-ink:#0b2257;--accent-tx:#0b2257;--amber:#ef9a1e;--green:#2a8a3e;--on:#fff;
+  --ok:#23843a;--okbg:#dcf3e2;--warn:#a96400;--warnbg:#fff0cf;--idle:#6b7690;--idlebg:#e7ebf2;--bad:#c4321f;--badbg:#fde3de;--info:#0b2257;--infobg:#e3e8f4;
+  --focus:#2a55c4;--inp:#fff;
+  --f-disp:"Outfit",system-ui,"Segoe UI",Roboto,sans-serif;
   --f-body:"Barlow",system-ui,"Segoe UI",Roboto,sans-serif;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#0f1420;--surface:#171e2e;--surface2:#1c2436;--tx:#e8ecf5;--mut:#9aa6c0;--line:#2a3449;
-  --navy:#2a4fa8;--navy2:#1c3677;--orange:#c9601a;--amber:#c47d12;--green:#257a37;--on:#fff;
+  --bg:#0a0f1d;--surface:#171e2e;--surface2:#1c2436;--tx:#e8ecf5;--mut:#9aa6c0;--line:#2a3449;
+  --navy:#17357d;--navy2:#0c2257;--orange:#f0a51c;--gold:#f0a51c;--gold-ink:#0b1a3d;--accent-tx:#f4b847;--amber:#c47d12;--green:#257a37;--on:#fff;
   --ok:#6fdc8c;--okbg:#14381f;--warn:#ffc35c;--warnbg:#41300c;--idle:#a3aec6;--idlebg:#252e42;--bad:#ff8b7a;--badbg:#45201a;--info:#9db8ff;--infobg:#1d2a4d;
   --focus:#7aa2ff;--inp:#121827;color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#0f1420;--surface:#171e2e;--surface2:#1c2436;--tx:#e8ecf5;--mut:#9aa6c0;--line:#2a3449;
-  --navy:#2a4fa8;--navy2:#1c3677;--orange:#c9601a;--amber:#c47d12;--green:#257a37;--on:#fff;
+  --bg:#0a0f1d;--surface:#171e2e;--surface2:#1c2436;--tx:#e8ecf5;--mut:#9aa6c0;--line:#2a3449;
+  --navy:#17357d;--navy2:#0c2257;--orange:#f0a51c;--gold:#f0a51c;--gold-ink:#0b1a3d;--accent-tx:#f4b847;--amber:#c47d12;--green:#257a37;--on:#fff;
   --ok:#6fdc8c;--okbg:#14381f;--warn:#ffc35c;--warnbg:#41300c;--idle:#a3aec6;--idlebg:#252e42;--bad:#ff8b7a;--badbg:#45201a;--info:#9db8ff;--infobg:#1d2a4d;
   --focus:#7aa2ff;--inp:#121827;color-scheme:dark}
 :root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -42,7 +43,7 @@ button,input,select,textarea{font:inherit;color:inherit}
 .me button{background:transparent;border:1px solid rgba(255,255,255,.35);color:var(--on);border-radius:8px;padding:5px 10px;cursor:pointer}
 .tabs{display:flex;gap:2px;overflow-x:auto;flex-basis:100%;margin-top:6px}
 .tab{background:transparent;border:0;color:var(--on);opacity:.75;padding:10px 16px;font-weight:600;cursor:pointer;border-radius:8px 8px 0 0;white-space:nowrap;font-size:15px}
-.tab[aria-selected="true"]{background:var(--bg);color:var(--tx);opacity:1}
+.tab[aria-selected="true"]{background:var(--bg);color:var(--tx);opacity:1;box-shadow:inset 0 3px 0 var(--gold)}
 main{padding-block:18px 32px}
 h2.sec{font-family:var(--f-disp);font-size:22px;margin:0}
 .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
@@ -51,7 +52,7 @@ h2.sec{font-family:var(--f-disp);font-size:22px;margin:0}
 .btn:hover{border-color:var(--focus)}
 .btn.pri{background:var(--navy);border-color:var(--navy);color:var(--on)}
 .btn.grn{background:var(--green);border-color:var(--green);color:var(--on)}
-.btn.org{background:var(--orange);border-color:var(--orange);color:var(--on)}
+.btn.org{background:var(--gold);border-color:var(--gold);color:var(--gold-ink)}
 .btn.sm{padding:5px 10px;font-size:13px}
 .btn.danger{color:var(--bad)}
 .btn.danger.arm{background:var(--bad);border-color:var(--bad);color:var(--on)}
@@ -83,13 +84,13 @@ textarea.f{width:100%;resize:vertical;line-height:1.5}
 /* conteúdos */
 .rolebar{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0}
 .rp{border:1px solid var(--line);background:var(--surface);border-radius:20px;padding:6px 14px;cursor:pointer;font-weight:600;font-size:14px;display:flex;gap:6px;align-items:center}
-.rp[aria-pressed="true"]{background:var(--navy);border-color:var(--navy);color:var(--on)}
+.rp[aria-pressed="true"]{background:var(--navy);border-color:var(--navy);color:var(--on);box-shadow:inset 0 -3px 0 var(--gold)}
 .rp span{font-size:12px;opacity:.8}
 .path{position:relative;display:flex;flex-direction:column;gap:10px;padding-left:28px}
 .path::before{content:"";position:absolute;left:13px;top:6px;bottom:6px;width:3px;background:var(--line);border-radius:2px}
 .mod{position:relative;padding:12px 14px;display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;cursor:pointer;text-align:left;width:100%}
 .mod:hover{border-color:var(--focus)}
-.mod .dot{position:absolute;left:-28px;top:14px;width:30px;height:30px;border-radius:50%;background:var(--navy);color:var(--on);display:grid;place-items:center;font-family:var(--f-disp);font-weight:700;font-size:14px;border:3px solid var(--bg)}
+.mod .dot{position:absolute;left:-28px;top:14px;width:30px;height:30px;border-radius:50%;background:var(--navy);color:var(--gold);display:grid;place-items:center;font-family:var(--f-disp);font-weight:700;font-size:14px;border:3px solid var(--bg)}
 .mod .t{flex:1 1 220px;min-width:0}
 .mod .t b{display:block;font-size:15.5px;overflow-wrap:anywhere}
 .mod .meta{display:flex;gap:6px;flex-wrap:wrap}
@@ -132,7 +133,7 @@ hr{border:0;border-top:1px solid var(--line);margin:2px 0}
 .xb{border:0;background:transparent;color:var(--bad);cursor:pointer;font-weight:600;padding:4px 6px;white-space:nowrap}
 .q{border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--surface2);display:flex;flex-direction:column;gap:8px}
 .qh{display:flex;gap:8px;align-items:flex-start}
-.qn{width:28px;height:28px;border-radius:7px;background:var(--orange);color:var(--on);display:grid;place-items:center;font-family:var(--f-disp);font-weight:700;flex:none}
+.qn{width:28px;height:28px;border-radius:7px;background:var(--gold);color:var(--gold-ink);display:grid;place-items:center;font-family:var(--f-disp);font-weight:700;flex:none}
 .qh textarea{flex:1}
 .op{display:flex;gap:8px;align-items:center}
 .op input[type=radio]{width:18px;height:18px;flex:none;accent-color:var(--green)}
@@ -164,12 +165,21 @@ body.lock .app{visibility:hidden}
   .ev{font-size:10.5px}
 }
 @media (max-width:480px){.cal .w{font-size:10.5px}.cd .n{font-size:11px}}
+
+/* identidade UNIFM */
+.top,.hero{position:relative;overflow:hidden;border-top:5px solid var(--gold)}
+.top::after,.hero::after{content:"UNIFM";position:absolute;right:-30px;top:-38px;font-family:var(--f-disp);font-weight:800;font-style:italic;font-size:210px;line-height:1;letter-spacing:-.02em;color:rgba(255,255,255,.045);pointer-events:none;transform:skewX(-10deg);white-space:nowrap}
+.top .in,.hero .in{position:relative;z-index:1}
+.logo{height:58px;width:auto;flex:none;display:block}
+.brandrow{display:flex;gap:14px;align-items:center;min-width:0}
+.gh{border-top:5px solid var(--gold)}
+.gh .logo{height:64px;margin-bottom:10px}
 </style>
 </head>
 <body class="lock">
 <section id="gate">
   <div class="gcard">
-    <div class="gh"><h1>Trilha de Treinamento</h1><p>Área do líder · entre com o código da equipe</p></div>
+    <div class="gh"><img class="logo" src="logo-unifm.png" alt="UNIFM"><h1>Trilha de Treinamento</h1><p>Área do líder · entre com o código da equipe</p></div>
     <form id="gForm" autocomplete="off">
       <div class="field"><label class="lbl" for="gName">Seu nome</label><input class="f" id="gName" placeholder="Como você quer aparecer" autocomplete="name"></div>
       <div class="field"><label class="lbl" for="gCode">Código de acesso</label><input class="f" id="gCode" type="password" required placeholder="O mesmo do painel de execução" autocomplete="current-password"></div>
@@ -183,7 +193,7 @@ body.lock .app{visibility:hidden}
 <div class="app">
 <header class="top pad">
   <div class="in">
-    <div class="brand"><h1>Trilha de Treinamento</h1><p>Área do líder · conteúdos, acessos e evolução da equipe</p></div>
+    <div class="brandrow"><img class="logo" src="logo-unifm.png" alt="UNIFM"><div class="brand"><h1>Trilha de Treinamento</h1><p>Área do líder · conteúdos, acessos e evolução da equipe</p></div></div>
     <div class="me"><span id="meTxt"></span><span class="tagw" id="roleTxt"></span><button type="button" id="logout">Sair</button></div>
     <nav class="tabs" role="tablist" aria-label="Seções">
       <button class="tab" role="tab" id="t-colabs" aria-selected="true" data-tab="colabs">Colaboradores</button>
@@ -433,7 +443,7 @@ function paintMat(){
    (canWrite?'<div class="row"><label class="btn">Anexar arquivo<input type="file" id="mUp" hidden multiple></label><span class="hint" id="mUpMsg">PDF, Word, PowerPoint, Excel, imagem ou vídeo, até 25 MB.</span></div>':"")+
    '<hr><div class="row between"><h4 class="secttl">Perguntas <span class="hint">(cada uma vale 1 ponto · máximo 5)</span></h4></div><div id="mQs" style="display:flex;flex-direction:column;gap:10px"></div>'+
    (canWrite?'<div class="row"><button class="btn" type="button" id="mAddQ">+ Escrever pergunta</button></div>':"")+
-   (canWrite?'<hr><div class="row between"><div class="row"><button class="btn grn" type="button" id="mSave">Salvar conteúdo</button><span class="hint" id="mSaveMsg"></span></div>'+(draftNew?"":'<button class="btn danger" type="button" id="mDel">Excluir conteúdo</button>')+"</div>":""),"var(--orange)");
+   (canWrite?'<hr><div class="row between"><div class="row"><button class="btn grn" type="button" id="mSave">Salvar conteúdo</button><span class="hint" id="mSaveMsg"></span></div>'+(draftNew?"":'<button class="btn danger" type="button" id="mDel">Excluir conteúdo</button>')+"</div>":""));
   paintFiles();paintQs();
   const bind=(id,k,fn)=>{const el=$(id);el.addEventListener("input",()=>{d[k]=fn?fn(el.value):el.value})};
   bind("mTit","titulo");bind("mTxt","texto");

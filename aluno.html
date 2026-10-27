@@ -2,27 +2,28 @@
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0">
-<title>Minha Trilha de Treinamento</title>
+<link rel="icon" href="logo-unifm.png">
+<title>UNIFM · Minha Trilha de Treinamento</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@600;700&family=Barlow:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Barlow:wght@400;500;600;700&display=swap">
 <style>
 /* Layout: faixa de boas-vindas com anel de progresso e pontos; card "Para hoje"; duas colunas (trilha por dias | calendário + prazos); aula abre em diálogo com material e questionário. */
 :root{
-  --bg:#eef1f6;--surface:#fff;--surface2:#f6f8fb;--tx:#18213a;--mut:#5f6b85;--line:#dbe1ec;
-  --navy:#1d3f91;--navy2:#16306f;--orange:#e46f1f;--green:#2a8a3e;--on:#fff;
-  --ok:#23843a;--okbg:#dcf3e2;--warn:#a96400;--warnbg:#fff0cf;--idle:#6b7690;--idlebg:#e7ebf2;--bad:#c4321f;--badbg:#fde3de;--info:#1d3f91;--infobg:#e1e9fb;
-  --focus:#2f6df0;--inp:#fff;
-  --f-disp:"Barlow Semi Condensed",system-ui,"Segoe UI",Roboto,sans-serif;
+  --bg:#edf0f6;--surface:#fff;--surface2:#f6f8fb;--tx:#18213a;--mut:#5f6b85;--line:#dbe1ec;
+  --navy:#0b2257;--navy2:#061a45;--orange:#f2a81d;--gold:#f2a81d;--gold-ink:#0b2257;--accent-tx:#0b2257;--green:#2a8a3e;--on:#fff;
+  --ok:#23843a;--okbg:#dcf3e2;--warn:#a96400;--warnbg:#fff0cf;--idle:#6b7690;--idlebg:#e7ebf2;--bad:#c4321f;--badbg:#fde3de;--info:#0b2257;--infobg:#e3e8f4;
+  --focus:#2a55c4;--inp:#fff;
+  --f-disp:"Outfit",system-ui,"Segoe UI",Roboto,sans-serif;
   --f-body:"Barlow",system-ui,"Segoe UI",Roboto,sans-serif;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#0f1420;--surface:#171e2e;--surface2:#1c2436;--tx:#e8ecf5;--mut:#9aa6c0;--line:#2a3449;
-  --navy:#2a4fa8;--navy2:#1c3677;--orange:#c9601a;--green:#257a37;--on:#fff;
+  --bg:#0a0f1d;--surface:#171e2e;--surface2:#1c2436;--tx:#e8ecf5;--mut:#9aa6c0;--line:#2a3449;
+  --navy:#17357d;--navy2:#0c2257;--orange:#f0a51c;--gold:#f0a51c;--gold-ink:#0b1a3d;--accent-tx:#f4b847;--green:#257a37;--on:#fff;
   --ok:#6fdc8c;--okbg:#14381f;--warn:#ffc35c;--warnbg:#41300c;--idle:#a3aec6;--idlebg:#252e42;--bad:#ff8b7a;--badbg:#45201a;--info:#9db8ff;--infobg:#1d2a4d;
   --focus:#7aa2ff;--inp:#121827;color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#0f1420;--surface:#171e2e;--surface2:#1c2436;--tx:#e8ecf5;--mut:#9aa6c0;--line:#2a3449;
-  --navy:#2a4fa8;--navy2:#1c3677;--orange:#c9601a;--green:#257a37;--on:#fff;
+  --bg:#0a0f1d;--surface:#171e2e;--surface2:#1c2436;--tx:#e8ecf5;--mut:#9aa6c0;--line:#2a3449;
+  --navy:#17357d;--navy2:#0c2257;--orange:#f0a51c;--gold:#f0a51c;--gold-ink:#0b1a3d;--accent-tx:#f4b847;--green:#257a37;--on:#fff;
   --ok:#6fdc8c;--okbg:#14381f;--warn:#ffc35c;--warnbg:#41300c;--idle:#a3aec6;--idlebg:#252e42;--bad:#ff8b7a;--badbg:#45201a;--info:#9db8ff;--infobg:#1d2a4d;
   --focus:#7aa2ff;--inp:#121827;color-scheme:dark}
 :root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -52,7 +53,7 @@ button,input{font:inherit;color:inherit}
 main{padding-block:18px 36px}
 .today{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 18px;display:flex;flex-wrap:wrap;gap:12px 18px;align-items:center;margin-bottom:18px;border-left:6px solid var(--orange)}
 .today .t{flex:1 1 260px;min-width:0}
-.today small{color:var(--orange);font-weight:700;text-transform:uppercase;letter-spacing:.07em;font-size:12px}
+.today small{color:var(--accent-tx);font-weight:700;text-transform:uppercase;letter-spacing:.07em;font-size:12px}
 .today h2{font-family:var(--f-disp);font-size:24px;margin:2px 0;overflow-wrap:anywhere}
 .today p{margin:0;color:var(--mut);font-size:14px}
 .today.done{border-left-color:var(--green)}.today.done small{color:var(--ok)}
@@ -62,7 +63,7 @@ h3.sec{font-family:var(--f-disp);font-size:21px;margin:0 0 12px}
 .box{padding:16px}
 .btn{border:1px solid var(--line);background:var(--surface);border-radius:9px;padding:9px 15px;cursor:pointer;font-weight:600;font-size:14.5px;white-space:nowrap}
 .btn:hover{border-color:var(--focus)}
-.btn.pri{background:var(--orange);border-color:var(--orange);color:var(--on)}
+.btn.pri{background:var(--gold);border-color:var(--gold);color:var(--gold-ink)}
 .btn.grn{background:var(--green);border-color:var(--green);color:var(--on)}
 .btn.nav{background:var(--navy);border-color:var(--navy);color:var(--on)}
 .btn.sm{padding:5px 10px;font-size:13px}
@@ -76,7 +77,7 @@ h3.sec{font-family:var(--f-disp);font-size:21px;margin:0 0 12px}
 .les:hover:not([disabled]){border-color:var(--focus);background:var(--surface)}
 .les[disabled]{cursor:default;opacity:.75}
 .les .dot{position:absolute;left:-34px;top:50%;transform:translateY(-50%);width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-family:var(--f-disp);font-weight:700;color:var(--on);background:var(--navy);border:3px solid var(--surface)}
-.les.k-done .dot{background:var(--green)}.les.k-late .dot{background:var(--bad)}.les.k-lock .dot{background:var(--idle)}.les.k-open .dot{background:var(--orange)}
+.les.k-done .dot{background:var(--green)}.les.k-late .dot{background:var(--bad)}.les.k-lock .dot{background:var(--idle)}.les.k-open .dot{background:var(--gold);color:var(--gold-ink)}
 .les .dot svg{width:16px;height:16px}
 .les .t{flex:1 1 200px;min-width:0}
 .les .t b{display:block;overflow-wrap:anywhere}
@@ -150,12 +151,21 @@ body.lock .app{visibility:hidden}
 @media (max-width:860px){.cols{grid-template-columns:1fr}}
 @media (max-width:520px){.stats{width:100%}.st{flex:1 1 90px;min-width:0}.ring{width:88px;height:88px}.ring svg{width:88px;height:88px}}
 @media (prefers-reduced-motion:no-preference){.ring circle.p{transition:stroke-dashoffset .6s ease}}
+
+/* identidade UNIFM */
+.top,.hero{position:relative;overflow:hidden;border-top:5px solid var(--gold)}
+.top::after,.hero::after{content:"UNIFM";position:absolute;right:-30px;top:-38px;font-family:var(--f-disp);font-weight:800;font-style:italic;font-size:210px;line-height:1;letter-spacing:-.02em;color:rgba(255,255,255,.045);pointer-events:none;transform:skewX(-10deg);white-space:nowrap}
+.top .in,.hero .in{position:relative;z-index:1}
+.logo{height:58px;width:auto;flex:none;display:block}
+.brandrow{display:flex;gap:14px;align-items:center;min-width:0}
+.gh{border-top:5px solid var(--gold)}
+.gh .logo{height:64px;margin-bottom:10px}
 </style>
 </head>
 <body class="lock">
 <section id="gate">
   <div class="gcard">
-    <div class="gh"><h1>Minha Trilha de Treinamento</h1><p>Digite a senha que o seu líder enviou para você.</p></div>
+    <div class="gh"><img class="logo" src="logo-unifm.png" alt="UNIFM"><h1>Minha Trilha de Treinamento</h1><p>Digite a senha que o seu líder enviou para você.</p></div>
     <form id="gForm" autocomplete="off">
       <label class="hint" for="gCode">Senha de acesso</label>
       <input id="gCode" required placeholder="XXXX-XXXX" maxlength="12" autocomplete="one-time-code" autocapitalize="characters" spellcheck="false">
@@ -169,14 +179,15 @@ body.lock .app{visibility:hidden}
 <div class="app">
 <header class="hero pad">
   <div class="in">
+    <img class="logo" src="logo-unifm.png" alt="UNIFM">
     <div class="hi">
-      <small id="hiSub">Trilha de treinamento</small>
+      <small id="hiSub">UNIFM · Trilha de treinamento</small>
       <h1 id="hiName">Olá!</h1>
       <span class="pill" id="hiRole"></span><span class="pill" id="hiDay"></span><button type="button" id="logout">Sair</button>
     </div>
     <div class="stats">
       <div class="ring" role="img" id="ringBox" aria-label="Progresso">
-        <svg viewBox="0 0 104 104"><circle cx="52" cy="52" r="44" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="10"/><circle class="p" id="ringP" cx="52" cy="52" r="44" fill="none" stroke="#7ee39a" stroke-width="10" stroke-linecap="round" stroke-dasharray="276.46" stroke-dashoffset="276.46"/></svg>
+        <svg viewBox="0 0 104 104"><circle cx="52" cy="52" r="44" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="10"/><circle class="p" id="ringP" cx="52" cy="52" r="44" fill="none" stroke="#f2a81d" stroke-width="10" stroke-linecap="round" stroke-dasharray="276.46" stroke-dashoffset="276.46"/></svg>
         <div class="v"><div><b id="ringV">0%</b><span>concluído</span></div></div>
       </div>
       <div class="st"><b id="sPts">0</b><span id="sPtsSub">pontos</span></div>
