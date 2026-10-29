@@ -225,26 +225,30 @@ const SB_URL="https://dqdlnywyiiuaeqvpkuek.supabase.co";
 const SB_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRxZGxueXd5aWl1YWVxdnBrdWVrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI0MTQ5MDUsImV4cCI6MjEwNzk5MDkwNX0.x4GgQf6dH30wH-7k01S_REOOqA8uQUIBJ5NHWeA6WlM";
 const CHECK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg>';
 const LOCK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
-let code="",D={colab:null,materiais:[],progresso:[],hoje:null},calM=null,pollT=null,openId=null,picks={};
+let code="",D={colab:null,materiais:[],progresso:[]},calM=null,pollT=null,openId=null,picks={},skew=0,wakeT=null;
+const H24=864e5;
 
-/* ---------- datas ---------- */
-function pd(s){if(!s)return null;const p=String(s).slice(0,10).split("-");return new Date(+p[0],+p[1]-1,+p[2])}
+/* ---------- datas e horários ---------- */
+const now=()=>Date.now()+skew;
+const ms=v=>v?new Date(v).getTime():null;
 function iso(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
-const diff=(a,b)=>Math.round((pd(a)-pd(b))/864e5);
-const dm=s=>{const d=pd(s);return d?d.toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit"}):"–"};
-const dlong=s=>{const d=pd(s);return d?d.toLocaleDateString("pt-BR",{weekday:"long",day:"2-digit",month:"long"}):"–"};
-const hoje=()=>D.hoje||iso(new Date());
+const dayKey=t=>iso(new Date(t));
+const hm=t=>new Date(t).toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
+const dm=t=>t==null?"–":new Date(t).toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit"});
+const ddiff=t=>Math.round((new Date(dayKey(t)+"T00:00")-new Date(dayKey(now())+"T00:00"))/H24);
+function when(t){if(t==null)return"–";const d=ddiff(t);return(d===0?"hoje":d===1?"amanhã":d===-1?"ontem":new Date(t).toLocaleDateString("pt-BR",{weekday:"long",day:"2-digit",month:"2-digit"}))+" às "+hm(t)}
 
 /* ---------- regras ---------- */
 const prog=id=>D.progresso.find(p=>p.material_id===id)||null;
 const nQ=m=>m.liberado?(m.perguntas||[]).length:(m.n_perguntas||0);
+const lib=m=>ms(m.libera_em),pz=m=>ms(m.prazo_em);
 function st(m){
-  const p=prog(m.id),h=hoje();
+  const p=prog(m.id);
   const done=nQ(m)?!!(p&&p.enviado_em):!!(p&&p.estudado_em);
-  const k=done?"done":!m.liberado?"lock":m.prazo<h?"late":"open";
+  const k=done?"done":!m.liberado?"lock":pz(m)<now()?"late":"open";
   return{p,done,k};
 }
-function prazoTxt(m){const d=diff(m.prazo,hoje());return d<0?"Prazo venceu em "+dm(m.prazo):d===0?"Prazo: hoje":d===1?"Prazo: amanhã":"Prazo: "+dm(m.prazo)+" ("+d+" dias)"}
+function prazoTxt(m){const t=pz(m);return t<now()?"Prazo venceu "+when(t):"Prazo: "+when(t)}
 
 /* ---------- conexão ---------- */
 function rpc(fn,args){
@@ -252,57 +256,68 @@ function rpc(fn,args){
    .then(async r=>{const t=await r.text();let j=null;try{j=t?JSON.parse(t):null}catch(_){}
      if(!r.ok){const e=new Error((j&&j.message)||String(r.status));e.msg=(j&&j.message)||"";throw e}return j});
 }
+function setD(r){D=r;if(r.agora)skew=ms(r.agora)-Date.now();scheduleWake()}
+// recarrega sozinho no minuto em que o próximo dia é liberado
+function scheduleWake(){
+  clearTimeout(wakeT);
+  const next=(D.materiais||[]).filter(m=>!m.liberado&&m.libera_em).map(lib).sort((a,b)=>a-b)[0];
+  if(next){const wait=next-now()+3000;if(wait>0&&wait<20*H24)wakeT=setTimeout(()=>{load().then(()=>toast("Novo conteúdo liberado!"))},Math.min(wait,2147483000))}
+}
 async function load(){
   if(!code)return;
-  try{D=await rpc("aluno_ler",{p_code:code});render();if(openId&&$("dlg").open)paintLesson()}
+  try{setD(await rpc("aluno_ler",{p_code:code}));render();if(openId&&$("dlg").open)paintLesson()}
   catch(e){if(e.msg==="codigo_invalido")logout("Sua senha mudou ou o acesso foi pausado. Peça uma nova ao seu líder.")}
 }
-let toastT;function toast(t){const el=$("toast");el.textContent=t;el.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>el.hidden=true,3200)}
+let toastT;function toast(t){const el=$("toast");el.textContent=t;el.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>el.hidden=true,3500)}
 
 /* ---------- render ---------- */
 function render(){
-  const c=D.colab||{},ms=D.materiais||[],h=hoje();
+  const c=D.colab||{},mats=D.materiais||[];
   const first=String(c.nome||"").split(" ")[0];
   $("hiName").textContent="Olá, "+(first||"bem-vindo")+"!";
   $("hiRole").textContent=ROLES[c.funcao]||c.funcao||"";
-  const dia=diff(h,c.inicio)+1;
-  $("hiDay").textContent=dia>=1?"Dia "+dia+" da trilha":"Sua trilha começa em "+dm(c.inicio);
-  const sts=ms.map(m=>[m,st(m)]),done=sts.filter(([m,s])=>s.done).length,pct=ms.length?Math.round(done/ms.length*100):0;
-  $("ringV").textContent=pct+"%";$("ringP").setAttribute("stroke-dashoffset",String(276.46*(1-pct/100)));$("ringBox").setAttribute("aria-label","Progresso da trilha: "+pct+"%");
+  const openDays=[...new Set(mats.filter(m=>m.liberado).map(m=>m.dia))].sort((a,b)=>a-b);
+  const allDays=[...new Set(mats.map(m=>m.dia))].sort((a,b)=>a-b);
+  const lastDay=allDays.length?allDays[allDays.length-1]:0;
+  $("hiDay").textContent=!c.inicio_em?"Plano ainda não iniciado":openDays.length?"D"+openDays[openDays.length-1]+(lastDay?" de "+lastDay:"")+" do plano":"Seu plano começa "+when(ms(c.inicio_em));
+  const sts=mats.map(m=>[m,st(m)]),done=sts.filter(([m,s])=>s.done).length,pct=mats.length?Math.round(done/mats.length*100):0;
+  $("ringV").textContent=pct+"%";$("ringP").setAttribute("stroke-dashoffset",String(276.46*(1-pct/100)));$("ringBox").setAttribute("aria-label","Progresso do plano: "+pct+"%");
   let ac=0,tot=0;D.progresso.forEach(p=>{if(p.enviado_em){ac+=p.acertos||0;tot+=p.total||0}});
-  const possible=ms.reduce((a,m)=>a+nQ(m),0);
-  $("sPts").textContent=ac;$("sPtsSub").textContent="pontos de "+possible+" na trilha";
-  $("sDone").textContent=done+"/"+ms.length;
+  const possible=mats.reduce((a,m)=>a+nQ(m),0);
+  $("sPts").textContent=ac;$("sPtsSub").textContent="pontos de "+possible+" no plano";
+  $("sDone").textContent=done+"/"+mats.length;
   // para hoje
-  const pend=sts.filter(([m,s])=>s.k==="late"||s.k==="open").sort((a,b)=>String(a[0].prazo).localeCompare(String(b[0].prazo)));
-  const next=sts.find(([m,s])=>s.k==="lock");
+  const pend=sts.filter(([m,s])=>s.k==="late"||s.k==="open").sort((a,b)=>a[0].dia-b[0].dia||pz(a[0])-pz(b[0]));
+  const next=sts.filter(([m,s])=>s.k==="lock"&&m.libera_em).sort((a,b)=>lib(a[0])-lib(b[0]))[0];
+  const nextTxt=next?"O D"+next[0].dia+" (“"+esc(next[0].titulo)+"”) será liberado "+when(lib(next[0]))+".":"";
   if(pend.length){const [m,s]=pend[0];
-    $("todayBox").innerHTML='<div class="today"><div class="t"><small>'+(s.k==="late"?"Atrasado · faça agora":"Para hoje")+"</small><h2>"+esc(m.titulo||"Conteúdo do dia "+m.dia)+"</h2><p>Dia "+m.dia+" · "+prazoTxt(m)+(nQ(m)?" · "+nQ(m)+" pergunta"+(nQ(m)>1?"s":"")+" valendo "+nQ(m)+" ponto"+(nQ(m)>1?"s":""):"")+(pend.length>1?" · mais "+(pend.length-1)+" pendente"+(pend.length>2?"s":""):"")+'</p></div><button class="btn pri" type="button" data-les="'+m.id+'">'+(s.p&&s.p.estudado_em?"Continuar":"Começar estudo")+"</button></div>"}
-  else if(ms.length&&done===ms.length)$("todayBox").innerHTML='<div class="today done"><div class="t"><small>Parabéns</small><h2>Você concluiu toda a trilha liberada</h2><p>'+ac+" de "+tot+" pontos. Quando o líder adicionar novos conteúdos, eles aparecem aqui.</p></div></div>";
-  else if(next)$("todayBox").innerHTML='<div class="today done"><div class="t"><small>Tudo em dia</small><h2>Nada pendente por hoje</h2><p>Próximo conteúdo: “'+esc(next[0].titulo)+"”, liberado em "+dlong(next[0].liberado_em)+".</p></div></div>";
+    $("todayBox").innerHTML='<div class="today"><div class="t"><small>'+(s.k==="late"?"Atrasado · faça agora":"Para hoje · D"+m.dia)+"</small><h2>"+esc(m.titulo||"Conteúdo do D"+m.dia)+"</h2><p>"+prazoTxt(m)+(nQ(m)?" · "+nQ(m)+" pergunta"+(nQ(m)>1?"s":"")+" valendo "+nQ(m)+" ponto"+(nQ(m)>1?"s":""):"")+(pend.length>1?" · mais "+(pend.length-1)+" pendente"+(pend.length>2?"s":""):"")+'</p></div><button class="btn pri" type="button" data-les="'+m.id+'">'+(s.p&&s.p.estudado_em?"Continuar":"Começar estudo")+"</button></div>"}
+  else if(next)$("todayBox").innerHTML='<div class="today done"><div class="t"><small>Tudo em dia</small><h2>Você concluiu o que foi liberado</h2><p>'+nextTxt+" O conteúdo aparece aqui sozinho nesse horário.</p></div></div>";
+  else if(mats.length&&done===mats.length)$("todayBox").innerHTML='<div class="today done"><div class="t"><small>Parabéns</small><h2>Você concluiu o plano de treinamento</h2><p>'+ac+" de "+tot+" pontos.</p></div></div>";
+  else if(!c.inicio_em)$("todayBox").innerHTML='<div class="today"><div class="t"><small>Aguardando</small><h2>Seu plano ainda não foi iniciado</h2><p>Assim que o seu líder iniciar o plano, o conteúdo do D1 aparece aqui.</p></div></div>';
   else $("todayBox").innerHTML='<div class="today"><div class="t"><small>Aguardando</small><h2>Seus conteúdos ainda não foram cadastrados</h2><p>Assim que o seu líder liberar o primeiro material, ele aparece aqui.</p></div></div>';
   // trilha
-  $("path").innerHTML=ms.length?'<div class="path">'+sts.map(([m,s])=>{
-    const right=s.k==="done"?(s.p&&s.p.enviado_em?'<span class="score">'+s.p.acertos+"/"+s.p.total+"</span><span class=\"chip ok\">Concluído</span>":'<span class="chip ok">Concluído</span>'):s.k==="lock"?'<span class="chip idle">Libera '+dm(m.liberado_em)+"</span>":s.k==="late"?'<span class="chip bad">Atrasado</span>':'<span class="chip warn">'+(diff(m.prazo,h)===0?"Prazo hoje":"Até "+dm(m.prazo))+"</span>";
-    const sub="Dia "+m.dia+(s.k==="lock"?"":" · prazo "+dm(m.prazo))+(nQ(m)?" · "+nQ(m)+" pergunta"+(nQ(m)>1?"s":""):"");
-    return'<button type="button" class="les k-'+s.k+'" data-les="'+m.id+'"'+(s.k==="lock"?" disabled":"")+'><span class="dot">'+(s.k==="done"?CHECK:s.k==="lock"?LOCK:m.dia)+'</span><span class="t"><b>'+esc(m.titulo||"Conteúdo do dia "+m.dia)+"</b><span>"+sub+'</span></span><span class="r">'+right+"</span></button>";
-  }).join("")+"</div>":'<div class="empty"><b>Sua trilha está sendo preparada</b>Os conteúdos aparecem aqui conforme o líder for liberando.</div>';
+  $("path").innerHTML=mats.length?'<div class="path">'+sts.map(([m,s])=>{
+    const right=s.k==="done"?(s.p&&s.p.enviado_em?'<span class="score">'+s.p.acertos+"/"+s.p.total+"</span><span class=\"chip ok\">Concluído</span>":'<span class="chip ok">Concluído</span>'):s.k==="lock"?'<span class="chip idle">'+(m.libera_em?"Libera "+dm(lib(m))+" "+hm(lib(m)):"Aguardando início")+"</span>":s.k==="late"?'<span class="chip bad">Atrasado</span>':'<span class="chip warn">'+(ddiff(pz(m))===0?"Prazo hoje "+hm(pz(m)):"Até "+dm(pz(m))+" "+hm(pz(m)))+"</span>";
+    const sub="D"+m.dia+(s.k==="lock"?"":" · prazo "+dm(pz(m))+" às "+hm(pz(m)))+(nQ(m)?" · "+nQ(m)+" pergunta"+(nQ(m)>1?"s":""):"");
+    return'<button type="button" class="les k-'+s.k+'" data-les="'+m.id+'"'+(s.k==="lock"?" disabled":"")+'><span class="dot">'+(s.k==="done"?CHECK:s.k==="lock"?LOCK:m.dia)+'</span><span class="t"><b>'+esc(m.titulo||"Conteúdo do D"+m.dia)+"</b><span>"+sub+'</span></span><span class="r">'+right+"</span></button>";
+  }).join("")+"</div>":'<div class="empty"><b>Seu plano está sendo preparado</b>Os conteúdos aparecem aqui conforme forem liberados.</div>';
   renderCal(sts);
 }
 function renderCal(sts){
-  if(!calM){const h=pd(hoje());calM=new Date(h.getFullYear(),h.getMonth(),1)}
+  if(!calM){const h=new Date(now());calM=new Date(h.getFullYear(),h.getMonth(),1)}
   {const t=calM.toLocaleDateString("pt-BR",{month:"long",year:"numeric"});$("cMonth").textContent=t.charAt(0).toUpperCase()+t.slice(1)}
-  const y=calM.getFullYear(),mo=calM.getMonth(),first=new Date(y,mo,1).getDay(),nd=new Date(y,mo+1,0).getDate(),h=hoje();
+  const y=calM.getFullYear(),mo=calM.getMonth(),first=new Date(y,mo,1).getDay(),nd=new Date(y,mo+1,0).getDate(),h=dayKey(now());
   const mk={};const add=(d,c,t)=>{(mk[d]=mk[d]||[]).push([c,t])};
-  (sts||[]).forEach(([m,s])=>{add(m.liberado_em,"i-lib","Liberação: "+m.titulo);add(m.prazo,s.done?"i-done":s.k==="late"?"i-late":"i-pz","Prazo: "+m.titulo)});
+  (sts||[]).forEach(([m,s])=>{if(!m.libera_em)return;add(dayKey(lib(m)),"i-lib","D"+m.dia+" libera às "+hm(lib(m))+": "+m.titulo);add(dayKey(pz(m)),s.done?"i-done":s.k==="late"?"i-late":"i-pz","Prazo às "+hm(pz(m))+": "+m.titulo)});
   let g=["D","S","T","Q","Q","S","S"].map(w=>'<span class="w">'+w+"</span>").join("");
   for(let i=0;i<first;i++)g+='<span class="cd out"></span>';
   for(let d=1;d<=nd;d++){const s=iso(new Date(y,mo,d)),l=mk[s]||[];g+='<span class="cd'+(s===h?" tdy":"")+'"'+(l.length?' title="'+esc(l.map(x=>x[1]).join("\n"))+'"':"")+">"+d+(l.length?'<span class="m">'+l.slice(0,3).map(x=>'<i class="'+x[0]+'"></i>').join("")+"</span>":"")+"</span>"}
   $("cal").innerHTML=g;
-  const up=(sts||[]).filter(([m,s])=>!s.done&&m.liberado).sort((a,b)=>String(a[0].prazo).localeCompare(String(b[0].prazo)));
-  const fut=(sts||[]).filter(([m,s])=>s.k==="lock").slice(0,3);
-  $("dl").innerHTML=(up.map(([m,s])=>"<li><b>"+dm(m.prazo)+"</b><span class=\"tt\">"+esc(m.titulo)+"</span>"+(s.k==="late"?'<span class="chip bad">Atrasado</span>':diff(m.prazo,h)===0?'<span class="chip warn">Hoje</span>':"")+"</li>").join("")+
-    fut.map(([m])=>"<li><b>"+dm(m.liberado_em)+"</b><span class=\"tt\">"+esc(m.titulo)+'</span><span class="chip idle">Novo</span></li>').join(""))||'<li class="hint">Nenhum prazo pendente.</li>';
+  const up=(sts||[]).filter(([m,s])=>!s.done&&m.liberado).sort((a,b)=>pz(a[0])-pz(b[0]));
+  const fut=(sts||[]).filter(([m,s])=>s.k==="lock"&&m.libera_em).sort((a,b)=>lib(a[0])-lib(b[0])).slice(0,3);
+  $("dl").innerHTML=(up.map(([m,s])=>"<li><b>"+dm(pz(m))+"</b><span class=\"tt\">D"+m.dia+" · "+esc(m.titulo)+" <span class=\"hint\">até "+hm(pz(m))+"</span></span>"+(s.k==="late"?'<span class="chip bad">Atrasado</span>':ddiff(pz(m))===0?'<span class="chip warn">Hoje</span>':"")+"</li>").join("")+
+    fut.map(([m])=>"<li><b>"+dm(lib(m))+"</b><span class=\"tt\">D"+m.dia+" · "+esc(m.titulo)+' <span class="hint">libera '+hm(lib(m))+'</span></span><span class="chip idle">Novo</span></li>').join(""))||'<li class="hint">Nenhum prazo pendente.</li>';
 }
 
 /* ---------- aula ---------- */
@@ -311,13 +326,13 @@ function openLesson(id){openId=id;picks={};paintLesson();if(!dlg.open)dlg.showMo
 function paintLesson(){
   const m=(D.materiais||[]).find(x=>x.id===openId);if(!m||!m.liberado){dlg.close();return}
   const s=st(m),p=s.p,studied=!!(p&&p.estudado_em),sent=!!(p&&p.enviado_em),qs=m.perguntas||[];
-  $("lSub").textContent="Dia "+m.dia+" · "+(s.done?"Concluído":prazoTxt(m));
+  $("lSub").textContent="D"+m.dia+" · "+(s.done?"Concluído":prazoTxt(m));
   $("lTitle").textContent=m.titulo||"Conteúdo do dia "+m.dia;
   let h='<div class="step'+(studied?" done":"")+'"><span class="n">'+(studied?CHECK:"1")+'</span><div class="c"><h4>Estude o material</h4>'+
     (m.texto&&m.texto.trim()?'<div class="txt">'+esc(m.texto)+"</div>":"")+
     ((m.arquivos||[]).length?'<div class="files">'+m.arquivos.map(f=>'<button type="button" class="fbtn" data-open="'+esc(f.path)+'"><span aria-hidden="true">📄</span><span>'+esc(f.name)+"</span></button>").join("")+"</div>":"")+
     (!(m.texto&&m.texto.trim())&&!(m.arquivos||[]).length?'<p class="hint">O líder ainda não anexou material neste conteúdo.</p>':"")+
-    '<div><button type="button" class="btn '+(studied?"":"grn")+'" id="lStudy">'+(studied?"✓ Estudado em "+dm(iso(new Date(p.estudado_em))):"Marquei como estudado")+"</button></div></div></div>";
+    '<div><button type="button" class="btn '+(studied?"":"grn")+'" id="lStudy">'+(studied?"✓ Estudado em "+dm(ms(p.estudado_em)):"Marquei como estudado")+"</button></div></div></div>";
   if(qs.length){
     h+='<div class="step'+(sent?" done":"")+'"><span class="n">'+(sent?CHECK:"2")+'</span><div class="c"><h4>Questionário · '+qs.length+" pergunta"+(qs.length>1?"s":"")+", 1 ponto cada</h4>";
     if(sent){
@@ -377,7 +392,7 @@ async function login(c,silent){
   c=norm(c);if(c.length<8){if(!silent)$("gErr").textContent="A senha tem 8 letras e números.";setLock(true);return}
   $("gBtn").disabled=true;$("gErr").textContent="";
   try{
-    D=await rpc("aluno_ler",{p_code:c});code=c;lsSet("al_code",c);setLock(false);render();
+    setD(await rpc("aluno_ler",{p_code:c}));code=c;lsSet("al_code",c);setLock(false);render();
     clearInterval(pollT);pollT=setInterval(()=>{if(!document.hidden&&!dlg.open)load()},60000);
   }catch(e){
     if(e.msg==="codigo_invalido"){lsSet("al_code","");$("gErr").textContent=silent?"Sua senha mudou ou o acesso foi pausado. Peça uma nova ao seu líder.":"Senha não encontrada. Confira com o seu líder."}
