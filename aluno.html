@@ -96,6 +96,7 @@ h3.sec{font-family:var(--f-disp);font-size:21px;margin:0 0 12px}
 .cd.tdy{box-shadow:inset 0 0 0 2px var(--navy);font-weight:700}
 .cd .m{display:flex;gap:2px}
 .cd .m i{width:7px;height:7px;border-radius:50%;display:block}
+.cd .fz{font-size:10.5px;font-weight:800;line-height:1;color:var(--gold-ink);background:var(--gold);border-radius:4px;padding:2px 4px;font-family:var(--f-disp)}
 .i-lib{background:var(--navy)}.i-pz{background:var(--orange)}.i-done{background:var(--green)}.i-late{background:var(--bad)}
 .legend{display:flex;gap:10px;flex-wrap:wrap;font-size:12.5px;color:var(--mut);margin-top:8px}
 .legend span{display:flex;gap:5px;align-items:center}.legend i{width:9px;height:9px;border-radius:50%;display:inline-block}
@@ -203,7 +204,7 @@ body.lock .app{visibility:hidden}
     <aside class="card box">
       <div class="calh"><button class="btn sm" type="button" id="cPrev" aria-label="Mês anterior">‹</button><b id="cMonth"></b><button class="btn sm" type="button" id="cNext" aria-label="Próximo mês">›</button></div>
       <div class="cal" id="cal"></div>
-      <div class="legend"><span><i class="i-lib"></i>Liberação</span><span><i class="i-pz"></i>Prazo</span><span><i class="i-done"></i>Cumprido</span><span><i class="i-late"></i>Atrasado</span></div>
+      <div class="legend"><span><i class="i-lib"></i>Liberação (F1 = Fase 1)</span><span><i class="i-pz"></i>Prazo</span><span><i class="i-done"></i>Cumprido</span><span><i class="i-late"></i>Atrasado</span></div>
       <h3 class="sec" style="margin-top:16px;font-size:18px">Próximos prazos</h3>
       <ul class="dl" id="dl"></ul>
     </aside>
@@ -279,7 +280,7 @@ function render(){
   const openDays=[...new Set(mats.filter(m=>m.liberado).map(m=>m.dia))].sort((a,b)=>a-b);
   const allDays=[...new Set(mats.map(m=>m.dia))].sort((a,b)=>a-b);
   const lastDay=allDays.length?allDays[allDays.length-1]:0;
-  $("hiDay").textContent=!c.inicio_em?"Plano ainda não iniciado":openDays.length?"D"+openDays[openDays.length-1]+(lastDay?" de "+lastDay:"")+" do plano":"Seu plano começa "+when(ms(c.inicio_em));
+  $("hiDay").textContent=!c.inicio_em?"Plano ainda não iniciado":openDays.length?"Fase "+openDays[openDays.length-1]+(lastDay?" de "+lastDay:"")+" do plano":"Seu plano começa "+when(ms(c.inicio_em));
   const sts=mats.map(m=>[m,st(m)]),done=sts.filter(([m,s])=>s.done).length,pct=mats.length?Math.round(done/mats.length*100):0;
   $("ringV").textContent=pct+"%";$("ringP").setAttribute("stroke-dashoffset",String(276.46*(1-pct/100)));$("ringBox").setAttribute("aria-label","Progresso do plano: "+pct+"%");
   let ac=0,tot=0;D.progresso.forEach(p=>{if(p.enviado_em){ac+=p.acertos||0;tot+=p.total||0}});
@@ -289,18 +290,18 @@ function render(){
   // para hoje
   const pend=sts.filter(([m,s])=>s.k==="late"||s.k==="open").sort((a,b)=>a[0].dia-b[0].dia||pz(a[0])-pz(b[0]));
   const next=sts.filter(([m,s])=>s.k==="lock"&&m.libera_em).sort((a,b)=>lib(a[0])-lib(b[0]))[0];
-  const nextTxt=next?"O D"+next[0].dia+" (“"+esc(next[0].titulo)+"”) será liberado "+when(lib(next[0]))+".":"";
+  const nextTxt=next?"A Fase "+next[0].dia+" (“"+esc(next[0].titulo)+"”) será liberada "+when(lib(next[0]))+".":"";
   if(pend.length){const [m,s]=pend[0];
-    $("todayBox").innerHTML='<div class="today"><div class="t"><small>'+(s.k==="late"?"Atrasado · faça agora":"Para hoje · D"+m.dia)+"</small><h2>"+esc(m.titulo||"Conteúdo do D"+m.dia)+"</h2><p>"+prazoTxt(m)+(nQ(m)?" · "+nQ(m)+" pergunta"+(nQ(m)>1?"s":"")+" valendo "+nQ(m)+" ponto"+(nQ(m)>1?"s":""):"")+(pend.length>1?" · mais "+(pend.length-1)+" pendente"+(pend.length>2?"s":""):"")+'</p></div><button class="btn pri" type="button" data-les="'+m.id+'">'+(s.p&&s.p.estudado_em?"Continuar":"Começar estudo")+"</button></div>"}
+    $("todayBox").innerHTML='<div class="today"><div class="t"><small>'+(s.k==="late"?"Atrasado · faça agora":"Para hoje · Fase "+m.dia)+"</small><h2>"+esc(m.titulo||"Conteúdo da Fase "+m.dia)+"</h2><p>"+prazoTxt(m)+(nQ(m)?" · "+nQ(m)+" pergunta"+(nQ(m)>1?"s":"")+" valendo "+nQ(m)+" ponto"+(nQ(m)>1?"s":""):"")+(pend.length>1?" · mais "+(pend.length-1)+" pendente"+(pend.length>2?"s":""):"")+'</p></div><button class="btn pri" type="button" data-les="'+m.id+'">'+(s.p&&s.p.estudado_em?"Continuar":"Começar estudo")+"</button></div>"}
   else if(next)$("todayBox").innerHTML='<div class="today done"><div class="t"><small>Tudo em dia</small><h2>Você concluiu o que foi liberado</h2><p>'+nextTxt+" O conteúdo aparece aqui sozinho nesse horário.</p></div></div>";
   else if(mats.length&&done===mats.length)$("todayBox").innerHTML='<div class="today done"><div class="t"><small>Parabéns</small><h2>Você concluiu o plano de treinamento</h2><p>'+ac+" de "+tot+" pontos.</p></div></div>";
-  else if(!c.inicio_em)$("todayBox").innerHTML='<div class="today"><div class="t"><small>Aguardando</small><h2>Seu plano ainda não foi iniciado</h2><p>Assim que o seu líder iniciar o plano, o conteúdo do D1 aparece aqui.</p></div></div>';
+  else if(!c.inicio_em)$("todayBox").innerHTML='<div class="today"><div class="t"><small>Aguardando</small><h2>Seu plano ainda não foi iniciado</h2><p>Assim que o seu líder iniciar o plano, o conteúdo da Fase 1 aparece aqui.</p></div></div>';
   else $("todayBox").innerHTML='<div class="today"><div class="t"><small>Aguardando</small><h2>Seus conteúdos ainda não foram cadastrados</h2><p>Assim que o seu líder liberar o primeiro material, ele aparece aqui.</p></div></div>';
   // trilha
   $("path").innerHTML=mats.length?'<div class="path">'+sts.map(([m,s])=>{
     const right=s.k==="done"?(s.p&&s.p.enviado_em?'<span class="score">'+s.p.acertos+"/"+s.p.total+"</span><span class=\"chip ok\">Concluído</span>":'<span class="chip ok">Concluído</span>'):s.k==="lock"?'<span class="chip idle">'+(m.libera_em?"Libera "+dm(lib(m))+" "+hm(lib(m)):"Aguardando início")+"</span>":s.k==="late"?'<span class="chip bad">Atrasado</span>':'<span class="chip warn">'+(ddiff(pz(m))===0?"Prazo hoje "+hm(pz(m)):"Até "+dm(pz(m))+" "+hm(pz(m)))+"</span>";
-    const sub="D"+m.dia+(s.k==="lock"?"":" · prazo "+dm(pz(m))+" às "+hm(pz(m)))+(nQ(m)?" · "+nQ(m)+" pergunta"+(nQ(m)>1?"s":""):"");
-    return'<button type="button" class="les k-'+s.k+'" data-les="'+m.id+'"'+(s.k==="lock"?" disabled":"")+'><span class="dot">'+(s.k==="done"?CHECK:s.k==="lock"?LOCK:m.dia)+'</span><span class="t"><b>'+esc(m.titulo||"Conteúdo do D"+m.dia)+"</b><span>"+sub+'</span></span><span class="r">'+right+"</span></button>";
+    const sub="Fase "+m.dia+(s.k==="lock"?"":" · prazo "+dm(pz(m))+" às "+hm(pz(m)))+(nQ(m)?" · "+nQ(m)+" pergunta"+(nQ(m)>1?"s":""):"");
+    return'<button type="button" class="les k-'+s.k+'" data-les="'+m.id+'"'+(s.k==="lock"?" disabled":"")+'><span class="dot">'+(s.k==="done"?CHECK:s.k==="lock"?LOCK:m.dia)+'</span><span class="t"><b>'+esc(m.titulo||"Conteúdo da Fase "+m.dia)+"</b><span>"+sub+'</span></span><span class="r">'+right+"</span></button>";
   }).join("")+"</div>":'<div class="empty"><b>Seu plano está sendo preparado</b>Os conteúdos aparecem aqui conforme forem liberados.</div>';
   renderCal(sts);
 }
@@ -308,16 +309,17 @@ function renderCal(sts){
   if(!calM){const h=new Date(now());calM=new Date(h.getFullYear(),h.getMonth(),1)}
   {const t=calM.toLocaleDateString("pt-BR",{month:"long",year:"numeric"});$("cMonth").textContent=t.charAt(0).toUpperCase()+t.slice(1)}
   const y=calM.getFullYear(),mo=calM.getMonth(),first=new Date(y,mo,1).getDay(),nd=new Date(y,mo+1,0).getDate(),h=dayKey(now());
-  const mk={};const add=(d,c,t)=>{(mk[d]=mk[d]||[]).push([c,t])};
-  (sts||[]).forEach(([m,s])=>{if(!m.libera_em)return;add(dayKey(lib(m)),"i-lib","D"+m.dia+" libera às "+hm(lib(m))+": "+m.titulo);add(dayKey(pz(m)),s.done?"i-done":s.k==="late"?"i-late":"i-pz","Prazo às "+hm(pz(m))+": "+m.titulo)});
+  const mk={},fz={};const add=(d,c,t)=>{(mk[d]=mk[d]||[]).push([c,t])};
+  (sts||[]).forEach(([m])=>{if(m.libera_em){const k=dayKey(lib(m));(fz[k]=fz[k]||new Set()).add(m.dia)}});
+  (sts||[]).forEach(([m,s])=>{if(!m.libera_em)return;add(dayKey(lib(m)),"i-lib","Fase "+m.dia+" libera às "+hm(lib(m))+": "+m.titulo);add(dayKey(pz(m)),s.done?"i-done":s.k==="late"?"i-late":"i-pz","Prazo às "+hm(pz(m))+": "+m.titulo)});
   let g=["D","S","T","Q","Q","S","S"].map(w=>'<span class="w">'+w+"</span>").join("");
   for(let i=0;i<first;i++)g+='<span class="cd out"></span>';
-  for(let d=1;d<=nd;d++){const s=iso(new Date(y,mo,d)),l=mk[s]||[];g+='<span class="cd'+(s===h?" tdy":"")+'"'+(l.length?' title="'+esc(l.map(x=>x[1]).join("\n"))+'"':"")+">"+d+(l.length?'<span class="m">'+l.slice(0,3).map(x=>'<i class="'+x[0]+'"></i>').join("")+"</span>":"")+"</span>"}
+  for(let d=1;d<=nd;d++){const s=iso(new Date(y,mo,d)),l=mk[s]||[];g+='<span class="cd'+(s===h?" tdy":"")+'"'+(l.length?' title="'+esc(l.map(x=>x[1]).join("\n"))+'"':"")+">"+d+(fz[s]?'<span class="fz">F'+[...fz[s]].join("·F")+"</span>":"")+(l.length?'<span class="m">'+l.slice(0,3).map(x=>'<i class="'+x[0]+'"></i>').join("")+"</span>":"")+"</span>"}
   $("cal").innerHTML=g;
   const up=(sts||[]).filter(([m,s])=>!s.done&&m.liberado).sort((a,b)=>pz(a[0])-pz(b[0]));
   const fut=(sts||[]).filter(([m,s])=>s.k==="lock"&&m.libera_em).sort((a,b)=>lib(a[0])-lib(b[0])).slice(0,3);
-  $("dl").innerHTML=(up.map(([m,s])=>"<li><b>"+dm(pz(m))+"</b><span class=\"tt\">D"+m.dia+" · "+esc(m.titulo)+" <span class=\"hint\">até "+hm(pz(m))+"</span></span>"+(s.k==="late"?'<span class="chip bad">Atrasado</span>':ddiff(pz(m))===0?'<span class="chip warn">Hoje</span>':"")+"</li>").join("")+
-    fut.map(([m])=>"<li><b>"+dm(lib(m))+"</b><span class=\"tt\">D"+m.dia+" · "+esc(m.titulo)+' <span class="hint">libera '+hm(lib(m))+'</span></span><span class="chip idle">Novo</span></li>').join(""))||'<li class="hint">Nenhum prazo pendente.</li>';
+  $("dl").innerHTML=(up.map(([m,s])=>"<li><b>"+dm(pz(m))+"</b><span class=\"tt\">Fase "+m.dia+" · "+esc(m.titulo)+" <span class=\"hint\">até "+hm(pz(m))+"</span></span>"+(s.k==="late"?'<span class="chip bad">Atrasado</span>':ddiff(pz(m))===0?'<span class="chip warn">Hoje</span>':"")+"</li>").join("")+
+    fut.map(([m])=>"<li><b>"+dm(lib(m))+"</b><span class=\"tt\">Fase "+m.dia+" · "+esc(m.titulo)+' <span class="hint">libera '+hm(lib(m))+'</span></span><span class="chip idle">Novo</span></li>').join(""))||'<li class="hint">Nenhum prazo pendente.</li>';
 }
 
 /* ---------- aula ---------- */
@@ -326,7 +328,7 @@ function openLesson(id){openId=id;picks={};paintLesson();if(!dlg.open)dlg.showMo
 function paintLesson(){
   const m=(D.materiais||[]).find(x=>x.id===openId);if(!m||!m.liberado){dlg.close();return}
   const s=st(m),p=s.p,studied=!!(p&&p.estudado_em),sent=!!(p&&p.enviado_em),qs=m.perguntas||[];
-  $("lSub").textContent="D"+m.dia+" · "+(s.done?"Concluído":prazoTxt(m));
+  $("lSub").textContent="Fase "+m.dia+" · "+(s.done?"Concluído":prazoTxt(m));
   $("lTitle").textContent=m.titulo||"Conteúdo do dia "+m.dia;
   let h='<div class="step'+(studied?" done":"")+'"><span class="n">'+(studied?CHECK:"1")+'</span><div class="c"><h4>Estude o material</h4>'+
     (m.texto&&m.texto.trim()?'<div class="txt">'+esc(m.texto)+"</div>":"")+

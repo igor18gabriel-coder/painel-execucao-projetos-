@@ -175,6 +175,13 @@ body.lock .app{visibility:hidden}
 .gh{border-top:5px solid var(--gold)}
 .gh .logo{height:64px;margin-bottom:10px}
 
+/* previsão no calendário */
+.prevbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface2);margin-bottom:12px}
+.prevbar b{font-family:var(--f-disp)}
+.ev.prv{background:transparent;border:1.5px dashed var(--gold);color:var(--tx);font-weight:600}
+.prevlist{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.prevlist>span{border:1.5px dashed var(--gold);border-radius:8px;padding:5px 10px;font-size:13.5px}
+.prevlist b{font-family:var(--f-disp)}
 /* plano por dias e agenda */
 .days{display:flex;flex-direction:column;gap:12px}
 .day{padding:12px 14px}
@@ -226,7 +233,7 @@ body.lock .app{visibility:hidden}
     <div class="kpis">
       <div class="k"><small>Em treinamento</small><b id="kAtivos">0</b></div>
       <div class="k"><small>Concluíram o plano</small><b id="kFim">0</b></div>
-      <div class="k"><small>Com dia atrasado</small><b id="kAtraso" style="color:var(--bad)">0</b></div>
+      <div class="k"><small>Com fase atrasada</small><b id="kAtraso" style="color:var(--bad)">0</b></div>
       <div class="k"><small>Média de acertos</small><b id="kMedia">–</b></div>
     </div>
     <form class="card addbar" id="addForm" autocomplete="off">
@@ -240,7 +247,7 @@ body.lock .app{visibility:hidden}
 
   <section id="v-conteudos" hidden>
     <div class="row between"><h2 class="sec">Plano de treinamento</h2></div>
-    <p class="hint" style="margin:6px 0 0">O D1 é liberado quando você inicia o plano do colaborador. Cada dia seguinte é liberado sozinho 24 horas depois do anterior. Se precisar, você adia um dia na agenda do colaborador (botão Detalhes).</p>
+    <p class="hint" style="margin:6px 0 0">A Fase 1 é liberado quando você inicia o plano do colaborador. Cada fase seguinte é liberada sozinha 24 horas depois da anterior. Se precisar, você adia uma fase na agenda do colaborador (botão Detalhes).</p>
     <div class="rolebar" id="roleBar" role="group" aria-label="Função"></div>
     <div id="mats"></div>
   </section>
@@ -251,8 +258,10 @@ body.lock .app{visibility:hidden}
         <button class="btn sm" type="button" id="cPrev" aria-label="Mês anterior">‹</button><b id="cMonth"></b><button class="btn sm" type="button" id="cNext" aria-label="Próximo mês">›</button>
         <select class="f" id="cWho" aria-label="Colaborador" style="margin-left:auto"><option value="">Todos os colaboradores</option></select>
       </div>
+      <div class="prevbar"><b>Prever datas das fases</b><select class="f" id="pvRole" aria-label="Função para a previsão"><option value="">Sem previsão</option></select><label class="lbl" for="pvStart">Início</label><input class="f" type="datetime-local" id="pvStart"><span class="hint">Mostra em que dia cai cada fase se nenhuma for adiada.</span></div>
       <div class="cal" id="cal"></div>
-      <div class="legend"><span><i style="background:var(--infobg)"></i>Dia liberado</span><span><i style="background:var(--warnbg)"></i>Prazo</span><span><i style="background:var(--okbg)"></i>Prazo cumprido</span><span><i style="background:var(--badbg)"></i>Prazo vencido</span></div>
+      <div class="prevlist" id="pvList" hidden></div>
+      <div class="legend"><span><i style="background:var(--infobg)"></i>Fase liberada</span><span><i style="border:1.5px dashed var(--gold)"></i>Previsão</span><span><i style="background:var(--warnbg)"></i>Prazo</span><span><i style="background:var(--okbg)"></i>Prazo cumprido</span><span><i style="background:var(--badbg)"></i>Prazo vencido</span></div>
     </div>
   </section>
 </div></main>
@@ -372,9 +381,9 @@ function renderColabs(){
     const st=!c.ativo?'<span class="chip idle">Acesso pausado</span>':!s.started?'<span class="chip warn">Plano não iniciado</span>':!c.tem_codigo?'<span class="chip warn">Sem senha</span>':s.fim?'<span class="chip ok">Plano concluído</span>':s.late?'<span class="chip bad">'+s.late+" atrasado"+(s.late>1?"s":"")+"</span>":!s.total?'<span class="chip idle">Sem conteúdos</span>':'<span class="chip ok">Em dia</span>';
     const lastDay=s.days.length?s.days[s.days.length-1]:0;
     let dia,sub;
-    if(!s.started){dia="Aguardando início";sub="Inicie o plano para liberar o D1"}
+    if(!s.started){dia="Aguardando início";sub="Inicie o plano para liberar a Fase 1"}
     else if(!s.cur){const l=libera(c,1);dia="D1 libera "+when(l);sub=""}
-    else{dia='<span class="dmini">D'+s.cur+"</span>"+(lastDay?" de "+lastDay:"");sub=s.nextDay?"D"+s.nextDay+" libera "+when(libera(c,s.nextDay)):s.days.length?"Todos os dias liberados":""}
+    else{dia='<span class="dmini">Fase '+s.cur+"</span>"+(lastDay?" de "+lastDay:"");sub=s.nextDay?"Fase "+s.nextDay+" libera "+when(libera(c,s.nextDay)):s.days.length?"Todas as fases liberadas":""}
     return'<div class="card person"><div class="who"><span class="av">'+esc(ini(c.nome))+'</span><div style="min-width:0"><b>'+esc(c.nome||"Sem nome")+"</b><small>"+esc(roleN(c.funcao))+(s.started?" · início "+dm(ms(c.inicio_em))+" às "+hm(ms(c.inicio_em)):"")+"</small></div></div>"+
      '<div><div style="font-weight:600;font-size:14px">'+dia+'</div><div class="cellsub">'+(sub?esc(sub)+"<br>":"")+st+"</div></div>"+
      '<div><div class="bar" role="img" aria-label="Progresso '+pct+'%"><i style="width:'+pct+'%"></i></div><div class="cellsub">'+s.done+" de "+s.total+" conteúdos concluídos ("+pct+"%)</div></div>"+
@@ -389,14 +398,22 @@ function renderMats(){
   let h='<div class="days">';
   for(let d=1;d<=maxD;d++){
     const list=all.filter(m=>m.dia===d);
-    h+='<div class="card day"><div class="dayh"><span class="dtag">D'+d+'</span><span class="hint">'+(d===1?"Liberado no início do plano":"Liberado 24 h depois do D"+(d-1))+"</span></div>"+
+    h+='<div class="card day"><div class="dayh"><span class="dtag">Fase '+d+'</span><span class="hint">'+(d===1?"Liberada no início do plano":"Liberada 24 h depois da Fase "+(d-1))+"</span></div>"+
       '<div class="dlist">'+list.map(m=>{const who=m.colab_id?S.colabs.find(c=>c.id===m.colab_id):null,na=(m.arquivos||[]).length;
         return'<button type="button" class="card mod" data-mat="'+m.id+'"><span class="t"><b>'+esc(m.titulo||"Sem título")+'</b><span class="cellsub">Prazo de '+m.prazo_dias+(m.prazo_dias>1?" dias":" dia")+" após liberar"+(who?" · só para "+esc(who.nome):"")+'</span></span><span class="meta"><span class="chip idle">'+na+" arquivo"+(na===1?"":"s")+"</span>"+(nPerg(m)?'<span class="chip">'+nPerg(m)+" pergunta"+(nPerg(m)>1?"s":"")+"</span>":'<span class="chip warn">Sem perguntas</span>')+"</span></button>"}).join("")+
-      (!list.length?'<span class="hint">Nenhum conteúdo neste dia ainda.</span>':"")+
-      (canWrite?'<div><button class="btn sm org" type="button" data-newday="'+d+'">+ Conteúdo no D'+d+"</button></div>":"")+"</div></div>";
+      (!list.length?'<span class="hint">Nenhum conteúdo nesta fase ainda.</span>':"")+
+      (canWrite?'<div><button class="btn sm org" type="button" data-newday="'+d+'">+ Conteúdo na Fase '+d+"</button></div>":"")+"</div></div>";
   }
-  if(canWrite)h+='<button type="button" class="addday" id="addDay">+ Adicionar D'+(maxD+1)+" ao plano de "+esc(roleN(roleSel))+"</button>";
+  if(canWrite)h+='<button type="button" class="addday" id="addDay">+ Adicionar Fase '+(maxD+1)+" ao plano de "+esc(roleN(roleSel))+"</button>";
   $("mats").innerHTML=h+"</div>";
+}
+function previsao(){
+  const role=$("pvRole").value,v=$("pvStart").value;if(!role||!v)return null;
+  const start=new Date(v).getTime();if(isNaN(start))return null;
+  const ms_=S.materiais.filter(m=>m.funcao===role&&!m.colab_id);
+  const days=[...new Set(ms_.map(m=>m.dia))];const maxD=Math.max(PLAN_DAYS,...days);
+  const fases=[];for(let d=1;d<=maxD;d++)fases.push({d,t:start+(d-1)*H24,titles:ms_.filter(m=>m.dia===d).map(m=>m.titulo||"Sem título")});
+  return{role,start,fases};
 }
 function renderCal(){
   if(!calM){const h=new Date(now());calM=new Date(h.getFullYear(),h.getMonth(),1)}
@@ -407,9 +424,13 @@ function renderCal(){
   const evs={};const add=(d,html)=>{(evs[d]=evs[d]||[]).push(html)};
   S.colabs.filter(c=>c.ativo&&c.inicio_em&&(!sel.value||c.id===sel.value)).forEach(c=>{
     const nm=sel.value?"":esc(String(c.nome).split(" ")[0])+" · ";
-    planDays(c).forEach(d=>{const ds=dayState(c,d);add(dayKey(ds.lib),'<span class="ev lib" title="Liberação às '+hm(ds.lib)+'">'+nm+"D"+d+" "+hm(ds.lib)+"</span>")});
-    colabMats(c).forEach(m=>{const s=stOf(c,m);add(dayKey(s.prazo),'<span class="ev pz'+(s.done?" done":s.k==="late"?" late":"")+'" title="Prazo">⏱ '+nm+esc(m.titulo||"D"+m.dia)+"</span>")});
+    planDays(c).forEach(d=>{const ds=dayState(c,d);add(dayKey(ds.lib),'<span class="ev lib" title="Liberação às '+hm(ds.lib)+'">'+nm+"Fase "+d+" "+hm(ds.lib)+"</span>")});
+    colabMats(c).forEach(m=>{const s=stOf(c,m);add(dayKey(s.prazo),'<span class="ev pz'+(s.done?" done":s.k==="late"?" late":"")+'" title="Prazo">⏱ '+nm+esc(m.titulo||"Fase "+m.dia)+"</span>")});
   });
+  const pv=previsao();
+  if(pv){pv.fases.forEach(f=>add(dayKey(f.t),'<span class="ev prv" title="Previsão · '+esc(roleN(pv.role))+'">Fase '+f.d+" · "+hm(f.t)+"</span>"))}
+  $("pvList").hidden=!pv;
+  if(pv)$("pvList").innerHTML=pv.fases.map(f=>"<span><b>Fase "+f.d+"</b> · "+new Date(f.t).toLocaleDateString("pt-BR",{weekday:"short",day:"2-digit",month:"2-digit"})+" às "+hm(f.t)+(f.titles.length?' <span class="hint">'+esc(f.titles.join(", "))+"</span>":"")+"</span>").join("");
   let g=["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"].map(w=>'<span class="w">'+w+"</span>").join("");
   for(let i=0;i<first;i++)g+='<div class="cd out"></div>';
   for(let d=1;d<=nd;d++){const s=iso(new Date(y,mo,d));const list=evs[s]||[];g+='<div class="cd'+(s===h?" today":"")+'"><span class="n">'+d+"</span>"+list.slice(0,4).join("")+(list.length>4?'<span class="hint">+'+(list.length-4)+"</span>":"")+"</div>"}
@@ -430,12 +451,12 @@ async function copy(text,btn){try{await navigator.clipboard.writeText(text);btn.
 
 /* colaborador: detalhes, plano e agenda */
 async function startPlan(id,quando){
-  try{const q=await call("gestor_plano_iniciar",{p_colab:id,p_quando:quando||null});await reload();toast("Plano iniciado. D1 liberado "+when(ms(q))+".")}
+  try{const q=await call("gestor_plano_iniciar",{p_colab:id,p_quando:quando||null});await reload();toast("Plano iniciado. Fase 1 liberada "+when(ms(q))+".")}
   catch(e){toast(errMsg(e))}
 }
 function agErr(e,c,d){
-  if(e.msg==="antes_do_dia_anterior")return"O D"+d+" não pode ficar antes do D"+(d-1)+" ("+when(libera(c,d-1))+").";
-  if(e.msg==="depois_do_proximo_dia")return"Sem mover os dias seguintes, o D"+d+" precisa ficar antes do D"+(d+1)+" ("+when(libera(c,d+1))+"). Marque “Os dias seguintes andam junto”.";
+  if(e.msg==="antes_do_dia_anterior")return"A Fase "+d+" não pode ficar antes da Fase "+(d-1)+" ("+when(libera(c,d-1))+").";
+  if(e.msg==="depois_do_proximo_dia")return"Sem mover as fases seguintes, a Fase "+d+" precisa ficar antes da Fase "+(d+1)+" ("+when(libera(c,d+1))+"). Marque “As fases seguintes andam junto”.";
   if(e.msg==="plano_nao_iniciado")return"Inicie o plano antes de mudar a agenda.";
   return errMsg(e);
 }
@@ -444,21 +465,21 @@ function openColab(id){
   reopen=()=>openColab(id);
   const s=summary(c),mats=colabMats(c),days=planDays(c),started=!!c.inicio_em;
   let plan;
-  if(!started)plan='<div class="plan"><span><b>Plano não iniciado.</b> Ao iniciar, o D1 é liberado e cada dia seguinte abre 24 h depois.</span>'+(canWrite?'<button class="btn grn" type="button" id="pNow">Iniciar agora</button><span class="hint">ou agendar:</span><input class="f" type="datetime-local" id="pWhen" aria-label="Data e hora de início"><button class="btn" type="button" id="pSched">Agendar início</button>':"")+"</div>";
+  if(!started)plan='<div class="plan"><span><b>Plano não iniciado.</b> Ao iniciar, a Fase 1 é liberado e cada fase seguinte abre 24 h depois.</span>'+(canWrite?'<button class="btn grn" type="button" id="pNow">Iniciar agora</button><span class="hint">ou agendar:</span><input class="f" type="datetime-local" id="pWhen" aria-label="Data e hora de início"><button class="btn" type="button" id="pSched">Agendar início</button>':"")+"</div>";
   else plan='<div class="plan"><span>Plano iniciado em <b>'+dm(ms(c.inicio_em))+" às "+hm(ms(c.inicio_em))+"</b>"+(hasOverride(c)?' · <span class="chip warn">agenda ajustada</span>':"")+"</span>"+(canWrite?(hasOverride(c)?'<button class="btn sm" type="button" id="pRestore">Voltar à agenda padrão (24 h)</button>':"")+'<button class="btn sm danger" type="button" id="pRestart">Reiniciar plano a partir de agora</button>':"")+"</div>";
   const agRows=days.map(d=>{const ds=dayState(c,d);
     const stt=ds.done?'<span class="chip ok">Concluído</span>':!started?'<span class="chip idle">Aguardando início</span>':ds.k==="lock"?'<span class="chip idle">Bloqueado</span>':ds.k==="late"?'<span class="chip bad">Atrasado</span>':'<span class="chip">Liberado</span>';
     const acts=canWrite&&started&&!ds.done?'<button class="btn sm" type="button" data-adiar="'+d+'">Adiar 1 dia</button> <button class="btn sm" type="button" data-mudar="'+d+'">Mudar data</button>':"";
-    return'<tr><td><span class="dmini">D'+d+'</span></td><td style="white-space:nowrap">'+(ds.lib==null?"–":when(ds.lib))+"</td><td>"+ds.mats.map(m=>esc(m.titulo||"Sem título")).join("<br>")+"</td><td>"+stt+'</td><td style="white-space:nowrap">'+acts+'</td></tr><tr hidden id="mv'+d+'"><td colspan="5"><div class="agform"><label>Liberar o D'+d+' em <input class="f" type="datetime-local" id="mvW'+d+'"'+(ds.lib!=null?' value="'+toLocalInput(ds.lib)+'"':"")+'></label><label><input type="checkbox" id="mvC'+d+'" checked> Os dias seguintes andam junto</label><button class="btn sm pri" type="button" data-mvok="'+d+'">Salvar</button><button class="btn sm" type="button" data-mvx="'+d+'">Cancelar</button><span class="hint" id="mvM'+d+'"></span></div></td></tr>'}).join("");
+    return'<tr><td><span class="dmini">Fase '+d+'</span></td><td style="white-space:nowrap">'+(ds.lib==null?"–":when(ds.lib))+"</td><td>"+ds.mats.map(m=>esc(m.titulo||"Sem título")).join("<br>")+"</td><td>"+stt+'</td><td style="white-space:nowrap">'+acts+'</td></tr><tr hidden id="mv'+d+'"><td colspan="5"><div class="agform"><label>Liberar a Fase '+d+' em <input class="f" type="datetime-local" id="mvW'+d+'"'+(ds.lib!=null?' value="'+toLocalInput(ds.lib)+'"':"")+'></label><label><input type="checkbox" id="mvC'+d+'" checked> As fases seguintes andam junto</label><button class="btn sm pri" type="button" data-mvok="'+d+'">Salvar</button><button class="btn sm" type="button" data-mvx="'+d+'">Cancelar</button><span class="hint" id="mvM'+d+'"></span></div></td></tr>'}).join("");
   const rows=mats.map(m=>{const t=stOf(c,m);
     const stt=t.k==="done"?'<span class="chip ok">Concluído</span>':t.k==="lock"?'<span class="chip idle">Bloqueado</span>':t.k==="late"?'<span class="chip bad">Atrasado</span>':'<span class="chip">Disponível</span>';
     const nota=t.p&&t.p.enviado_em?"<b>"+t.p.acertos+"</b>/"+t.p.total:nPerg(m)?"–":"sem perguntas";
-    return'<tr><td><span class="dmini">D'+m.dia+"</span></td><td>"+esc(m.titulo||"Sem título")+'</td><td style="white-space:nowrap">'+(t.prazo?when(t.prazo):"–")+"</td><td>"+stt+(t.p&&t.p.estudado_em?'<div class="cellsub">estudou '+dm(ms(t.p.estudado_em))+"</div>":"")+"</td><td>"+nota+(canWrite&&t.p&&t.p.enviado_em?' <button class="btn sm" type="button" data-reopen="'+m.id+'">Nova tentativa</button>':"")+"</td></tr>"}).join("");
-  openDlg(c.nome||"Colaborador",roleN(c.funcao)+(s.cur?" · D"+s.cur+" do plano":started?" · plano iniciado":" · plano não iniciado"),
+    return'<tr><td><span class="dmini">Fase '+m.dia+"</span></td><td>"+esc(m.titulo||"Sem título")+'</td><td style="white-space:nowrap">'+(t.prazo?when(t.prazo):"–")+"</td><td>"+stt+(t.p&&t.p.estudado_em?'<div class="cellsub">estudou '+dm(ms(t.p.estudado_em))+"</div>":"")+"</td><td>"+nota+(canWrite&&t.p&&t.p.enviado_em?' <button class="btn sm" type="button" data-reopen="'+m.id+'">Nova tentativa</button>':"")+"</td></tr>"}).join("");
+  openDlg(c.nome||"Colaborador",roleN(c.funcao)+(s.cur?" · Fase "+s.cur+" do plano":started?" · plano iniciado":" · plano não iniciado"),
    plan+
-   '<h4 class="secttl">Agenda do plano</h4>'+(days.length?'<div class="tw"><table class="t"><thead><tr><th>Dia</th><th>Libera</th><th>Conteúdos</th><th>Status</th><th></th></tr></thead><tbody>'+agRows+"</tbody></table></div>"+(canWrite&&started?'<p class="hint" style="margin:0">“Adiar 1 dia” empurra este dia e todos os seguintes em 24 h. Em “Mudar data” você escolhe se os dias seguintes acompanham.</p>':""):'<p class="hint">Ainda não há conteúdos no plano de '+esc(roleN(c.funcao))+".</p>")+
+   '<h4 class="secttl">Agenda do plano</h4>'+(days.length?'<div class="tw"><table class="t"><thead><tr><th>Fase</th><th>Libera</th><th>Conteúdos</th><th>Status</th><th></th></tr></thead><tbody>'+agRows+"</tbody></table></div>"+(canWrite&&started?'<p class="hint" style="margin:0">“Adiar 1 dia” empurra esta fase e todas as seguintes em 24 h. Em “Mudar data” você escolhe se as fases seguintes acompanham.</p>':""):'<p class="hint">Ainda não há conteúdos no plano de '+esc(roleN(c.funcao))+".</p>")+
    '<hr><h4 class="secttl">Evolução · '+s.ac+" de "+s.tot+" pontos · "+s.done+"/"+s.total+" conteúdos</h4>"+
-   (mats.length?'<div class="tw"><table class="t"><thead><tr><th>Dia</th><th>Conteúdo</th><th>Prazo</th><th>Status</th><th>Pontos</th></tr></thead><tbody>'+rows+"</tbody></table></div>":"")+
+   (mats.length?'<div class="tw"><table class="t"><thead><tr><th>Fase</th><th>Conteúdo</th><th>Prazo</th><th>Status</th><th>Pontos</th></tr></thead><tbody>'+rows+"</tbody></table></div>":"")+
    (canWrite?'<hr><div class="grid2"><div class="field"><label class="lbl" for="eNome">Nome</label><input class="f" id="eNome" value="'+esc(c.nome)+'"></div>'+
    '<div class="field"><label class="lbl" for="eFun">Função</label><select class="f" id="eFun">'+ROLES.map(r=>'<option value="'+r.k+'"'+(r.k===c.funcao?" selected":"")+">"+esc(r.n)+"</option>").join("")+"</select></div></div>"+
    '<div class="row"><button class="btn pri" type="button" id="eSave">Salvar dados</button><label class="row" style="gap:6px;font-size:14px"><input type="checkbox" id="eAtivo"'+(c.ativo?" checked":"")+'> Acesso liberado</label></div><hr><div class="row"><button class="btn danger" type="button" id="eDel">Excluir colaborador</button><span class="hint">Apaga também as respostas e a pontuação dele.</span></div>':""));
@@ -471,7 +492,7 @@ function openColab(id){
   B.querySelectorAll("[data-adiar]").forEach(b=>b.onclick=async()=>{
     const d=+b.dataset.adiar,cur=libera(c,d);
     b.disabled=true;
-    try{await call("gestor_agenda_mover",{p_colab:c.id,p_dia:d,p_quando:new Date(cur+H24).toISOString(),p_cascata:true});await reload();toast("D"+d+" e os dias seguintes adiados em 1 dia");openColab(id)}
+    try{await call("gestor_agenda_mover",{p_colab:c.id,p_dia:d,p_quando:new Date(cur+H24).toISOString(),p_cascata:true});await reload();toast("Fase "+d+" e as fases seguintes adiadas em 1 dia");openColab(id)}
     catch(e){b.disabled=false;toast(agErr(e,c,d))}
   });
   B.querySelectorAll("[data-mudar]").forEach(b=>b.onclick=()=>{const r=$("mv"+b.dataset.mudar);r.hidden=!r.hidden});
@@ -479,7 +500,7 @@ function openColab(id){
   B.querySelectorAll("[data-mvok]").forEach(b=>b.onclick=async()=>{
     const d=+b.dataset.mvok,v=$("mvW"+d).value,msg=$("mvM"+d);if(!v){msg.textContent="Escolha a data e a hora.";return}
     b.disabled=true;
-    try{await call("gestor_agenda_mover",{p_colab:c.id,p_dia:d,p_quando:new Date(v).toISOString(),p_cascata:$("mvC"+d).checked});await reload();toast("Agenda do D"+d+" atualizada");openColab(id)}
+    try{await call("gestor_agenda_mover",{p_colab:c.id,p_dia:d,p_quando:new Date(v).toISOString(),p_cascata:$("mvC"+d).checked});await reload();toast("Agenda da Fase "+d+" atualizada");openColab(id)}
     catch(e){b.disabled=false;msg.textContent=agErr(e,c,d)}
   });
   $("eSave").onclick=async()=>{try{await call("gestor_colab_salvar",{p_id:c.id,p_dados:{nome:$("eNome").value.trim(),funcao:$("eFun").value,ativo:$("eAtivo").checked}});toast("Dados salvos");dlg.close()}catch(e){toast(errMsg(e))}};
@@ -497,7 +518,7 @@ function genCode(id){
     try{
       const cod=await call("gestor_colab_codigo",{p_id:id});
       const link=new URL("aluno.html",location.href).href;
-      const msg="Olá, "+String(c.nome||"").split(" ")[0]+"! Seu plano de treinamento UNIFM está liberado.\nAcesse: "+link+"\nSua senha: "+cod+"\nA cada dia um novo conteúdo é liberado, com prazo e perguntas.";
+      const msg="Olá, "+String(c.nome||"").split(" ")[0]+"! Seu plano de treinamento UNIFM está liberado.\nAcesse: "+link+"\nSua senha: "+cod+"\nA cada dia uma nova fase é liberada, com prazo e perguntas.";
       $("dBody").innerHTML='<div class="code">'+esc(cod)+'</div><p class="hint" style="margin:0">Anote ou envie agora: por segurança, a senha não aparece de novo. Se perder, gere outra.</p>'+
         '<div class="field"><span class="lbl">Mensagem pronta para enviar</span><div class="msg">'+esc(msg)+'</div></div><div class="row"><button class="btn pri" type="button" id="cCopy">Copiar mensagem</button><button class="btn" type="button" id="cCopy2">Copiar só a senha</button><a class="btn" href="https://wa.me/?text='+encodeURIComponent(msg)+'" target="_blank" rel="noopener">Enviar pelo WhatsApp</a></div>';
       $("cCopy").onclick=e=>copy(msg,e.target);$("cCopy2").onclick=e=>copy(cod,e.target);
@@ -520,12 +541,12 @@ function openMat(id,dia){
 function paintMat(){
   const d=draft,dis=canWrite?"":" disabled";
   const people=S.colabs.filter(c=>c.funcao===d.funcao||c.id===d.colab_id);
-  openDlg(draftNew?"Novo conteúdo · D"+d.dia:"Editar conteúdo · D"+d.dia,roleN(d.funcao),
+  openDlg(draftNew?"Novo conteúdo · Fase "+d.dia:"Editar conteúdo · Fase "+d.dia,roleN(d.funcao),
    '<fieldset style="border:0;margin:0;padding:0;display:flex;flex-direction:column;gap:14px;min-width:0"'+dis+">"+
    '<div class="field"><label class="lbl" for="mTit">Título</label><input class="f" id="mTit" value="'+esc(d.titulo)+'" placeholder="Ex.: Script de abordagem por telefone"></div>'+
    '<div class="grid2"><div class="field"><label class="lbl" for="mFun">Função</label><select class="f" id="mFun">'+ROLES.map(r=>'<option value="'+r.k+'"'+(r.k===d.funcao?" selected":"")+">"+esc(r.n)+"</option>").join("")+"</select></div>"+
    '<div class="field"><label class="lbl" for="mPara">Para quem</label><select class="f" id="mPara"><option value="">Todos da função</option>'+people.map(c=>'<option value="'+c.id+'"'+(c.id===d.colab_id?" selected":"")+">Só "+esc(c.nome)+"</option>").join("")+"</select></div>"+
-   '<div class="field"><label class="lbl" for="mDia">Dia do plano (D1, D2…)</label><input class="f" type="number" min="1" max="365" id="mDia" value="'+d.dia+'"></div>'+
+   '<div class="field"><label class="lbl" for="mDia">Fase do plano (Fase 1, Fase 2…)</label><input class="f" type="number" min="1" max="365" id="mDia" value="'+d.dia+'"></div>'+
    '<div class="field"><label class="lbl" for="mPz">Prazo para cumprir (dias após liberar)</label><input class="f" type="number" min="1" max="90" id="mPz" value="'+d.prazo_dias+'"></div></div>'+
    '<div class="field"><label class="lbl" for="mTxt">Orientações e conteúdo escrito</label><textarea class="f" id="mTxt" rows="6" placeholder="O que o colaborador precisa estudar, praticar e observar neste dia.">'+esc(d.texto)+"</textarea></div>"+
    "</fieldset>"+
@@ -595,7 +616,7 @@ async function saveMat(){
   try{
     await call("gestor_material_salvar",{p_id:d.id,p_dados:{funcao:d.funcao,colab_id:d.colab_id||"",dia:d.dia,prazo_dias:d.prazo_dias,titulo:d.titulo.trim(),texto:d.texto,arquivos:d.arquivos,perguntas}});
     (d._remove||[]).forEach(p=>fileApi("delete",{path:p}).catch(()=>{}));
-    d._saved=true;roleSel=d.funcao;toast("Conteúdo salvo no D"+d.dia);dlg.close();
+    d._saved=true;roleSel=d.funcao;toast("Conteúdo salvo na Fase "+d.dia);dlg.close();
   }catch(e){$("mSave").disabled=false;msg.textContent=errMsg(e)}
 }
 
@@ -617,6 +638,10 @@ $("mats").addEventListener("click",e=>{
 $("cPrev").onclick=()=>{calM=new Date(calM.getFullYear(),calM.getMonth()-1,1);renderCal()};
 $("cNext").onclick=()=>{calM=new Date(calM.getFullYear(),calM.getMonth()+1,1);renderCal()};
 $("cWho").onchange=renderCal;
+$("pvRole").innerHTML='<option value="">Sem previsão</option>'+ROLES.map(r=>'<option value="'+r.k+'">'+esc(r.n)+"</option>").join("");
+{const t=new Date();t.setDate(t.getDate()+1);t.setHours(9,0,0,0);$("pvStart").value=toLocalInput(t.getTime())}
+$("pvRole").onchange=()=>{const pv=previsao();if(pv){const d=new Date(pv.start);calM=new Date(d.getFullYear(),d.getMonth(),1)}renderCal()};
+$("pvStart").oninput=()=>{const pv=previsao();if(pv){const d=new Date(pv.start);calM=new Date(d.getFullYear(),d.getMonth(),1)}renderCal()};
 $("aFuncao").innerHTML=ROLES.map(r=>'<option value="'+r.k+'">'+esc(r.n)+"</option>").join("");
 $("addForm").addEventListener("submit",async e=>{
   e.preventDefault();const nome=$("aNome").value.trim();if(!nome)return;
@@ -625,7 +650,7 @@ $("addForm").addEventListener("submit",async e=>{
     await call("gestor_colab_salvar",{p_id:id,p_dados:{nome,funcao:$("aFuncao").value,ativo:true}});
     if(start)await call("gestor_plano_iniciar",{p_colab:id,p_quando:null});
     $("aNome").value="";await reload();
-    toast(nome+" adicionado"+(start?" e plano iniciado (D1 liberado agora)":"")+". Agora gere a senha de acesso.");
+    toast(nome+" adicionado"+(start?" e plano iniciado (Fase 1 liberada agora)":"")+". Agora gere a senha de acesso.");
   }catch(err){toast(errMsg(err))}
   $("aBtn").disabled=false;
 });
