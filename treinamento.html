@@ -182,6 +182,8 @@ body.lock .app{visibility:hidden}
 .prevlist{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
 .prevlist>span{border:1.5px dashed var(--gold);border-radius:8px;padding:5px 10px;font-size:13.5px}
 .prevlist b{font-family:var(--f-disp)}
+.vidadd{display:flex;flex-direction:column;gap:8px}
+.vidadd .grow{flex:1 1 240px}
 /* plano por dias e agenda */
 .days{display:flex;flex-direction:column;gap:12px}
 .day{padding:12px 14px}
@@ -284,6 +286,20 @@ const SB_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZ
 const H24=864e5,MAXQ=50,PLAN_DAYS=5;
 let code="",me="",canWrite=false,S={colabs:[],agenda:[],materiais:[],progresso:[]},tab="colabs",roleSel="sdr",calM=null,pollT=null,busy=0,skew=0,extraDays={};
 
+function embedUrl(u){
+  let x;try{x=new URL(String(u||"").trim())}catch(_){return null}
+  if(x.protocol!=="https:"&&x.protocol!=="http:")return null;
+  const h=x.hostname.replace(/^www\.|^m\./,""),p=x.pathname.split("/").filter(Boolean),ok=s=>/^[A-Za-z0-9_-]{6,}$/.test(s||"");
+  let id=null;
+  if(h==="youtu.be")id=p[0];
+  else if(h==="youtube.com"||h==="youtube-nocookie.com"){id=x.searchParams.get("v")||(["embed","shorts","live","v"].includes(p[0])?p[1]:null)}
+  if(id&&ok(id))return"https://www.youtube-nocookie.com/embed/"+id+"?rel=0";
+  if(h==="vimeo.com"||h==="player.vimeo.com"){const i=p.findIndex(s=>/^\d+$/.test(s));if(i>=0){const hash=p[i+1]&&/^[a-f0-9]{6,}$/i.test(p[i+1])?p[i+1]:x.searchParams.get("h");return"https://player.vimeo.com/video/"+p[i]+(hash?"?h="+hash:"")}}
+  if(h==="drive.google.com"){const i=p.indexOf("d");const fid=i>=0?p[i+1]:x.searchParams.get("id");if(ok(fid))return"https://drive.google.com/file/d/"+fid+"/preview"}
+  return null;
+}
+const isVid=f=>f&&(f.kind==="link"||f.kind==="video"||/^video\//.test(f.type||"")||/\.(mp4|webm|mov|m4v|ogv)$/i.test(f.name||""));
+const vidSource=u=>{const h=(()=>{try{return new URL(u).hostname}catch(_){return""}})();return/youtu/.test(h)?"YouTube":/vimeo/.test(h)?"Vimeo":/drive\.google/.test(h)?"Google Drive":"link"};
 /* ---------- datas e horários ---------- */
 const now=()=>Date.now()+skew;
 const ms=v=>v?new Date(v).getTime():null;
@@ -399,8 +415,8 @@ function renderMats(){
   for(let d=1;d<=maxD;d++){
     const list=all.filter(m=>m.dia===d);
     h+='<div class="card day"><div class="dayh"><span class="dtag">Fase '+d+'</span><span class="hint">'+(d===1?"Liberada no início do plano":"Liberada 24 h depois da Fase "+(d-1))+"</span></div>"+
-      '<div class="dlist">'+list.map(m=>{const who=m.colab_id?S.colabs.find(c=>c.id===m.colab_id):null,na=(m.arquivos||[]).length;
-        return'<button type="button" class="card mod" data-mat="'+m.id+'"><span class="t"><b>'+esc(m.titulo||"Sem título")+'</b><span class="cellsub">Prazo de '+m.prazo_dias+(m.prazo_dias>1?" dias":" dia")+" após liberar"+(who?" · só para "+esc(who.nome):"")+'</span></span><span class="meta"><span class="chip idle">'+na+" arquivo"+(na===1?"":"s")+"</span>"+(nPerg(m)?'<span class="chip">'+nPerg(m)+" pergunta"+(nPerg(m)>1?"s":"")+"</span>":'<span class="chip warn">Sem perguntas</span>')+"</span></button>"}).join("")+
+      '<div class="dlist">'+list.map(m=>{const who=m.colab_id?S.colabs.find(c=>c.id===m.colab_id):null,nv=(m.arquivos||[]).filter(isVid).length,na=(m.arquivos||[]).length-nv;
+        return'<button type="button" class="card mod" data-mat="'+m.id+'"><span class="t"><b>'+esc(m.titulo||"Sem título")+'</b><span class="cellsub">Prazo de '+m.prazo_dias+(m.prazo_dias>1?" dias":" dia")+" após liberar"+(who?" · só para "+esc(who.nome):"")+'</span></span><span class="meta">'+(nv?'<span class="chip idle">▶ '+nv+" vídeo"+(nv===1?"":"s")+"</span>":"")+'<span class="chip idle">'+na+" arquivo"+(na===1?"":"s")+"</span>"+(nPerg(m)?'<span class="chip">'+nPerg(m)+" pergunta"+(nPerg(m)>1?"s":"")+"</span>":'<span class="chip warn">Sem perguntas</span>')+"</span></button>"}).join("")+
       (!list.length?'<span class="hint">Nenhum conteúdo nesta fase ainda.</span>':"")+
       (canWrite?'<div><button class="btn sm org" type="button" data-newday="'+d+'">+ Conteúdo na Fase '+d+"</button></div>":"")+"</div></div>";
   }
@@ -550,8 +566,12 @@ function paintMat(){
    '<div class="field"><label class="lbl" for="mPz">Prazo para cumprir (dias após liberar)</label><input class="f" type="number" min="1" max="90" id="mPz" value="'+d.prazo_dias+'"></div></div>'+
    '<div class="field"><label class="lbl" for="mTxt">Orientações e conteúdo escrito</label><textarea class="f" id="mTxt" rows="6" placeholder="O que o colaborador precisa estudar, praticar e observar neste dia.">'+esc(d.texto)+"</textarea></div>"+
    "</fieldset>"+
+   '<hr><h4 class="secttl">Vídeos da aula</h4><div class="files" id="mVids"></div>'+
+   (canWrite?'<div class="vidadd"><div class="row"><label class="btn">Enviar vídeo do computador<input type="file" id="mVUp" hidden multiple accept="video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov,.m4v"></label><span class="hint" id="mVMsg">MP4 ou WebM, até 50 MB.</span></div>'+
+     '<div class="row"><input class="f grow" id="mVLink" type="url" inputmode="url" placeholder="Ou cole o link do YouTube, Vimeo ou Google Drive" aria-label="Link do vídeo"><input class="f" id="mVName" placeholder="Título do vídeo (opcional)" aria-label="Título do vídeo"><button class="btn" type="button" id="mVAdd">Adicionar link</button></div>'+
+     '<span class="hint">Vídeos com mais de 50 MB: suba no YouTube como “Não listado” (ou no Google Drive, compartilhado para “Qualquer pessoa com o link”) e cole o link aqui.</span></div>':"")+
    '<hr><h4 class="secttl">Arquivos do treinamento</h4><div class="files" id="mFiles"></div>'+
-   (canWrite?'<div class="row"><label class="btn">Anexar arquivo<input type="file" id="mUp" hidden multiple></label><span class="hint" id="mUpMsg">PDF, Word, PowerPoint, Excel, imagem ou vídeo, até 25 MB.</span></div>':"")+
+   (canWrite?'<div class="row"><label class="btn">Anexar arquivo<input type="file" id="mUp" hidden multiple></label><span class="hint" id="mUpMsg">PDF, Word, PowerPoint, Excel ou imagem, até 50 MB.</span></div>':"")+
    '<hr><div class="row between"><h4 class="secttl">Perguntas <span class="hint" id="qCount"></span></h4></div><div id="mQs" style="display:flex;flex-direction:column;gap:10px"></div>'+
    (canWrite?'<div class="row"><button class="btn" type="button" id="mAddQ">+ Adicionar pergunta</button></div>':"")+
    (canWrite?'<hr><div class="row between"><div class="row"><button class="btn grn" type="button" id="mSave">Salvar conteúdo</button><span class="hint" id="mSaveMsg"></span></div>'+(draftNew?"":'<button class="btn danger" type="button" id="mDel">Excluir conteúdo</button>')+"</div>":""));
@@ -562,16 +582,31 @@ function paintMat(){
   $("mFun").onchange=e=>{d.funcao=e.target.value;const c=d.colab_id&&S.colabs.find(x=>x.id===d.colab_id);if(c&&c.funcao!==d.funcao)d.colab_id=null;paintMat()};
   $("mPara").onchange=e=>{d.colab_id=e.target.value||null};
   if(!canWrite)return;
-  $("mUp").onchange=e=>{upload([...e.target.files]);e.target.value=""};
+  $("mUp").onchange=e=>{upload([...e.target.files],false);e.target.value=""};
+  $("mVUp").onchange=e=>{upload([...e.target.files],true);e.target.value=""};
+  $("mVAdd").onclick=()=>{
+    const url=$("mVLink").value.trim(),msg=$("mVMsg");
+    if(!url){msg.textContent="Cole o link do vídeo.";$("mVLink").focus();return}
+    if(!embedUrl(url)){msg.textContent="Esse link não é de um vídeo do YouTube, Vimeo ou Google Drive. Confira e cole de novo.";return}
+    draft.arquivos.push({kind:"link",url,name:$("mVName").value.trim()||"Vídeo do "+vidSource(url)});
+    $("mVLink").value="";$("mVName").value="";msg.textContent="Vídeo adicionado. Salve o conteúdo para liberar.";paintFiles();
+  };
   $("mAddQ").onclick=()=>{if(d.perguntas.length>=MAXQ){toast("Máximo de "+MAXQ+" perguntas por conteúdo");return}d.perguntas.push({q:"",ops:["","","",""],c:0});paintQs();const t=document.querySelector('[data-qq="'+(d.perguntas.length-1)+'"]');if(t)t.focus()};
   $("mSave").onclick=saveMat;
-  if($("mDel"))arm($("mDel"),"Confirmar exclusão",async()=>{try{await call("gestor_material_excluir",{p_id:d.id});d.arquivos.forEach(f=>fileApi("delete",{path:f.path}).catch(()=>{}));draft._saved=true;toast("Conteúdo excluído");dlg.close()}catch(e){toast(errMsg(e))}});
+  if($("mDel"))arm($("mDel"),"Confirmar exclusão",async()=>{try{await call("gestor_material_excluir",{p_id:d.id});d.arquivos.forEach(f=>{if(f.path)fileApi("delete",{path:f.path}).catch(()=>{})});draft._saved=true;toast("Conteúdo excluído");dlg.close()}catch(e){toast(errMsg(e))}});
 }
 function paintFiles(){
-  const d=draft;
-  $("mFiles").innerHTML=d.arquivos.length?d.arquivos.map((f,i)=>'<div class="file"><span aria-hidden="true">📎</span><a href="#" data-open="'+esc(f.path)+'">'+esc(f.name)+"</a>"+(canWrite?'<button class="xb" type="button" data-fdel="'+i+'">Remover</button>':"")+"</div>").join(""):'<span class="hint">Nenhum arquivo anexado.</span>';
-  $("mFiles").querySelectorAll("[data-open]").forEach(a=>a.onclick=e=>{e.preventDefault();openFile(a)});
-  $("mFiles").querySelectorAll("[data-fdel]").forEach(b=>b.onclick=()=>{const f=d.arquivos.splice(+b.dataset.fdel,1)[0];if(f&&draftUploads.includes(f.path))fileApi("delete",{path:f.path}).catch(()=>{});else if(f)(d._remove=d._remove||[]).push(f.path);paintFiles()});
+  const d=draft,row=(f,i)=>{
+    const v=isVid(f),label=f.kind==="link"?esc(f.name)+' <span class="hint">('+vidSource(f.url)+")</span>":esc(f.name);
+    const link=f.kind==="link"?'<a href="'+esc(f.url)+'" target="_blank" rel="noopener">'+label+"</a>":'<a href="#" data-open="'+esc(f.path)+'">'+label+"</a>";
+    return'<div class="file"><span aria-hidden="true">'+(v?"▶️":"📎")+"</span>"+link+(canWrite?'<button class="xb" type="button" data-fdel="'+i+'">Remover</button>':"")+"</div>"};
+  const vids=d.arquivos.map((f,i)=>[f,i]).filter(([f])=>isVid(f)),files=d.arquivos.map((f,i)=>[f,i]).filter(([f])=>!isVid(f));
+  $("mVids").innerHTML=vids.length?vids.map(([f,i])=>row(f,i)).join(""):'<span class="hint">Nenhum vídeo ainda.</span>';
+  $("mFiles").innerHTML=files.length?files.map(([f,i])=>row(f,i)).join(""):'<span class="hint">Nenhum arquivo anexado.</span>';
+  ["mVids","mFiles"].forEach(id=>{
+    $(id).querySelectorAll("[data-open]").forEach(a=>a.onclick=e=>{e.preventDefault();openFile(a)});
+    $(id).querySelectorAll("[data-fdel]").forEach(b=>b.onclick=()=>{const f=d.arquivos.splice(+b.dataset.fdel,1)[0];if(f&&f.path){if(draftUploads.includes(f.path))fileApi("delete",{path:f.path}).catch(()=>{});else(d._remove=d._remove||[]).push(f.path)}paintFiles()});
+  });
 }
 function paintQs(){
   const d=draft,box=$("mQs"),dis=canWrite?"":" disabled",n=d.perguntas.length;
@@ -585,18 +620,22 @@ function paintQs(){
   box.querySelectorAll("[data-qc]").forEach(r=>r.onchange=()=>{d.perguntas[+r.dataset.qc].c=+r.value;paintQs()});
   box.querySelectorAll("[data-qdel]").forEach(b=>b.onclick=()=>{d.perguntas.splice(+b.dataset.qdel,1);paintQs()});
 }
-async function upload(files){
-  const msg=$("mUpMsg");
+function putFile(url,f,onp){
+  return new Promise((ok,no)=>{const x=new XMLHttpRequest();x.open("PUT",url);x.setRequestHeader("apikey",SB_KEY);x.setRequestHeader("Content-Type",f.type||"application/octet-stream");x.setRequestHeader("x-upsert","false");
+    x.upload.onprogress=e=>{if(e.lengthComputable)onp(Math.round(e.loaded/e.total*100))};x.onload=()=>x.status<300?ok():no(new Error(String(x.status)));x.onerror=()=>no(new Error("rede"));x.send(f)});
+}
+async function upload(files,asVideo){
+  const msg=$(asVideo?"mVMsg":"mUpMsg");
   for(const f of files){
-    if(f.size>25*1024*1024){msg.textContent=f.name+" passa de 25 MB.";continue}
-    msg.textContent="Enviando "+f.name+"…";
+    if(f.size>50*1024*1024){msg.textContent=f.name+" tem "+Math.round(f.size/1048576)+" MB e passa do limite de 50 MB."+(asVideo||/^video\//.test(f.type)?" Suba no YouTube como “Não listado” ou no Google Drive e cole o link.":"");continue}
+    msg.textContent="Enviando "+f.name+"… 0%";
     try{
       const r=await fileApi("upload",{name:f.name});
-      const up=await fetch(SB_URL+"/storage/v1/object/upload/sign/treinamento/"+r.path+"?token="+encodeURIComponent(r.token),{method:"PUT",headers:{apikey:SB_KEY,"Content-Type":f.type||"application/octet-stream","x-upsert":"false"},body:f});
-      if(!up.ok)throw new Error("up");
-      draft.arquivos.push({path:r.path,name:f.name,type:f.type||""});draftUploads.push(r.path);
-      msg.textContent=f.name+" anexado. Salve o conteúdo para liberar.";
-    }catch(_){msg.textContent="Não foi possível enviar "+f.name+". Verifique a internet."}
+      await putFile(SB_URL+"/storage/v1/object/upload/sign/treinamento/"+r.path+"?token="+encodeURIComponent(r.token),f,pct=>{msg.textContent="Enviando "+f.name+"… "+pct+"%"});
+      const vid=asVideo||/^video\//.test(f.type)||/\.(mp4|webm|mov|m4v)$/i.test(f.name);
+      draft.arquivos.push(Object.assign({path:r.path,name:f.name,type:f.type||""},vid?{kind:"video"}:{}));draftUploads.push(r.path);
+      msg.textContent=f.name+" enviado. Salve o conteúdo para liberar.";
+    }catch(_){msg.textContent="Não foi possível enviar "+f.name+". Verifique a internet e tente de novo."}
     if($("mFiles"))paintFiles();
   }
 }

@@ -122,6 +122,15 @@ dialog::backdrop{background:rgba(10,16,32,.6)}
 .files{display:flex;flex-wrap:wrap;gap:8px}
 .fbtn{display:flex;gap:8px;align-items:center;border:1px solid var(--line);background:var(--surface2);border-radius:10px;padding:9px 12px;cursor:pointer;font-weight:600;max-width:100%;text-align:left}
 .fbtn:hover{border-color:var(--focus)}
+.vids{display:flex;flex-direction:column;gap:14px}
+.vid{margin:0;min-width:0}
+.vid .frame{position:relative;width:100%;aspect-ratio:16/9;max-width:100%;border-radius:12px;overflow:hidden;background:#000}
+.vid iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.vid video{display:block;width:100%;max-width:100%;max-height:70vh;border-radius:12px;background:#000}
+.vid figcaption{font-size:13.5px;color:var(--mut);margin-top:6px;font-weight:600;overflow-wrap:anywhere}
+.lnk{border:0;background:none;color:var(--focus);text-decoration:underline;cursor:pointer;padding:0;font:inherit}
+a.fbtn{text-decoration:none;color:var(--tx)}
+
 .fbtn span{overflow-wrap:anywhere}
 .qz{display:flex;flex-direction:column;gap:14px}
 .qq{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--surface2)}
@@ -229,6 +238,20 @@ const LOCK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-wi
 let code="",D={colab:null,materiais:[],progresso:[]},calM=null,pollT=null,openId=null,picks={},skew=0,wakeT=null;
 const H24=864e5;
 
+function embedUrl(u){
+  let x;try{x=new URL(String(u||"").trim())}catch(_){return null}
+  if(x.protocol!=="https:"&&x.protocol!=="http:")return null;
+  const h=x.hostname.replace(/^www\.|^m\./,""),p=x.pathname.split("/").filter(Boolean),ok=s=>/^[A-Za-z0-9_-]{6,}$/.test(s||"");
+  let id=null;
+  if(h==="youtu.be")id=p[0];
+  else if(h==="youtube.com"||h==="youtube-nocookie.com"){id=x.searchParams.get("v")||(["embed","shorts","live","v"].includes(p[0])?p[1]:null)}
+  if(id&&ok(id))return"https://www.youtube-nocookie.com/embed/"+id+"?rel=0";
+  if(h==="vimeo.com"||h==="player.vimeo.com"){const i=p.findIndex(s=>/^\d+$/.test(s));if(i>=0){const hash=p[i+1]&&/^[a-f0-9]{6,}$/i.test(p[i+1])?p[i+1]:x.searchParams.get("h");return"https://player.vimeo.com/video/"+p[i]+(hash?"?h="+hash:"")}}
+  if(h==="drive.google.com"){const i=p.indexOf("d");const fid=i>=0?p[i+1]:x.searchParams.get("id");if(ok(fid))return"https://drive.google.com/file/d/"+fid+"/preview"}
+  return null;
+}
+const isVid=f=>f&&(f.kind==="link"||f.kind==="video"||/^video\//.test(f.type||"")||/\.(mp4|webm|mov|m4v|ogv)$/i.test(f.name||""));
+const vidSource=u=>{const h=(()=>{try{return new URL(u).hostname}catch(_){return""}})();return/youtu/.test(h)?"YouTube":/vimeo/.test(h)?"Vimeo":/drive\.google/.test(h)?"Google Drive":"link"};
 /* ---------- datas e horários ---------- */
 const now=()=>Date.now()+skew;
 const ms=v=>v?new Date(v).getTime():null;
@@ -324,17 +347,45 @@ function renderCal(sts){
 
 /* ---------- aula ---------- */
 const dlg=$("dlg");
-function openLesson(id){openId=id;picks={};paintLesson();if(!dlg.open)dlg.showModal();$("lBody").scrollTop=0}
+function openLesson(id){openId=id;picks={};buildLesson();paintLesson();if(!dlg.open)dlg.showModal();$("lBody").scrollTop=0}
+const urlCache={};
+async function fileUrl(path){
+  const c=urlCache[path];if(c&&c.t>Date.now()-45*60e3)return c.u;
+  const r=await fetch(SB_URL+"/functions/v1/treino-arquivos",{method:"POST",headers:{apikey:SB_KEY,Authorization:"Bearer "+SB_KEY,"Content-Type":"application/json"},body:JSON.stringify({code,action:"url",path})}).then(r=>r.ok?r.json():Promise.reject());
+  urlCache[path]={u:r.url,t:Date.now()};return r.url;
+}
+// material: montado uma vez por aula, para o vídeo não reiniciar quando a tela atualiza
+function buildLesson(){
+  const m=(D.materiais||[]).find(x=>x.id===openId);if(!m||!m.liberado)return;
+  const arqs=m.arquivos||[],vids=arqs.filter(isVid),files=arqs.filter(f=>!isVid(f)),hasTxt=!!(m.texto&&m.texto.trim());
+  const vh=vids.map(f=>{
+    if(f.kind==="link"){const e=embedUrl(f.url);
+      return e?'<figure class="vid"><div class="frame"><iframe src="'+esc(e)+'" title="'+esc(f.name||"Vídeo")+'" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen" allowfullscreen loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe></div><figcaption>▶ '+esc(f.name||"Vídeo")+"</figcaption></figure>"
+       :(/^https:\/\//.test(f.url||"")?'<a class="fbtn" href="'+esc(f.url)+'" target="_blank" rel="noopener"><span aria-hidden="true">▶</span><span>'+esc(f.name||"Abrir vídeo")+"</span></a>":"")}
+    return'<figure class="vid"><video controls preload="metadata" playsinline controlslist="nodownload" data-vpath="'+esc(f.path)+'"></video><figcaption>▶ '+esc(f.name)+'<span class="vmsg"></span></figcaption></figure>';
+  }).join("");
+  $("lBody").innerHTML='<div class="step" id="st1"><span class="n" id="st1n">1</span><div class="c"><h4>Estude o material</h4>'+
+    (hasTxt?'<div class="txt">'+esc(m.texto)+"</div>":"")+
+    (vh?'<div class="vids">'+vh+"</div>":"")+
+    (files.length?'<div class="files">'+files.map(f=>'<button type="button" class="fbtn" data-open="'+esc(f.path)+'"><span aria-hidden="true">📄</span><span>'+esc(f.name)+"</span></button>").join("")+"</div>":"")+
+    (!hasTxt&&!arqs.length?'<p class="hint">O líder ainda não anexou material neste conteúdo.</p>':"")+
+    '<div id="lStudyBox"></div></div></div><div id="lDyn"></div>';
+  $("lBody").querySelectorAll("[data-open]").forEach(b=>b.onclick=()=>openFile(b));
+  $("lBody").querySelectorAll("video[data-vpath]").forEach(async v=>{
+    const cap=v.parentNode.querySelector(".vmsg");
+    v.addEventListener("error",()=>{cap.innerHTML=' · <button type="button" class="lnk">Não abriu aqui? Abrir em outra aba</button>';cap.querySelector("button").onclick=async()=>{try{window.open(await fileUrl(v.dataset.vpath),"_blank","noopener")}catch(_){toast("Não foi possível abrir o vídeo")}}});
+    try{v.src=await fileUrl(v.dataset.vpath)}catch(_){cap.textContent=" · não foi possível carregar o vídeo. Verifique a internet."}
+  });
+}
 function paintLesson(){
   const m=(D.materiais||[]).find(x=>x.id===openId);if(!m||!m.liberado){dlg.close();return}
+  if(!$("lDyn"))buildLesson();
   const s=st(m),p=s.p,studied=!!(p&&p.estudado_em),sent=!!(p&&p.enviado_em),qs=m.perguntas||[];
   $("lSub").textContent="Fase "+m.dia+" · "+(s.done?"Concluído":prazoTxt(m));
-  $("lTitle").textContent=m.titulo||"Conteúdo do dia "+m.dia;
-  let h='<div class="step'+(studied?" done":"")+'"><span class="n">'+(studied?CHECK:"1")+'</span><div class="c"><h4>Estude o material</h4>'+
-    (m.texto&&m.texto.trim()?'<div class="txt">'+esc(m.texto)+"</div>":"")+
-    ((m.arquivos||[]).length?'<div class="files">'+m.arquivos.map(f=>'<button type="button" class="fbtn" data-open="'+esc(f.path)+'"><span aria-hidden="true">📄</span><span>'+esc(f.name)+"</span></button>").join("")+"</div>":"")+
-    (!(m.texto&&m.texto.trim())&&!(m.arquivos||[]).length?'<p class="hint">O líder ainda não anexou material neste conteúdo.</p>':"")+
-    '<div><button type="button" class="btn '+(studied?"":"grn")+'" id="lStudy">'+(studied?"✓ Estudado em "+dm(ms(p.estudado_em)):"Marquei como estudado")+"</button></div></div></div>";
+  $("lTitle").textContent=m.titulo||"Conteúdo da Fase "+m.dia;
+  $("st1").className="step"+(studied?" done":"");$("st1n").innerHTML=studied?CHECK:"1";
+  $("lStudyBox").innerHTML='<button type="button" class="btn '+(studied?"":"grn")+'" id="lStudy">'+(studied?"✓ Estudado em "+dm(ms(p.estudado_em)):"Marquei como estudado")+"</button>";
+  let h="";
   if(qs.length){
     h+='<div class="step'+(sent?" done":"")+'"><span class="n">'+(sent?CHECK:"2")+'</span><div class="c"><h4>Questionário · '+qs.length+" pergunta"+(qs.length>1?"s":"")+", 1 ponto cada</h4>";
     if(sent){
@@ -349,8 +400,7 @@ function paintLesson(){
     }
     h+="</div></div>";
   }
-  $("lBody").innerHTML=h;
-  $("lBody").querySelectorAll("[data-open]").forEach(b=>b.onclick=()=>openFile(b));
+  $("lDyn").innerHTML=h;
   $("lStudy").onclick=async()=>{
     const v=!studied;if(sent&&!v)return;
     try{await rpc("aluno_estudar",{p_code:code,p_mat:m.id,p_val:v});await load();toast(v?"Ótimo! Estudo registrado.":"Marcação removida")}catch(e){toast("Não foi possível registrar. Verifique a internet.")}
@@ -371,14 +421,12 @@ function paintLesson(){
 }
 async function openFile(b){
   const w=window.open("","_blank");const lbl=b.querySelector("span:last-child"),old=lbl.textContent;lbl.textContent="Abrindo…";
-  try{
-    const r=await fetch(SB_URL+"/functions/v1/treino-arquivos",{method:"POST",headers:{apikey:SB_KEY,Authorization:"Bearer "+SB_KEY,"Content-Type":"application/json"},body:JSON.stringify({code,action:"url",path:b.dataset.open})}).then(r=>r.ok?r.json():Promise.reject());
-    if(w){w.opener=null;w.location.href=r.url}else location.href=r.url;
-  }catch(_){if(w)w.close();toast("Não foi possível abrir o arquivo")}
+  try{const u=await fileUrl(b.dataset.open);if(w){w.opener=null;w.location.href=u}else location.href=u}
+  catch(_){if(w)w.close();toast("Não foi possível abrir o arquivo")}
   lbl.textContent=old;
 }
 $("lClose").onclick=()=>dlg.close();
-dlg.addEventListener("close",()=>{openId=null});
+dlg.addEventListener("close",()=>{openId=null;$("lBody").innerHTML=""});
 
 /* ---------- eventos e acesso ---------- */
 document.addEventListener("click",e=>{const b=e.target.closest("[data-les]");if(b&&!b.disabled)openLesson(b.dataset.les)});
