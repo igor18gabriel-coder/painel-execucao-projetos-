@@ -344,8 +344,16 @@ function sit(t){
 const items=t=>Array.isArray(t.items)?t.items:[];
 const OWK=[["owner","fone"],["owner2","fone2"],["owner3","fone3"]];
 const owners=t=>OWK.map((k,i)=>({i,n:String(t[k[0]]||"").trim(),f:String(t[k[1]]||"").trim()})).filter(x=>x.n);
-const ownTxt=t=>owners(t).map(x=>x.n).join(", ");
-const hasOwner=t=>owners(t).length>0;
+const normA=v=>String(v||"").trim().toLowerCase();
+const effOwners=t=>{
+  const own=owners(t).map(x=>x.n);
+  if(!t.dia||!t.area)return own;
+  const ev=tev(t),ar=normA(t.area),out=own.slice();
+  Object.values(tasks).forEach(o=>{if(o.id!==t.id&&!o.dia&&tev(o)===ev&&normA(o.area)===ar)owners(o).forEach(x=>{if(!out.includes(x.n))out.push(x.n)})});
+  return out;
+};
+const ownTxt=t=>effOwners(t).join(", ");
+const hasOwner=t=>effOwners(t).length>0;
 
 /* ---------- eventos ---------- */
 const evList=()=>Object.values(events).sort((a,b)=>String(a.start||"9999").localeCompare(String(b.start||"9999"))||(a.n||0)-(b.n||0));
@@ -435,7 +443,7 @@ function renderOverview(){
     return '<li><button type="button" data-open="'+esc(tev(t))+'"><span class="sit s-'+s[0]+'">'+esc(s[1])+'</span><span class="t">'+esc(t.title)+'</span><span class="tag">'+esc(e?e.name:"")+'</span><span class="hint">'+(hasOwner(t)?esc(ownTxt(t)):"sem responsável")+'</span></button></li>'}).join(""):'<li class="hint">Nada atrasado nem vencendo nos próximos 7 dias.</li>';
   // pessoas em mais de um evento
   const m={};
-  Object.values(tasks).forEach(t=>{if(t.status==="Concluído"||!hasOwner(t))return;const id=tev(t);if(!id)return;owners(t).forEach(o=>{const k=o.n;(m[k]=m[k]||{})[id]=(m[k][id]||0)+1})});
+  Object.values(tasks).forEach(t=>{if(t.status==="Concluído"||!hasOwner(t))return;const id=tev(t);if(!id)return;effOwners(t).forEach(k=>{(m[k]=m[k]||{})[id]=(m[k][id]||0)+1})});
   const multi=Object.keys(m).filter(k=>Object.keys(m[k]).length>1).sort();
   $("shared").innerHTML=multi.length?'<ul style="margin:0;padding-left:18px;color:var(--tx);font-size:14px">'+multi.map(k=>'<li><b>'+esc(k)+'</b>: '+Object.keys(m[k]).map(id=>esc((events[id]||{}).name||"")+" ("+m[k][id]+")").join(", ")+'</li>').join("")+'</ul>':"Ninguém tem tarefas abertas em mais de um evento.";
   $("eFrom").innerHTML='<option value="">Nenhuma (evento vazio)</option>'+evs.map(e=>'<option value="'+esc(e.id)+'">'+esc(e.name)+'</option>').join("");
@@ -452,7 +460,7 @@ function renderEvent(id){
   const all=tasksOf(id);
   $("evDel").disabled=!canWrite;$("evDel").textContent="Excluir evento";
   $("evDelHint").textContent=all.length?"Também exclui as "+all.length+" tarefas do evento e tudo que estiver nele.":"";
-  const ownerNames=[...new Set(all.flatMap(t=>owners(t).map(o=>o.n)))].sort();
+  const ownerNames=[...new Set(all.flatMap(t=>effOwners(t)))].sort();
   const areas=[...new Set(Object.values(tasks).map(t=>t.area).filter(Boolean))].sort();
   const myAreas=[...new Set(all.map(t=>t.area).filter(Boolean))].sort();
   const fa=$("fArea").value,fo=$("fOwner").value;
@@ -468,7 +476,7 @@ function renderEvent(id){
   const pr={Alta:0,Média:1,Baixa:2};
   const rows=all.filter(t=>{
     if(!!t.dia!==(sv==="dia"))return false;
-    if(fa2&&t.area!==fa2)return false;if(fo2&&!owners(t).some(o=>o.n===fo2))return false;
+    if(fa2&&t.area!==fa2)return false;if(fo2&&!effOwners(t).includes(fo2))return false;
     if(fp&&t.prio!==fp)return false;if(fs&&t.status!==fs)return false;
     if(fi==="late"&&sit(t)[0]!=="late")return false;if(fi==="soon"&&sit(t)[0]!=="soon")return false;
     if(fi==="noowner"&&(hasOwner(t)||t.status==="Concluído"))return false;
@@ -489,6 +497,7 @@ function renderEvent(id){
       '<div><label for="d-'+k+'">Prazo</label><input id="d-'+k+'" type="date" data-act="due" value="'+esc(t.due||"")+'"'+dis+'></div>'+
       '<div><label for="p-'+k+'">Prioridade</label><select id="p-'+k+'" data-act="prio"'+dis+'>'+["Alta","Média","Baixa"].map(x=>'<option'+(x===t.prio?' selected':'')+'>'+x+'</option>').join("")+'</select></div>'+
     '</div>'+
+    (t.dia&&ownTxt(t)&&ownTxt(t)!==owners(t).map(x=>x.n).join(", ")?'<div class="hint" style="margin-top:6px">Responsáveis da área contam aqui também: '+esc(ownTxt(t))+'</div>':'')+
     waBtn(t,sc)+
     (it.length?'<div style="margin-top:8px"><button class="btn" type="button" data-act="pdf">🖨️ Gerar checklist em PDF</button></div>':'')+
     (pc===null?'':'<div class="mini"><i style="width:'+pc+'%"></i></div><div class="pct">Checklist: '+done+' de '+it.length+' ('+pc+'%)</div>')+
