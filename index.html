@@ -656,7 +656,7 @@ function pdfDia(){
     doc.setTextColor(70);doc.text(rl[0],W-M-2,y+1,{align:"right"});
     doc.setFont("helvetica","bold");doc.setFontSize(12);doc.setTextColor(10,42,107);
     const ttl=doc.splitTextToSize(t.title,B-rw-8);doc.text(ttl[0],M+2,y+1);y+=8;
-    doc.setFontSize(11.5);doc.setTextColor(0);
+    doc.setFont("helvetica","normal");doc.setFontSize(11.5);doc.setTextColor(0);
     it.forEach(x=>{
       const ln=doc.splitTextToSize(x.t,B-12),h=Math.max(7.5,ln.length*5.4+2.6);
       need(h);
