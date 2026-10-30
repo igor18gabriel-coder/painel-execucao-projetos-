@@ -776,9 +776,11 @@ const POS=[
  {k:"eq",ico:"🤝",t:"Feedback da equipe",c:"#b57bff",items:["Marcar a reunião de retrospectiva","Ouvir cada área (o que funcionou e o que não)","Registrar as lições aprendidas","Definir melhorias para o próximo evento"]}
 ];
 const posDoc=k=>(store.meta&&store.meta["pos_"+cur+"_"+k])||{};
+const posItems=S=>{const it=posDoc(S.k).it;return Array.isArray(it)?it.map(String):S.items};
+const posTitle=S=>String(posDoc(S.k).t||"").trim()||S.t;
 const nf=v=>{if(typeof v==="number")return isFinite(v)?v:null;let t=String(v==null?"":v).replace(/[^\d.,-]/g,"");if(!t)return null;if(t.includes(","))t=t.replace(/\./g,"").replace(",",".");else if(!/^-?\d+\.\d{1,2}$/.test(t))t=t.replace(/\./g,"");const n=parseFloat(t);return isNaN(n)?null:n};
 const brl=n=>n==null?"–":n.toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
-function posStats(){let d=0,t=0;POS.forEach(S=>{const c=posDoc(S.k).c||[];S.items.forEach((_,i)=>{t++;if(c[i])d++})});return{d,t,pc:t?Math.round(100*d/t):0}}
+function posStats(){let d=0,t=0;POS.forEach(S=>{const c=posDoc(S.k).c||[];posItems(S).forEach((_,i)=>{t++;if(c[i])d++})});return{d,t,pc:t?Math.round(100*d/t):0}}
 function renderPos(){
   const ev=events[cur];const el=$("posPane");if(!ev){el.innerHTML="";return}
   const dis=canWrite?"":" disabled",st=posStats(),ppl=+ev.people||0;
@@ -786,10 +788,13 @@ function renderPos(){
   h+='<div class="pb" style="margin:-4px 0 16px"><i style="width:'+st.pc+'%"></i></div>';
   h+='<div class="pgrid">';
   POS.forEach(S=>{
-    const d=posDoc(S.k),c=d.c||[],n=c.filter((x,i)=>i<S.items.length&&x).length,pc=Math.round(100*n/S.items.length),k=S.k;
-    h+='<div class="stage'+(pc===100?' done':'')+'" style="--sc:'+S.c+'" data-k="'+k+'"><div class="sh"><div class="ico" aria-hidden="true">'+S.ico+'</div><h3>'+esc(S.t)+'</h3><div class="pc">'+(pc===100?'✓':pc+'%')+'</div></div>';
+    const d=posDoc(S.k),c=d.c||[],PI=posItems(S),n=c.filter((x,i)=>i<PI.length&&x).length,pc=PI.length?Math.round(100*n/PI.length):0,k=S.k;
+    h+='<div class="stage'+(pc===100?' done':'')+'" style="--sc:'+S.c+'" data-k="'+k+'"><div class="sh"><div class="ico" aria-hidden="true">'+S.ico+'</div>'+(canWrite?'<input class="itx" style="flex:1;min-width:0;font-weight:800;font-size:16px" data-ptitle="1" value="'+esc(posTitle(S))+'" aria-label="Nome da etapa">':'<h3>'+esc(posTitle(S))+'</h3>')+'<div class="pc">'+(pc===100?'✓':pc+'%')+'</div></div>';
     h+='<div class="pb" style="margin:0 0 6px"><i style="width:'+pc+'%;background:'+S.c+'"></i></div>';
-    S.items.forEach((t,i)=>{h+='<label class="prow'+(c[i]?' on':'')+'"><input type="checkbox" data-pchk="'+i+'"'+(c[i]?' checked':'')+dis+'><span>'+esc(t)+'</span></label>'});
+    PI.forEach((t,i)=>{h+=canWrite
+      ?'<div class="ci"><input type="checkbox" data-pchk="'+i+'"'+(c[i]?' checked':'')+' aria-label="Marcar item"><input class="itx" data-pit="'+i+'" value="'+esc(t)+'" aria-label="Texto do item"><button class="ib" type="button" data-pa="up" data-i="'+i+'" aria-label="Subir">↑</button><button class="ib" type="button" data-pa="down" data-i="'+i+'" aria-label="Descer">↓</button><button class="ib" type="button" data-pa="del" data-i="'+i+'" aria-label="Excluir item">✕</button></div>'
+      :'<label class="prow'+(c[i]?' on':'')+'"><input type="checkbox" data-pchk="'+i+'"'+(c[i]?' checked':'')+dis+'><span>'+esc(t)+'</span></label>'});
+    if(canWrite)h+='<div class="ci add"><input class="itx" data-pnew="1" placeholder="Novo item desta etapa" aria-label="Novo item" autocomplete="off"><button class="btn" type="button" data-pa="add">Adicionar</button></div>';
     h+='<div class="sf"><div class="wide"><label class="lbl" for="pr-'+k+'">Responsável</label><input id="pr-'+k+'" data-pf="resp" list="teamList" autocomplete="off" value="'+esc(d.resp||"")+'"'+dis+'></div>';
     if(k==="cus"){
       h+='<div><label class="lbl" for="pp-'+k+'">Custo previsto (R$)</label><input id="pp-'+k+'" data-pf="prev" inputmode="decimal" value="'+esc(d.prev||"")+'" placeholder="0,00"'+dis+'></div><div><label class="lbl" for="pq-'+k+'">Custo realizado (R$)</label><input id="pq-'+k+'" data-pf="real" inputmode="decimal" value="'+esc(d.real||"")+'" placeholder="0,00"'+dis+'></div>';
@@ -819,10 +824,25 @@ function posWrite(k,patch){
 }
 $("posPane").addEventListener("change",e=>{
   const el=e.target,st=el.closest(".stage");if(!st)return;const k=st.dataset.k,S=POS.find(x=>x.k===k);
-  if(el.dataset.pchk!=null){const c=S.items.map((_,i)=>!!(posDoc(k).c||[])[i]);c[+el.dataset.pchk]=el.checked;posWrite(k,{c})}
+  if(el.dataset.pchk!=null){const c=posItems(S).map((_,i)=>!!(posDoc(k).c||[])[i]);c[+el.dataset.pchk]=el.checked;posWrite(k,{c})}
+  else if(el.dataset.ptitle){const v=el.value.trim();if(!v){renderPos();return}if(posTitle(S)!==v)posWrite(k,{t:v})}
+  else if(el.dataset.pit!=null){const v=el.value.trim(),i=+el.dataset.pit,it=posItems(S).slice();if(!v){renderPos();return}if(it[i]===v)return;it[i]=v;posWrite(k,{it,c:it.map((_,j)=>!!(posDoc(k).c||[])[j])})}
+  else if(el.dataset.pnew)return;
   else if(el.dataset.pf){const v=el.value.trim();if((posDoc(k)[el.dataset.pf]||"")!==v)posWrite(k,{[el.dataset.pf]:v})}
 });
-$("posPane").addEventListener("click",e=>{if(e.target.closest("#posPdf"))posPdf()});
+$("posPane").addEventListener("click",e=>{
+  if(e.target.closest("#posPdf")){posPdf();return}
+  const b=e.target.closest("[data-pa]");if(!b||!canWrite)return;
+  const st=b.closest(".stage"),k=st.dataset.k,S=POS.find(x=>x.k===k),a=b.dataset.pa,i=+b.dataset.i;
+  const it=posItems(S).slice(),c=it.map((_,j)=>!!(posDoc(k).c||[])[j]);
+  if(a==="add"){const inp=st.querySelector("[data-pnew]"),v=inp?inp.value.trim():"";if(!v)return;it.push(v);c.push(false)}
+  else if(a==="del"){it.splice(i,1);c.splice(i,1)}
+  else if(a==="up"&&i>0){[it[i-1],it[i]]=[it[i],it[i-1]];[c[i-1],c[i]]=[c[i],c[i-1]]}
+  else if(a==="down"&&i<it.length-1){[it[i+1],it[i]]=[it[i],it[i+1]];[c[i+1],c[i]]=[c[i],c[i+1]]}
+  else return;
+  posWrite(k,{it,c});
+});
+$("posPane").addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.dataset&&e.target.dataset.pnew){e.preventDefault();const b=e.target.closest(".stage").querySelector('[data-pa="add"]');if(b)b.click()}});
 function posPdf(){
   const J=window.jspdf;if(!J){alert("Não foi possível carregar o gerador de PDF. Verifique a internet e tente de novo.");return}
   const ev=events[cur]||{},doc=new J.jsPDF({unit:"mm",format:"a4"}),M=15,W=210,B=W-2*M;let y=0,pg=1;
@@ -833,10 +853,10 @@ function posPdf(){
   doc.setFontSize(11);doc.setFont("helvetica","normal");doc.setTextColor(70);doc.text((ev.name||"")+(ev.people?" · "+ev.people+" participantes":""),M,y);y+=8;
   const line=(l,x,w)=>{doc.setFontSize(9);doc.setTextColor(90);doc.text(l,x,y);doc.setDrawColor(120);doc.setLineWidth(.3);doc.line(x,y+6,x+w,y+6)};
   POS.forEach((S,si)=>{
-    need(28+S.items.length*8.5);doc.setFillColor(0,78,195);doc.rect(M,y,B,8,"F");doc.setFillColor(255,172,3);doc.rect(M,y+8,B,1,"F");
-    doc.setFont("helvetica","bold");doc.setFontSize(12);doc.setTextColor(255);doc.text((si+1)+" · "+S.t,M+3,y+5.6);y+=14;
+    need(28+posItems(S).length*8.5);doc.setFillColor(0,78,195);doc.rect(M,y,B,8,"F");doc.setFillColor(255,172,3);doc.rect(M,y+8,B,1,"F");
+    doc.setFont("helvetica","bold");doc.setFontSize(12);doc.setTextColor(255);doc.text((si+1)+" · "+posTitle(S),M+3,y+5.6);y+=14;
     doc.setFont("helvetica","normal");doc.setFontSize(11.5);doc.setTextColor(0);
-    S.items.forEach(t=>{doc.setFont("helvetica","normal");doc.setFontSize(11.5);doc.setTextColor(0);const ln=doc.splitTextToSize(t,B-12),h=Math.max(8,ln.length*5.4+3);need(h);doc.setDrawColor(0);doc.setLineWidth(.5);doc.rect(M,y,5,5);doc.text(ln,M+9,y+4);doc.setDrawColor(225);doc.setLineWidth(.2);doc.line(M+9,y+h-1.2,W-M,y+h-1.2);y+=h});
+    posItems(S).forEach(t=>{doc.setFont("helvetica","normal");doc.setFontSize(11.5);doc.setTextColor(0);const ln=doc.splitTextToSize(t,B-12),h=Math.max(8,ln.length*5.4+3);need(h);doc.setDrawColor(0);doc.setLineWidth(.5);doc.rect(M,y,5,5);doc.text(ln,M+9,y+4);doc.setDrawColor(225);doc.setLineWidth(.2);doc.line(M+9,y+h-1.2,W-M,y+h-1.2);y+=h});
     y+=3;need(30);
     line("Responsável",M,B/2-4);
     if(S.k==="cus"){line("Previsto (R$)",M+B/2,40);line("Realizado (R$)",M+B/2+46,40)}
