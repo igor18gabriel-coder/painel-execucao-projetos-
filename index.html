@@ -198,6 +198,7 @@ h1{color:#fff}
 <section id="ovView" hidden>
   <h2 style="margin-top:0">Eventos</h2>
   <div class="evgrid" id="evCards"></div>
+  <details class="panel" id="pastBox" hidden style="margin-top:14px"><summary id="pastSum">Eventos já realizados</summary><div class="in"><div class="evgrid" id="evPast"></div></div></details>
 
   <h2>Atenção nos próximos 7 dias</h2>
   <ul class="att" id="att"></ul>
@@ -428,15 +429,19 @@ $("tabs").addEventListener("click",e=>{
 function renderOverview(){
   const evs=evList();
   $("subt").textContent=evs.length?evs.length+(evs.length===1?" evento":" eventos")+" · planejamento compartilhado":"Planejamento compartilhado";
-  $("evCards").innerHTML=evs.length?evs.map(e=>{
+  const card=e=>{
     const s=stats(e.id),w=evWhen(e);
     const sim=evs.filter(o=>o.id!==e.id&&overlaps(e,o)).map(o=>o.name);
     return '<div class="ev"><div><h3>'+esc(e.name)+'</h3><div class="sub">'+esc(evRange(e))+(e.people?' · '+esc(e.people)+' participantes':'')+' · '+esc(w.txt)+'</div></div>'+
-      (sim.length?'<div class="chips"><span class="chip warn">Ao mesmo tempo que: '+esc(sim.join(", "))+'</span></div>':'')+
+      (sim.length&&w.k!=="past"?'<div class="chips"><span class="chip warn">Ao mesmo tempo que: '+esc(sim.join(", "))+'</span></div>':'')+
       '<div><div class="mini"><i style="width:'+s.pct+'%"></i></div><div class="pct">Checklists '+s.pct+'% · '+s.done+' de '+s.n+' tarefas concluídas</div></div>'+
       '<div class="chips">'+(s.late?'<span class="chip bad">'+s.late+' atrasadas</span>':'<span class="chip ok">Sem atrasos</span>')+(s.noOwner?'<span class="chip warn">'+s.noOwner+' sem responsável</span>':'')+(s.block?'<span class="chip bad">'+s.block+' bloqueadas</span>':'')+'</div>'+
       '<div><button class="btn pri" type="button" data-open="'+esc(e.id)+'">Abrir evento</button></div></div>';
-  }).join(""):'<div class="empty">'+(loaded()?"Nenhum evento ainda. "+(canWrite?"Crie o primeiro em Novo evento.":""):"Carregando…")+'</div>';
+  };
+  const ativos=evs.filter(e=>evWhen(e).k!=="past"),past=evs.filter(e=>evWhen(e).k==="past").sort((a,b)=>String(b.start||"").localeCompare(String(a.start||"")));
+  $("evCards").innerHTML=evs.length?(ativos.length?ativos.map(card).join(""):'<div class="empty">Nenhum evento em andamento ou futuro.</div>'):'<div class="empty">'+(loaded()?"Nenhum evento ainda. "+(canWrite?"Crie o primeiro em Novo evento.":""):"Carregando…")+'</div>';
+  $("pastBox").hidden=!past.length;$("pastSum").textContent="Eventos já realizados ("+past.length+")";
+  $("evPast").innerHTML=past.map(card).join("");
   // atenção 7 dias
   const att=Object.values(tasks).filter(t=>{const s=sit(t)[0];return s==="late"||s==="soon"}).sort((a,b)=>String(a.due).localeCompare(String(b.due))).slice(0,12);
   $("att").innerHTML=att.length?att.map(t=>{const s=sit(t),e=events[tev(t)];
