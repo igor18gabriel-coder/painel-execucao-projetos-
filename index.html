@@ -7,6 +7,7 @@
 :root[data-theme="dark"]{--bg:#10296a;--card:#183a85;--tx:#e9ecf3;--mut:#b8c5e4;--bd:#2f55a8;--ac:#6ea0ff;--yl:#ffac03;--yltx:#0a2a6b;--band:#ffffff;--red:#ff8a80;--amb:#ffc46b;--grn:#6ee7a0;--redbg:#4a1f1b;--ambbg:#4a3512;--grnbg:#123d28;--bluebg:#214a9c;--inp:#122f72;color-scheme:dark}
 *{box-sizing:border-box}
 body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--tx);line-height:1.45}
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:url(fundo.jpg) center/cover no-repeat;opacity:.13}
 .wrap{max-width:1100px;margin:0 auto;padding-block:16px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 header{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-bottom:12px}
 header>div{min-width:0}
