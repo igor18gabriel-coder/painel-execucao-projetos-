@@ -474,6 +474,7 @@ function renderEvent(id){
     return '<div class="task p-'+esc(t.prio)+(sc==="late"?' late':'')+'" data-id="'+k+'">'+
     '<div class="top"><div class="ttl">'+esc(t.title)+'</div><div><span class="tag">'+esc(t.area||"Sem área")+'</span><span class="sit s-'+sc+'">'+esc(sl)+'</span></div></div>'+
     '<div class="grid edit">'+
+      (canWrite?'<div style="grid-column:1/-1"><label for="ti-'+k+'">Nome da tarefa</label><input id="ti-'+k+'" data-act="title" autocomplete="off" value="'+esc(t.title||"")+'"></div>':'')+
       '<div><label for="s-'+k+'">Status</label><select id="s-'+k+'" data-act="status"'+dis+'>'+STATUS.map(x=>'<option'+(x===t.status?' selected':'')+'>'+x+'</option>').join("")+'</select></div>'+
       '<div><label for="o-'+k+'">Responsável</label><input id="o-'+k+'" data-act="owner" list="teamList" autocomplete="off" value="'+esc(t.owner||"")+'" placeholder="'+(t.papel?"Função: "+esc(t.papel):"Informe o nome")+'"'+dis+'></div>'+
       '<div><label for="f-'+k+'">WhatsApp do responsável</label><input id="f-'+k+'" type="tel" inputmode="tel" data-act="fone" autocomplete="off" value="'+esc(t.fone||"")+'" placeholder="(22) 99999-9999"'+dis+'></div>'+
@@ -537,6 +538,7 @@ $("list").addEventListener("change",e=>{
   const el=e.target,act=el.dataset.act;if(!act||act==="del")return;
   const id=el.closest(".task").dataset.id,v=el.value;
   if(act==="status")edit(id,c=>c.status===v?null:{status:v},c=>"status "+c.status+" → "+v);
+  else if(act==="title"){const nv=v.trim();if(!nv){render();return}edit(id,c=>(c.title||"")===nv?null:{title:nv},c=>"renomeou: "+(c.title||"")+" → "+nv)}
   else if(act==="owner")edit(id,c=>(c.owner||"")===v.trim()?null:{owner:v.trim()},()=>"responsável: "+(v.trim()||"(vazio)"));
   else if(act==="fone")edit(id,c=>(c.fone||"")===v.trim()?null:{fone:v.trim()},()=>"WhatsApp do responsável atualizado");
   else if(act==="due")edit(id,c=>(c.due||"")===v?null:{due:v},()=>"prazo: "+(v?v.split("-").reverse().join("/"):"(sem prazo)"));
