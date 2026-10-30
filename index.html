@@ -749,7 +749,7 @@ $("newEvForm").addEventListener("submit",e=>{
       const nid="t"+Date.now().toString(36)+(k++).toString(36);
       let due="";if(t.due){const d=pd(t.due);d.setDate(d.getDate()+shift);due=iso(d)}
       await db.doc("tasks/"+nid).set({n:(t.n||0),ev:id,area:t.area||"",prio:t.prio||"Média",title:t.title||"",due,owner:"",papel:t.papel||"",status:"A fazer",dia:!!t.dia,
-        items:items(t).map(x=>({t:x.t,d:false})),note:"",upd:Date.now(),log:[{at:Date.now(),by:me,w:"copiou de "+src.name}]});
+        items:items(t).map(x=>({t:x.t,d:false})),note:t.note||"",upd:Date.now(),log:[{at:Date.now(),by:me,w:"copiou de "+src.name}]});
     }
     $("newEvForm").reset();$("newEvPanel").open=false;btn.disabled=!canWrite;go(id);
   }).finally(()=>{btn.disabled=!canWrite});
