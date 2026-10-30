@@ -329,7 +329,7 @@ function waMsg(t,nm){
   return m;
 }
 function waBtn(t,sc){
-  if(t.status==="Concluído")return"";
+  if(!canWrite||t.status==="Concluído")return"";
   let h="";
   OWK.forEach((kk,n)=>{
     const f=t[kk[1]],nm=String(t[kk[0]]||"").trim(),num=foneNum(f);
