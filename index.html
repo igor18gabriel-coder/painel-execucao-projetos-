@@ -249,8 +249,9 @@ h1{color:#fff}
     </div>
   </details>
 
-  <div class="seg" id="evSeg" role="tablist" aria-label="Seção do evento"><button type="button" data-sv="tasks" aria-selected="true">📋 Tarefas</button><button type="button" data-sv="pos" aria-selected="false">🏁 Pós-evento</button><button type="button" data-sv="res" aria-selected="false">💵 Resultado</button><button type="button" data-sv="ins" aria-selected="false">📝 Inscrições</button></div>
+  <div class="seg" id="evSeg" role="tablist" aria-label="Seção do evento"><button type="button" data-sv="tasks" aria-selected="true">📋 Tarefas</button><button type="button" data-sv="dia" aria-selected="false">☑️ Dia do evento</button><button type="button" data-sv="pos" aria-selected="false">🏁 Pós-evento</button><button type="button" data-sv="res" aria-selected="false">💵 Resultado</button><button type="button" data-sv="ins" aria-selected="false">📝 Inscrições</button></div>
   <div id="tasksPane">
+  <div id="diaBar" class="panel" hidden style="padding:12px"><div style="font-weight:800;margin-bottom:4px">☑️ Conferências do dia do evento</div><div class="hint" style="margin-bottom:8px">Itens para conferir no próprio dia, sem prazo. Gere o PDF para imprimir e levar na mão.</div><button class="btn pri" type="button" id="diaPdf">🖨️ Gerar PDF do dia do evento</button></div>
   <div class="kpis">
     <div class="k" style="--kc:var(--ac)"><small>Tarefas</small><b id="kTotal">–</b></div>
     <div class="k" style="--kc:var(--grn)"><small>Concluídas</small><b id="kDone">–</b></div>
@@ -459,6 +460,7 @@ function renderEvent(id){
   const q=$("q").value.toLowerCase(),fp=$("fPrio").value,fs=$("fStatus").value,fi=$("fSit").value,fa2=$("fArea").value,fo2=$("fOwner").value;
   const pr={Alta:0,Média:1,Baixa:2};
   const rows=all.filter(t=>{
+    if(!!t.dia!==(sv==="dia"))return false;
     if(fa2&&t.area!==fa2)return false;if(fo2&&(t.owner||"").trim()!==fo2)return false;
     if(fp&&t.prio!==fp)return false;if(fs&&t.status!==fs)return false;
     if(fi==="late"&&sit(t)[0]!=="late")return false;if(fi==="soon"&&sit(t)[0]!=="soon")return false;
@@ -466,7 +468,7 @@ function renderEvent(id){
     if(q&&!((t.title||"")+" "+(t.owner||"")+" "+(t.area||"")).toLowerCase().includes(q))return false;return true})
    .sort((a,b)=>String(a.due||"9999").localeCompare(String(b.due||"9999"))||(pr[a.prio]==null?1:pr[a.prio])-(pr[b.prio]==null?1:pr[b.prio])||(a.n||0)-(b.n||0));
   const L=$("list");
-  if(!rows.length){L.innerHTML='<div class="empty">'+(has?"Nenhuma tarefa com esses filtros.":"Este evento ainda não tem tarefas. "+(canWrite?"Use Nova tarefa neste evento para criar a primeira.":""))+'</div>';return}
+  if(!rows.length){L.innerHTML='<div class="empty">'+(sv==="dia"?"Nenhuma conferência do dia do evento ainda. Crie uma tarefa nesta aba em Nova tarefa neste evento.":has?"Nenhuma tarefa com esses filtros.":"Este evento ainda não tem tarefas. "+(canWrite?"Use Nova tarefa neste evento para criar a primeira.":""))+'</div>';return}
   const dis=canWrite?"":" disabled";
   L.innerHTML=rows.map(t=>{
     const [sc,sl]=sit(t),it=items(t),done=it.filter(x=>x.d).length,pc=it.length?Math.round(100*done/it.length):null;
@@ -503,7 +505,7 @@ function render(){
   renderTabs();countdown();
   $("ovView").hidden=cur!=="geral";$("evView").hidden=cur==="geral";
   if(cur==="geral"){$("subt").textContent="Planejamento compartilhado";renderOverview()}else{renderEvent(cur);if(sv==="pos")renderPos();if(sv==="res")renderRes();if(sv==="ins")renderIns()}
-  $("insPane").hidden=sv!=="ins"||cur==="geral";$("tasksPane").hidden=sv!=="tasks"||cur==="geral";$("posPane").hidden=sv!=="pos"||cur==="geral";$("resPane").hidden=sv!=="res"||cur==="geral";
+  $("insPane").hidden=sv!=="ins"||cur==="geral";$("tasksPane").hidden=(sv!=="tasks"&&sv!=="dia")||cur==="geral";$("diaBar").hidden=sv!=="dia";$("posPane").hidden=sv!=="pos"||cur==="geral";$("resPane").hidden=sv!=="res"||cur==="geral";
 }
 function schedule(){
   const a=document.activeElement;
@@ -623,6 +625,49 @@ function pdfTask(id){
   doc.save("Checklist_"+nm+".pdf");
 }
 $("list").addEventListener("click",e=>{const b=e.target.closest('[data-act="pdf"]');if(!b)return;pdfTask(b.closest(".task").dataset.id)});
+function pdfDia(){
+  const ev=events[cur];if(!ev)return;
+  const ts=tasksOf(cur).filter(t=>t.dia&&items(t).length).sort((a,b)=>String(a.area||"").localeCompare(String(b.area||""))||(a.n||0)-(b.n||0));
+  if(!ts.length){alert("Não há conferências do dia do evento com itens.");return}
+  const J=window.jspdf;if(!J){alert("Não foi possível carregar o gerador de PDF. Verifique a internet e tente de novo.");return}
+  const doc=new J.jsPDF({unit:"mm",format:"a4"}),M=15,W=210,B=W-2*M;let y=16,pg=1;
+  const head=()=>{try{doc.addImage(document.querySelector(".logo").src,"PNG",M,8,56,8)}catch(_){}
+    doc.setFillColor(255,172,3);doc.rect(0,0,W,3,"F");y=22};
+  const foot=n=>{doc.setFont("helvetica","normal");doc.setFontSize(8);doc.setTextColor(110);doc.text("Fastfood Milionário · Execução de Projetos · "+ev.name,M,289);doc.text("Página "+n,W-M,289,{align:"right"})};
+  const need=h=>{if(y+h>272){foot(pg);doc.addPage();pg++;head()}};
+  head();
+  doc.setTextColor(10,42,107);doc.setFont("helvetica","bold");doc.setFontSize(18);doc.text("Checklist do dia do evento",M,y+6);y+=12;
+  doc.setFont("helvetica","normal");doc.setFontSize(11);doc.setTextColor(70);doc.text(ev.name,M,y);y+=5;
+  doc.setDrawColor(0,78,195);doc.setLineWidth(.8);doc.line(M,y,W-M,y);y+=4;
+  doc.setFontSize(9);doc.setTextColor(100);doc.text("Conferir cada item com caneta antes de o evento começar.",M,y+2);y+=11;
+  ts.forEach(t=>{
+    const it=items(t);need(22);
+    doc.setFillColor(232,238,252);doc.rect(M,y-4.5,B,8,"F");
+    doc.setFont("helvetica","bold");doc.setFontSize(12);doc.setTextColor(10,42,107);
+    const ttl=doc.splitTextToSize(t.title,B-60);doc.text(ttl[0],M+2,y+1);
+    const rs=(t.owner&&t.owner.trim())?"Resp.: "+t.owner.trim():"Resp.: ____________";
+    doc.setFont("helvetica","normal");doc.setFontSize(9.5);doc.setTextColor(70);doc.text(rs,W-M-2,y+1,{align:"right"});y+=8;
+    doc.setFontSize(11.5);doc.setTextColor(0);
+    it.forEach(x=>{
+      const ln=doc.splitTextToSize(x.t,B-12),h=Math.max(7.5,ln.length*5.4+2.6);
+      need(h);
+      doc.setDrawColor(0);doc.setLineWidth(.5);doc.rect(M,y,5,5);
+      doc.setTextColor(0);doc.text(ln,M+9,y+4);
+      doc.setDrawColor(225);doc.setLineWidth(.2);doc.line(M+9,y+h-1.2,W-M,y+h-1.2);y+=h;
+    });
+    y+=5;
+  });
+  need(60);y+=2;
+  doc.setFontSize(10);doc.setTextColor(70);doc.text("Observações:",M,y);y+=3;
+  doc.setDrawColor(150);doc.setLineWidth(.3);for(let i=0;i<5;i++){y+=9;doc.line(M,y,W-M,y)}
+  y+=14;doc.setDrawColor(0);doc.line(M,y,M+90,y);doc.line(M+105,y,W-M,y);
+  doc.setFontSize(9);doc.text("Conferido por",M,y+4.5);doc.text("Assinatura",M+105,y+4.5);
+  foot(pg);
+  const nm=String(ev.name||"evento").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-zA-Z0-9]+/g,"_").replace(/^_|_$/g,"");
+  doc.save("Checklist_Dia_do_Evento_"+nm+".pdf");
+}
+$("diaPdf").addEventListener("click",pdfDia);
+
 $("evDel").addEventListener("click",()=>{
   if(!canWrite)return;const id=cur,ev=events[id];if(!ev)return;
   const ts=tasksOf(id).map(t=>t.id),meta=Object.keys(store.meta||{}).filter(k=>k==="form_"+id||k.startsWith("pos_"+id+"_")||k.startsWith("res_"+id+"_")),ins=Object.keys(store.insc||{}).filter(k=>store.insc[k]&&store.insc[k].ev===id);
@@ -657,7 +702,7 @@ $("newForm").addEventListener("submit",e=>{
   const title=$("nTitle").value.trim();if(!title)return;
   const id="t"+Date.now().toString(36),evId=cur;
   const doc={n:Math.max(0,...Object.values(tasks).map(t=>t.n||0))+1,ev:evId,area:$("nArea").value.trim(),prio:$("nPrio").value,title,due:$("nDue").value,owner:$("nOwner").value.trim(),papel:"",status:"A fazer",items:[],note:"",upd:Date.now(),
-    log:[{at:Date.now(),by:me,w:"criou a tarefa"}]};
+    log:[{at:Date.now(),by:me,w:"criou a tarefa"}]};if(sv==="dia"){doc.dia=true;doc.due=""}
   queue(id,()=>db.doc("tasks/"+id).set(doc).then(()=>{$("newForm").reset();$("nPrio").value="Média";$("newPanel").open=false}));
 });
 $("newEvForm").addEventListener("submit",e=>{
@@ -674,7 +719,7 @@ $("newEvForm").addEventListener("submit",e=>{
     for(const t of srcTasks){
       const nid="t"+Date.now().toString(36)+(k++).toString(36);
       let due="";if(t.due){const d=pd(t.due);d.setDate(d.getDate()+shift);due=iso(d)}
-      await db.doc("tasks/"+nid).set({n:(t.n||0),ev:id,area:t.area||"",prio:t.prio||"Média",title:t.title||"",due,owner:"",papel:t.papel||"",status:"A fazer",
+      await db.doc("tasks/"+nid).set({n:(t.n||0),ev:id,area:t.area||"",prio:t.prio||"Média",title:t.title||"",due,owner:"",papel:t.papel||"",status:"A fazer",dia:!!t.dia,
         items:items(t).map(x=>({t:x.t,d:false})),note:"",upd:Date.now(),log:[{at:Date.now(),by:me,w:"copiou de "+src.name}]});
     }
     $("newEvForm").reset();$("newEvPanel").open=false;btn.disabled=!canWrite;go(id);
@@ -737,7 +782,7 @@ function renderPos(){
   h+='</div><div style="margin-top:16px"><button class="btn pri" type="button" id="posPdf">🖨️ Gerar checklist pós-evento em PDF</button></div>';
   el.innerHTML=h;
 }
-function setSv(v){sv=v;document.querySelectorAll("#evSeg button").forEach(b=>b.setAttribute("aria-selected",String(b.dataset.sv===v)));$("tasksPane").hidden=v!=="tasks";$("posPane").hidden=v!=="pos";$("resPane").hidden=v!=="res";$("insPane").hidden=v!=="ins";if(v==="pos")renderPos();if(v==="res")renderRes();if(v==="ins")renderIns()}
+function setSv(v){sv=v;document.querySelectorAll("#evSeg button").forEach(b=>b.setAttribute("aria-selected",String(b.dataset.sv===v)));$("tasksPane").hidden=(v!=="tasks"&&v!=="dia");$("diaBar").hidden=v!=="dia";if(v==="tasks"||v==="dia")render();$("posPane").hidden=v!=="pos";$("resPane").hidden=v!=="res";$("insPane").hidden=v!=="ins";if(v==="pos")renderPos();if(v==="res")renderRes();if(v==="ins")renderIns()}
 $("evSeg").addEventListener("click",e=>{const b=e.target.closest("button");if(b)setSv(b.dataset.sv)});
 function posWrite(k,patch){
   if(!db||!canWrite)return;const ev=cur;
@@ -1045,7 +1090,7 @@ async function login(c,name,silent){
     setLock(false);
     addSub("events",null,s=>{const t={};s.docs.forEach(x=>{const v=x.data();if(v)t[x.id]=Object.assign({},v,{id:x.id})});events=t;eLoaded=true;schedule()});
     addSub("tasks",null,s=>{const t={};s.docs.forEach(x=>{const v=x.data();if(v)t[x.id]=Object.assign({},v,{id:x.id})});tasks=t;tLoaded=true;schedule()});
-    addSub("meta",null,()=>{if(cur!=="geral"&&sv!=="tasks")schedule()});
+    addSub("meta",null,()=>{if(cur!=="geral"&&sv!=="tasks"&&sv!=="dia")schedule()});
     addSub("insc",null,()=>{if(cur!=="geral"&&sv==="ins")schedule()});
     addSub("meta","team",s=>{const v=s.exists&&s.data();team=v&&Array.isArray(v.names)?v.names:[];schedule()});
     clearInterval(pollT);pollT=setInterval(()=>{if(!document.hidden)poll()},8000);
