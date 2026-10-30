@@ -393,13 +393,13 @@ function setStatusBar(){
   else if(!db)t="Conectando…";
   else if(!loaded())t="Carregando…";
   else if(canWrite)t="Edição liberada",cls+=" ok";
-  else t="Somente leitura",cls+=" warn";
+  else t="Conferência",cls+=" warn";
   c.className=cls;c.textContent=t;
   $("who").textContent=db&&loaded()&&canWrite?"Você edita como "+me:"";
   const n=$("notice");
   if(fail==="nodb")n.innerHTML='<div class="notice"><b>Os dados compartilhados não estão disponíveis aqui</b><p>Abra o painel pelo link, logado no claude.ai, com acesso concedido pelo dono.</p></div>';
   else if(fail)n.innerHTML='<div class="notice bad"><b>Não consegui ler os dados</b><p>'+(fail==="revoked"?"O seu acesso a este painel mudou. Peça ao dono para compartilhar de novo.":fail==="quota_exceeded"?"O limite de armazenamento do painel foi atingido.":"Recarregue a página. Se continuar, avise o dono do painel.")+'</p></div>';
-  else if(db&&loaded()&&!canWrite)n.innerHTML='<div class="notice"><b>Você pode ver, mas não editar</b><p>Você entrou com o código de leitura. Para editar, clique em Sair e entre com o código de edição.</p></div>';
+  else if(db&&loaded()&&!canWrite)n.innerHTML='<div class="notice"><b>Modo de conferência</b><p>Você pode marcar os itens do checklist e escrever observações. Para alterar mais coisas (responsáveis, prazos, tarefas), clique em Sair e entre com o código de edição.</p></div>';
   else n.innerHTML="";
   ["teamAdd","nAdd","teamName","eAdd"].forEach(id=>{const e=$(id);if(e)e.disabled=!canWrite});
 }
@@ -503,10 +503,10 @@ function renderEvent(id){
     (pc===null?'':'<div class="mini"><i style="width:'+pc+'%"></i></div><div class="pct">Checklist: '+done+' de '+it.length+' ('+pc+'%)</div>')+
     ((it.length||canWrite)?'<details class="d" data-k="c'+k+'"'+(openIds.has("c"+t.id)?' open':'')+'><summary>Checklist'+(canWrite?' (editável)':'')+'</summary><ul class="ckl">'+it.map((x,i)=>canWrite
       ?'<li class="'+(x.d?'done':'')+'"><div class="ci"><input type="checkbox" data-act="chk" data-i="'+i+'"'+(x.d?' checked':'')+' aria-label="Marcar item"><input class="itx" type="text" data-act="itxt" data-i="'+i+'" value="'+esc(x.t)+'" aria-label="Texto do item"><button class="ib" type="button" data-act="iup" data-i="'+i+'" aria-label="Subir item">↑</button><button class="ib" type="button" data-act="idown" data-i="'+i+'" aria-label="Descer item">↓</button><button class="ib" type="button" data-act="idel" data-i="'+i+'" aria-label="Excluir item">×</button></div></li>'
-      :'<li class="'+(x.d?'done':'')+'"><label><input type="checkbox" data-act="chk" data-i="'+i+'"'+(x.d?' checked':'')+dis+'><span>'+esc(x.t)+'</span></label></li>').join("")+'</ul>'+
+      :'<li class="'+(x.d?'done':'')+'"><label><input type="checkbox" data-act="chk" data-i="'+i+'"'+(x.d?' checked':'')+'><span>'+esc(x.t)+'</span></label></li>').join("")+'</ul>'+
       (canWrite?'<div class="ci add"><input class="itx" id="ia-'+k+'" data-act="inew" placeholder="Novo item do checklist" aria-label="Novo item do checklist" autocomplete="off"><button class="btn" type="button" data-act="iadd">Adicionar item</button></div>':'')+'</details>':'')+
     '<details class="d" data-k="n'+k+'"'+(openIds.has("n"+t.id)?' open':'')+'><summary>Observação e histórico'+(t.note?' •':'')+'</summary>'+
-      '<div style="margin-top:6px"><label class="lbl" for="n-'+k+'">Observação</label><textarea id="n-'+k+'" rows="2" data-act="note"'+dis+'>'+esc(t.note||"")+'</textarea></div>'+
+      '<div style="margin-top:6px"><label class="lbl" for="n-'+k+'">Observação</label><textarea id="n-'+k+'" rows="2" data-act="note">'+esc(t.note||"")+'</textarea></div>'+
       (log.length?'<ul class="log">'+log.map(l=>'<li>'+esc(new Date(l.at).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}))+' · '+esc(l.by)+': '+esc(l.w)+'</li>').join("")+'</ul>':'')+
       (canWrite?'<div style="margin-top:8px"><button class="btn danger" type="button" data-act="del">Excluir tarefa</button></div>':'')+
     '</details></div>';
@@ -541,11 +541,12 @@ function queue(key,fn){
   const next=(queues[key]||Promise.resolve()).catch(()=>{}).then(fn).catch(failWrite);
   queues[key]=next;return next;
 }
-function edit(id,build,what){
-  if(!db||!canWrite)return;
+function edit(id,build,what,markOnly){
+  if(!db||(!canWrite&&!markOnly))return;
   queue(id,()=>{
     const c=tasks[id];if(!c)return;
     const patch=build(c);if(!patch)return;
+    if(!canWrite&&Object.keys(patch).some(k=>k!=="items"&&k!=="note"))return;
     patch.log=[{at:Date.now(),by:me,w:what(c)}].concat(Array.isArray(c.log)?c.log:[]).slice(0,12);
     patch.upd=Date.now();
     return db.doc("tasks/"+id).update(patch);
@@ -553,6 +554,7 @@ function edit(id,build,what){
 }
 $("list").addEventListener("change",e=>{
   const el=e.target,act=el.dataset.act;if(!act||act==="del")return;
+  if(!canWrite&&act!=="chk"&&act!=="note")return;
   const id=el.closest(".task").dataset.id,v=el.value;
   if(act==="status")edit(id,c=>c.status===v?null:{status:v},c=>"status "+c.status+" → "+v);
   else if(act==="title"){const nv=v.trim();if(!nv){render();return}edit(id,c=>(c.title||"")===nv?null:{title:nv},c=>"renomeou: "+(c.title||"")+" → "+nv)}
@@ -560,12 +562,12 @@ $("list").addEventListener("change",e=>{
   else if(/^fone[23]?$/.test(act))edit(id,c=>(c[act]||"")===v.trim()?null:{[act]:v.trim()},()=>"WhatsApp do responsável atualizado");
   else if(act==="due")edit(id,c=>(c.due||"")===v?null:{due:v},()=>"prazo: "+(v?v.split("-").reverse().join("/"):"(sem prazo)"));
   else if(act==="prio")edit(id,c=>c.prio===v?null:{prio:v},()=>"prioridade: "+v);
-  else if(act==="note")edit(id,c=>(c.note||"")===v.trim()?null:{note:v.trim()},()=>"observação atualizada");
+  else if(act==="note")edit(id,c=>(c.note||"")===v.trim()?null:{note:v.trim()},()=>"observação atualizada",true);
   else if(act==="itxt"){const i=+el.dataset.i,nv=v.trim();
     if(!nv){render();return}
     edit(id,c=>{const it=items(c).map(x=>Object.assign({},x));if(!it[i]||it[i].t===nv)return null;it[i].t=nv;return{items:it}},c=>"editou item: "+nv)}
   else if(act==="chk"){const i=+el.dataset.i,on=el.checked;
-    edit(id,c=>{const it=items(c).map(x=>Object.assign({},x));if(!it[i]||it[i].d===on)return null;it[i].d=on;return{items:it}},c=>(on?"marcou: ":"desmarcou: ")+((items(c)[i]||{}).t||""))}
+    edit(id,c=>{const it=items(c).map(x=>Object.assign({},x));if(!it[i]||it[i].d===on)return null;it[i].d=on;return{items:it}},c=>(on?"marcou: ":"desmarcou: ")+((items(c)[i]||{}).t||""),true)}
 });
 let arm=null;
 function twoClick(btn,key,idle,run){
@@ -1064,7 +1066,8 @@ async function write(col,id,d,modo){
   try{
     const c=store[col]=store[col]||{};
     c[id]=modo==="update"&&c[id]?Object.assign({},c[id],d):d;notify();
-    await rpc("painel_gravar",{p_code:code,p_col:col,p_id:id,p_dados:d,p_modo:modo});
+    if(canWrite)await rpc("painel_gravar",{p_code:code,p_col:col,p_id:id,p_dados:d,p_modo:modo});
+    else await rpc("painel_marcar",{p_code:code,p_id:id,p_dados:d});
   }finally{writing--;poll()}
 }
 const dbShim={
