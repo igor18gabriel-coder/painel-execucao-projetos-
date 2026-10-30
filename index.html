@@ -506,7 +506,7 @@ function renderEvent(id){
       :'<li class="'+(x.d?'done':'')+'"><label><input type="checkbox" data-act="chk" data-i="'+i+'"'+(x.d?' checked':'')+'><span>'+esc(x.t)+'</span></label></li>').join("")+'</ul>'+
       (canWrite?'<div class="ci add"><input class="itx" id="ia-'+k+'" data-act="inew" placeholder="Novo item do checklist" aria-label="Novo item do checklist" autocomplete="off"><button class="btn" type="button" data-act="iadd">Adicionar item</button></div>':'')+'</details>':'')+
     '<details class="d" data-k="n'+k+'"'+(openIds.has("n"+t.id)?' open':'')+'><summary>Observação e histórico'+(t.note?' •':'')+'</summary>'+
-      '<div style="margin-top:6px"><label class="lbl" for="n-'+k+'">Observação</label><textarea id="n-'+k+'" rows="2" data-act="note">'+esc(t.note||"")+'</textarea></div>'+
+      '<div style="margin-top:6px"><label class="lbl" for="n-'+k+'">Observação</label><textarea id="n-'+k+'" rows="'+Math.max(6,Math.min(30,String(t.note||"").split("\n").length+1))+'" style="min-height:140px;resize:vertical;font-size:15px;line-height:1.45" data-act="note">'+esc(t.note||"")+'</textarea></div>'+
       (log.length?'<ul class="log">'+log.map(l=>'<li>'+esc(new Date(l.at).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}))+' · '+esc(l.by)+': '+esc(l.w)+'</li>').join("")+'</ul>':'')+
       (canWrite?'<div style="margin-top:8px"><button class="btn danger" type="button" data-act="del">Excluir tarefa</button></div>':'')+
     '</details></div>';
