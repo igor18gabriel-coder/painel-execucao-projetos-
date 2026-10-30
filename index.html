@@ -317,8 +317,8 @@ function iso(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0"
 const short=s=>{const d=pd(s);return d?d.toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit"}):"–"};
 const dleft=t=>{const d=pd(t.due);return d?Math.round((d-today())/864e5):null};
 const foneNum=v=>{let d=String(v||"").replace(/\D/g,"").replace(/^0+/,"");if(d.length===10||d.length===11)d="55"+d;return d.length>=12?d:""};
-function waMsg(t){
-  const ev=(events[tev(t)]||{}).name||"",nome=(t.owner||"").trim().split(/\s+/)[0]||"",d=dleft(t),dt=t.due?short(t.due):"";
+function waMsg(t,nm){
+  const ev=(events[tev(t)]||{}).name||"",nome=String(nm||"").trim().split(/\s+/)[0]||"",d=dleft(t),dt=t.due?short(t.due):"";
   let m="Olá"+(nome?", "+nome:"")+"! Aqui é "+(me||"da coordenação")+(ev?", do projeto "+ev:"")+". ";
   if(d!==null&&d<0)m+="A tarefa \""+t.title+"\" estava prevista para "+dt+" e está atrasada há "+(-d)+(d===-1?" dia":" dias")+". Pode me atualizar sobre o andamento e informar uma nova previsão?";
   else m+="Lembrete da tarefa \""+t.title+"\""+(dt?" (prazo "+dt+")":"")+". Como está o andamento?";
@@ -326,9 +326,13 @@ function waMsg(t){
 }
 function waBtn(t,sc){
   if(t.status==="Concluído")return"";
-  const n=foneNum(t.fone);
-  if(!n)return t.fone?'<div class="hint" style="margin-top:6px">Número inválido: informe com DDD.</div>':"";
-  return '<div style="margin-top:8px"><button class="btn wa'+(sc==="late"?' late':'')+'" type="button" data-act="wa">💬 '+(sc==="late"?"Cobrar atraso no WhatsApp":"Enviar lembrete no WhatsApp")+'</button></div>';
+  let h="";
+  OWK.forEach((kk,n)=>{
+    const f=t[kk[1]],nm=String(t[kk[0]]||"").trim(),num=foneNum(f);
+    if(!f)return;
+    if(!num){h+='<div class="hint" style="margin-top:6px">Número inválido'+(nm?' ('+esc(nm)+')':'')+': informe com DDD.</div>';return}
+    h+='<div style="margin-top:8px"><button class="btn wa'+(sc==="late"?' late':'')+'" type="button" data-act="wa" data-k="'+n+'">💬 '+(sc==="late"?"Cobrar atraso":"Enviar lembrete")+(nm?' · '+esc(nm.split(/\s+/)[0]):' no WhatsApp')+'</button></div>'});
+  return h;
 }
 function sit(t){
   if(t.status==="Concluído")return["done","Concluído"];
@@ -338,7 +342,10 @@ function sit(t){
   return["ok","No prazo"];
 }
 const items=t=>Array.isArray(t.items)?t.items:[];
-const hasOwner=t=>!!(t.owner&&t.owner.trim());
+const OWK=[["owner","fone"],["owner2","fone2"],["owner3","fone3"]];
+const owners=t=>OWK.map((k,i)=>({i,n:String(t[k[0]]||"").trim(),f:String(t[k[1]]||"").trim()})).filter(x=>x.n);
+const ownTxt=t=>owners(t).map(x=>x.n).join(", ");
+const hasOwner=t=>owners(t).length>0;
 
 /* ---------- eventos ---------- */
 const evList=()=>Object.values(events).sort((a,b)=>String(a.start||"9999").localeCompare(String(b.start||"9999"))||(a.n||0)-(b.n||0));
@@ -425,10 +432,10 @@ function renderOverview(){
   // atenção 7 dias
   const att=Object.values(tasks).filter(t=>{const s=sit(t)[0];return s==="late"||s==="soon"}).sort((a,b)=>String(a.due).localeCompare(String(b.due))).slice(0,12);
   $("att").innerHTML=att.length?att.map(t=>{const s=sit(t),e=events[tev(t)];
-    return '<li><button type="button" data-open="'+esc(tev(t))+'"><span class="sit s-'+s[0]+'">'+esc(s[1])+'</span><span class="t">'+esc(t.title)+'</span><span class="tag">'+esc(e?e.name:"")+'</span><span class="hint">'+(hasOwner(t)?esc(t.owner):"sem responsável")+'</span></button></li>'}).join(""):'<li class="hint">Nada atrasado nem vencendo nos próximos 7 dias.</li>';
+    return '<li><button type="button" data-open="'+esc(tev(t))+'"><span class="sit s-'+s[0]+'">'+esc(s[1])+'</span><span class="t">'+esc(t.title)+'</span><span class="tag">'+esc(e?e.name:"")+'</span><span class="hint">'+(hasOwner(t)?esc(ownTxt(t)):"sem responsável")+'</span></button></li>'}).join(""):'<li class="hint">Nada atrasado nem vencendo nos próximos 7 dias.</li>';
   // pessoas em mais de um evento
   const m={};
-  Object.values(tasks).forEach(t=>{if(t.status==="Concluído"||!hasOwner(t))return;const k=t.owner.trim(),id=tev(t);if(!id)return;(m[k]=m[k]||{})[id]=(m[k][id]||0)+1});
+  Object.values(tasks).forEach(t=>{if(t.status==="Concluído"||!hasOwner(t))return;const id=tev(t);if(!id)return;owners(t).forEach(o=>{const k=o.n;(m[k]=m[k]||{})[id]=(m[k][id]||0)+1})});
   const multi=Object.keys(m).filter(k=>Object.keys(m[k]).length>1).sort();
   $("shared").innerHTML=multi.length?'<ul style="margin:0;padding-left:18px;color:var(--tx);font-size:14px">'+multi.map(k=>'<li><b>'+esc(k)+'</b>: '+Object.keys(m[k]).map(id=>esc((events[id]||{}).name||"")+" ("+m[k][id]+")").join(", ")+'</li>').join("")+'</ul>':"Ninguém tem tarefas abertas em mais de um evento.";
   $("eFrom").innerHTML='<option value="">Nenhuma (evento vazio)</option>'+evs.map(e=>'<option value="'+esc(e.id)+'">'+esc(e.name)+'</option>').join("");
@@ -445,12 +452,12 @@ function renderEvent(id){
   const all=tasksOf(id);
   $("evDel").disabled=!canWrite;$("evDel").textContent="Excluir evento";
   $("evDelHint").textContent=all.length?"Também exclui as "+all.length+" tarefas do evento e tudo que estiver nele.":"";
-  const owners=[...new Set(all.map(t=>(t.owner||"").trim()).filter(Boolean))].sort();
+  const ownerNames=[...new Set(all.flatMap(t=>owners(t).map(o=>o.n)))].sort();
   const areas=[...new Set(Object.values(tasks).map(t=>t.area).filter(Boolean))].sort();
   const myAreas=[...new Set(all.map(t=>t.area).filter(Boolean))].sort();
   const fa=$("fArea").value,fo=$("fOwner").value;
   $("fArea").innerHTML='<option value="">Todas as áreas</option>'+myAreas.map(a=>'<option'+(a===fa?' selected':'')+'>'+esc(a)+'</option>').join("");
-  $("fOwner").innerHTML='<option value="">Todos os responsáveis</option>'+owners.map(a=>'<option'+(a===fo?' selected':'')+'>'+esc(a)+'</option>').join("");
+  $("fOwner").innerHTML='<option value="">Todos os responsáveis</option>'+ownerNames.map(a=>'<option'+(a===fo?' selected':'')+'>'+esc(a)+'</option>').join("");
   $("areas").innerHTML=areas.map(a=>'<option value="'+esc(a)+'">').join("");
   const s=stats(id),has=s.n>0;
   $("kTotal").textContent=has?s.n:"–";$("kDone").textContent=has?s.done:"–";$("kDoing").textContent=has?s.doing:"–";
@@ -461,11 +468,11 @@ function renderEvent(id){
   const pr={Alta:0,Média:1,Baixa:2};
   const rows=all.filter(t=>{
     if(!!t.dia!==(sv==="dia"))return false;
-    if(fa2&&t.area!==fa2)return false;if(fo2&&(t.owner||"").trim()!==fo2)return false;
+    if(fa2&&t.area!==fa2)return false;if(fo2&&!owners(t).some(o=>o.n===fo2))return false;
     if(fp&&t.prio!==fp)return false;if(fs&&t.status!==fs)return false;
     if(fi==="late"&&sit(t)[0]!=="late")return false;if(fi==="soon"&&sit(t)[0]!=="soon")return false;
     if(fi==="noowner"&&(hasOwner(t)||t.status==="Concluído"))return false;
-    if(q&&!((t.title||"")+" "+(t.owner||"")+" "+(t.area||"")).toLowerCase().includes(q))return false;return true})
+    if(q&&!((t.title||"")+" "+ownTxt(t)+" "+(t.area||"")).toLowerCase().includes(q))return false;return true})
    .sort((a,b)=>String(a.due||"9999").localeCompare(String(b.due||"9999"))||(pr[a.prio]==null?1:pr[a.prio])-(pr[b.prio]==null?1:pr[b.prio])||(a.n||0)-(b.n||0));
   const L=$("list");
   if(!rows.length){L.innerHTML='<div class="empty">'+(sv==="dia"?"Nenhuma conferência do dia do evento ainda. Crie uma tarefa nesta aba em Nova tarefa neste evento.":has?"Nenhuma tarefa com esses filtros.":"Este evento ainda não tem tarefas. "+(canWrite?"Use Nova tarefa neste evento para criar a primeira.":""))+'</div>';return}
@@ -478,8 +485,7 @@ function renderEvent(id){
     '<div class="grid edit">'+
       (canWrite?'<div style="grid-column:1/-1"><label for="ti-'+k+'">Nome da tarefa</label><input id="ti-'+k+'" data-act="title" autocomplete="off" value="'+esc(t.title||"")+'"></div>':'')+
       '<div><label for="s-'+k+'">Status</label><select id="s-'+k+'" data-act="status"'+dis+'>'+STATUS.map(x=>'<option'+(x===t.status?' selected':'')+'>'+x+'</option>').join("")+'</select></div>'+
-      '<div><label for="o-'+k+'">Responsável</label><input id="o-'+k+'" data-act="owner" list="teamList" autocomplete="off" value="'+esc(t.owner||"")+'" placeholder="'+(t.papel?"Função: "+esc(t.papel):"Informe o nome")+'"'+dis+'></div>'+
-      '<div><label for="f-'+k+'">WhatsApp do responsável</label><input id="f-'+k+'" type="tel" inputmode="tel" data-act="fone" autocomplete="off" value="'+esc(t.fone||"")+'" placeholder="(22) 99999-9999"'+dis+'></div>'+
+      OWK.map((kk,n)=>(n===0||canWrite||t[kk[0]])?'<div><label for="o'+n+'-'+k+'">Responsável'+(n?' '+(n+1):'')+'</label><input id="o'+n+'-'+k+'" data-act="'+kk[0]+'" list="teamList" autocomplete="off" value="'+esc(t[kk[0]]||"")+'" placeholder="'+(n===0?(t.papel?"Função: "+esc(t.papel):"Informe o nome"):"Opcional")+'"'+dis+'></div><div><label for="f'+n+'-'+k+'">WhatsApp'+(n?' '+(n+1):' do responsável')+'</label><input id="f'+n+'-'+k+'" type="tel" inputmode="tel" data-act="'+kk[1]+'" autocomplete="off" value="'+esc(t[kk[1]]||"")+'" placeholder="(22) 99999-9999"'+dis+'></div>':"").join("")+
       '<div><label for="d-'+k+'">Prazo</label><input id="d-'+k+'" type="date" data-act="due" value="'+esc(t.due||"")+'"'+dis+'></div>'+
       '<div><label for="p-'+k+'">Prioridade</label><select id="p-'+k+'" data-act="prio"'+dis+'>'+["Alta","Média","Baixa"].map(x=>'<option'+(x===t.prio?' selected':'')+'>'+x+'</option>').join("")+'</select></div>'+
     '</div>'+
@@ -501,7 +507,7 @@ function renderEvent(id){
 function render(){
   setStatusBar();
   if(loaded()&&cur!=="geral"&&!events[cur])cur="geral";
-  $("teamList").innerHTML=[...new Set(team.concat(Object.values(tasks).map(t=>(t.owner||"").trim()).filter(Boolean)))].sort().map(a=>'<option value="'+esc(a)+'">').join("");
+  $("teamList").innerHTML=[...new Set(team.concat(Object.values(tasks).flatMap(t=>owners(t).map(o=>o.n))))].sort().map(a=>'<option value="'+esc(a)+'">').join("");
   renderTabs();countdown();
   $("ovView").hidden=cur!=="geral";$("evView").hidden=cur==="geral";
   if(cur==="geral"){$("subt").textContent="Planejamento compartilhado";renderOverview()}else{renderEvent(cur);if(sv==="pos")renderPos();if(sv==="res")renderRes();if(sv==="ins")renderIns()}
@@ -541,8 +547,8 @@ $("list").addEventListener("change",e=>{
   const id=el.closest(".task").dataset.id,v=el.value;
   if(act==="status")edit(id,c=>c.status===v?null:{status:v},c=>"status "+c.status+" → "+v);
   else if(act==="title"){const nv=v.trim();if(!nv){render();return}edit(id,c=>(c.title||"")===nv?null:{title:nv},c=>"renomeou: "+(c.title||"")+" → "+nv)}
-  else if(act==="owner")edit(id,c=>(c.owner||"")===v.trim()?null:{owner:v.trim()},()=>"responsável: "+(v.trim()||"(vazio)"));
-  else if(act==="fone")edit(id,c=>(c.fone||"")===v.trim()?null:{fone:v.trim()},()=>"WhatsApp do responsável atualizado");
+  else if(/^owner[23]?$/.test(act))edit(id,c=>(c[act]||"")===v.trim()?null:{[act]:v.trim()},()=>(act==="owner"?"responsável":"responsável "+act.slice(5))+": "+(v.trim()||"(vazio)"));
+  else if(/^fone[23]?$/.test(act))edit(id,c=>(c[act]||"")===v.trim()?null:{[act]:v.trim()},()=>"WhatsApp do responsável atualizado");
   else if(act==="due")edit(id,c=>(c.due||"")===v?null:{due:v},()=>"prazo: "+(v?v.split("-").reverse().join("/"):"(sem prazo)"));
   else if(act==="prio")edit(id,c=>c.prio===v?null:{prio:v},()=>"prioridade: "+v);
   else if(act==="note")edit(id,c=>(c.note||"")===v.trim()?null:{note:v.trim()},()=>"observação atualizada");
@@ -586,9 +592,9 @@ $("list").addEventListener("click",e=>{
 $("list").addEventListener("click",e=>{
   const b=e.target.closest('[data-act="wa"]');if(!b)return;
   const id=b.closest(".task").dataset.id,t=tasks[id];if(!t)return;
-  const n=foneNum(t.fone);if(!n)return;
-  window.open("https://wa.me/"+n+"?text="+encodeURIComponent(waMsg(t)),"_blank","noopener");
-  edit(id,()=>({}),()=>"abriu mensagem no WhatsApp para "+(t.owner||"responsável"));
+  const kk=OWK[+b.dataset.k||0],n=foneNum(t[kk[1]]);if(!n)return;
+  window.open("https://wa.me/"+n+"?text="+encodeURIComponent(waMsg(t,t[kk[0]])),"_blank","noopener");
+  edit(id,()=>({}),()=>"abriu mensagem no WhatsApp para "+(t[kk[0]]||"responsável"));
 });
 function pdfTask(id){
   const t=tasks[id];if(!t)return;
@@ -604,7 +610,7 @@ function pdfTask(id){
   const tl=doc.splitTextToSize(t.title,B);doc.text(tl,M,y+6);y+=6+tl.length*7;
   doc.setFont("helvetica","normal");doc.setFontSize(10.5);doc.setTextColor(70);
   doc.text("Área: "+(t.area||"—")+(ev?"   |   Evento: "+ev:""),M,y);y+=6;
-  doc.text("Responsável: "+(t.owner&&t.owner.trim()?t.owner.trim():"______________________________"),M,y);y+=5;
+  doc.text("Responsável: "+(hasOwner(t)?ownTxt(t):"______________________________"),M,y);y+=5;
   doc.setDrawColor(0,78,195);doc.setLineWidth(.8);doc.line(M,y,W-M,y);y+=4;
   doc.setFontSize(9);doc.setTextColor(100);doc.text("Conferir cada item com caneta antes de o evento começar.",M,y+2);y+=8;
   doc.setFontSize(12);doc.setTextColor(0);
@@ -644,9 +650,12 @@ function pdfDia(){
     const it=items(t);need(22);
     doc.setFillColor(232,238,252);doc.rect(M,y-4.5,B,8,"F");
     doc.setFont("helvetica","bold");doc.setFontSize(12);doc.setTextColor(10,42,107);
-    const ttl=doc.splitTextToSize(t.title,B-60);doc.text(ttl[0],M+2,y+1);
-    const rs=(t.owner&&t.owner.trim())?"Resp.: "+t.owner.trim():"Resp.: ____________";
-    doc.setFont("helvetica","normal");doc.setFontSize(9.5);doc.setTextColor(70);doc.text(rs,W-M-2,y+1,{align:"right"});y+=8;
+    const rs=hasOwner(t)?"Resp.: "+ownTxt(t):"Resp.: ____________";
+    doc.setFont("helvetica","normal");doc.setFontSize(9);const rw=Math.min(doc.getTextWidth(rs),B*0.5);
+    const rl=doc.splitTextToSize(rs,rw);
+    doc.setTextColor(70);doc.text(rl[0],W-M-2,y+1,{align:"right"});
+    doc.setFont("helvetica","bold");doc.setFontSize(12);doc.setTextColor(10,42,107);
+    const ttl=doc.splitTextToSize(t.title,B-rw-8);doc.text(ttl[0],M+2,y+1);y+=8;
     doc.setFontSize(11.5);doc.setTextColor(0);
     it.forEach(x=>{
       const ln=doc.splitTextToSize(x.t,B-12),h=Math.max(7.5,ln.length*5.4+2.6);
@@ -728,7 +737,7 @@ $("newEvForm").addEventListener("submit",e=>{
 $("csv").addEventListener("click",async()=>{
   const q=s=>'"'+String(s==null?"":s).replace(/"/g,'""')+'"';
   const rows=[["Evento","Área","Prioridade","Tarefa","Prazo","Responsável","Status","Checklist"].map(q).join(";")]
-   .concat(tasksOf(cur).sort((a,b)=>String(a.due||"").localeCompare(String(b.due||""))).map(t=>[(events[cur]||{}).name,t.area,t.prio,t.title,t.due,t.owner,t.status,items(t).filter(x=>x.d).length+"/"+items(t).length].map(q).join(";")));
+   .concat(tasksOf(cur).sort((a,b)=>String(a.due||"").localeCompare(String(b.due||""))).map(t=>[(events[cur]||{}).name,t.area,t.prio,t.title,t.due,ownTxt(t),t.status,items(t).filter(x=>x.d).length+"/"+items(t).length].map(q).join(";")));
   const txt=rows.join("\n"),b=$("csv");
   try{await navigator.clipboard.writeText(txt);b.textContent="Copiado"}catch(err){
     let ta=$("csvBox");
