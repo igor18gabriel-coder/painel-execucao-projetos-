@@ -1,0 +1,18 @@
+{
+  "id": "agenda-fm",
+  "name": "AGENDA FM",
+  "short_name": "Agenda FM",
+  "description": "Agenda da equipe UNIFM: reuniões, disponibilidade e agendas fechadas.",
+  "lang": "pt-BR",
+  "start_url": "../agenda.html?app=1",
+  "scope": "../agenda.html",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0b2257",
+  "theme_color": "#0b2257",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

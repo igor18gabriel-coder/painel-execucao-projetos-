@@ -3,6 +3,13 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0">
 <link rel="icon" href="logo-unifm.png">
+<link rel="manifest" href="agenda-app/manifest.webmanifest">
+<meta name="theme-color" content="#0b2257">
+<link rel="apple-touch-icon" href="agenda-app/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Agenda FM">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>AGENDA FM</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -56,6 +63,34 @@ button{cursor:pointer}
 .gswitch{border:0;background:none;color:var(--accent-tx);font-weight:700;padding:0;font-size:13px;text-align:left}
 .pend{display:flex;flex-direction:column;gap:8px;padding:12px;border-radius:8px;background:color-mix(in srgb,var(--gold) 14%,var(--surface));border:1px solid color-mix(in srgb,var(--gold) 45%,transparent)}
 .pend .mrow{background:var(--surface);border-radius:8px;border:1px solid var(--line-soft)}
+.install{width:min(400px,100%);margin-top:14px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;gap:10px}
+.install-h{display:flex;align-items:center;gap:12px}
+.install-h img{width:44px;height:44px;border-radius:10px;flex:none}
+.install-h strong{font-family:var(--f-display);font-size:16px;display:block}
+.install-h span{color:var(--muted);font-size:13px}
+.install ol{margin:0;padding-left:20px;color:var(--muted);font-size:14px;display:flex;flex-direction:column;gap:4px}
+.install ol b{color:var(--fg)}
+.install .ok{color:var(--ok);font-weight:700;font-size:14px}
+.gwrap{display:flex;flex-direction:column;align-items:center;width:100%}
+/* lista (celular) */
+.list{flex:1;overflow:auto;padding:4px 12px 16px}
+.lday{padding:12px 0;border-bottom:1px solid var(--line-soft);display:flex;flex-direction:column;gap:8px}
+.lday-h{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.lday-h h3{margin:0;font-family:var(--f-display);font-size:16px;font-weight:700;text-transform:capitalize}
+.lday-h h3 small{color:var(--muted);font-weight:600;font-family:var(--f-body);font-size:13px;text-transform:none;margin-left:6px}
+.lday.today .lday-h h3{color:var(--accent-tx)}
+.lday.empty{padding:8px 0}
+.lday.empty .lday-h h3{font-size:14px;color:var(--muted)}
+.litem{display:grid;grid-template-columns:62px 4px 1fr auto;gap:10px;align-items:center;padding:10px;border-radius:10px;background:var(--sunk);cursor:pointer;text-align:left;border:0;width:100%}
+.litem .tm{font-family:var(--f-mono);font-size:13px;font-variant-numeric:tabular-nums;line-height:1.3}
+.litem .tm span{color:var(--muted);display:block}
+.litem .bar{align-self:stretch;border-radius:2px}
+.litem>div{min-width:0}
+.litem .t{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.litem .s{font-size:13px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.litem.blkrow{background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--danger) 10%,transparent) 0 6px,transparent 6px 12px);border:1px dashed color-mix(in srgb,var(--danger) 45%,transparent)}
+.litem.blkrow .t{color:var(--danger)}
+.addday{border:1px dashed var(--line);background:transparent;border-radius:8px;padding:4px 10px;font-size:13px;font-weight:700;color:var(--accent-tx)}
 .count{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:var(--gold);color:#0b1a3d;font-size:12px;font-weight:800}
 
 .app{display:grid;grid-template-rows:auto 1fr;height:100%;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:12px;gap:12px}
@@ -257,6 +292,15 @@ dialog::backdrop{background:rgba(6,16,40,.5)}
   .arow,.avail-scale{grid-template-columns:78px 1fr}
   .dt{grid-template-columns:1fr}
   .who>span{display:none}
+  .top{gap:8px}
+  .top .btn{padding:6px 10px;font-size:14px}
+  .brand img{height:32px}
+  .brand h1{font-size:18px}
+  .seg{order:6;width:100%;display:grid;grid-template-columns:repeat(4,1fr)}
+  .seg button{padding:7px 4px;font-size:14px}
+  .range-label{order:5;font-size:17px}
+  #btnBlock,#btnNew,#btnTeam,.who{order:7}
+  .main{min-height:60vh}
   .mrow{grid-template-columns:auto 1fr}
   .mrow .acts{grid-column:1/-1;justify-content:flex-start}
 }
@@ -265,7 +309,7 @@ dialog::backdrop{background:rgba(6,16,40,.5)}
 </head>
 <body>
 
-<section id="gate">
+<section id="gate"><div class="gwrap">
   <div class="gcard">
     <div class="gh"><img src="logo-unifm.png" alt="UNIFM"><h1>AGENDA FM</h1><p>Agenda da equipe</p></div>
     <div class="gtabs" role="tablist"><button type="button" role="tab" id="tabLogin" aria-selected="true">Entrar</button><button type="button" role="tab" id="tabSignup" aria-selected="false">Criar acesso</button></div>
@@ -291,7 +335,14 @@ dialog::backdrop{background:rgba(6,16,40,.5)}
       <span class="empty" style="font-size:13px">O responsável pela agenda aprova o seu cadastro. Depois disso, é só entrar com nome e senha.</span>
     </form>
   </div>
-</section>
+  <div class="install" id="installBox">
+    <div class="install-h"><img src="agenda-app/icon-192.png" alt=""><div><strong>Baixe o app no celular</strong><span>Ou continue usando pelo navegador, como preferir.</span></div></div>
+    <button class="btn primary" type="button" id="btnInstall" hidden>Instalar o app AGENDA FM</button>
+    <ol id="howIos" hidden><li>Abra esta página no <b>Safari</b>.</li><li>Toque em <b>Compartilhar</b> (quadrado com seta para cima).</li><li>Escolha <b>Adicionar à Tela de Início</b> e toque em <b>Adicionar</b>.</li></ol>
+    <ol id="howOther" hidden><li>Abra esta página no <b>Chrome</b> (Android) ou no <b>Safari</b> (iPhone).</li><li>No menu do navegador, toque em <b>Instalar app</b> ou <b>Adicionar à tela inicial</b>.</li></ol>
+    <div class="ok" id="installOk" hidden>App instalado. Procure o ícone AGENDA FM na tela do celular.</div>
+  </div>
+</div></section>
 
 <div class="app" id="app" hidden>
   <header class="top">
@@ -304,6 +355,7 @@ dialog::backdrop{background:rgba(6,16,40,.5)}
     <div class="range-label" id="rangeLabel">&nbsp;</div>
     <div class="spacer"></div>
     <div class="seg" role="group" aria-label="Modo de visualização">
+      <button type="button" data-view="lista" aria-pressed="false">Lista</button>
       <button type="button" data-view="equipe" aria-pressed="false">Equipe</button>
       <button type="button" data-view="semana" aria-pressed="true">Semana</button>
       <button type="button" data-view="mes" aria-pressed="false">Mês</button>
@@ -485,7 +537,7 @@ const store = {
 const S = {
   code: store.get("code", null) || (() => { try { return sessionStorage.getItem("agfm_code"); } catch { return null; } })(),
   me: null, admin: false, members: [], meetings: [], blocks: [], pending: [],
-  view: store.get("view", "semana"), cursor: new Date(), mini: new Date(),
+  view: store.get("view", innerWidth < 700 ? "lista" : "semana"), cursor: new Date(), mini: new Date(),
   hidden: new Set(store.get("hidden", [])), weekend: store.get("weekend", false), firstPaint: true,
 };
 S.cursor.setHours(0,0,0,0);
@@ -649,6 +701,7 @@ function render(){
 function renderLabel(){
   const c = S.cursor; let t;
   if (S.view === "mes") t = `${MESES[c.getMonth()]} ${c.getFullYear()}`;
+  else if (S.view === "lista"){ const b = addDays(c, 13); t = `${c.getDate()} ${MESES[c.getMonth()].slice(0,3)} – ${b.getDate()} ${MESES[b.getMonth()].slice(0,3)} ${b.getFullYear()}`; }
   else if (S.view === "equipe") t = `${["domingo","segunda-feira","terça-feira","quarta-feira","quinta-feira","sexta-feira","sábado"][c.getDay()]}, ${c.getDate()} de ${MESES[c.getMonth()]}`;
   else { const a = startWeek(c), b = addDays(a, S.weekend ? 6 : 4);
     t = a.getMonth() === b.getMonth() ? `${a.getDate()} – ${b.getDate()} de ${MESES[b.getMonth()]} ${b.getFullYear()}` : `${a.getDate()} ${MESES[a.getMonth()].slice(0,3)} – ${b.getDate()} ${MESES[b.getMonth()].slice(0,3)} ${b.getFullYear()}`; }
@@ -683,7 +736,7 @@ function renderMain(){
   let banner = "";
   if (S.admin && S.pending.length) banner = `<div class="banner"><p><b>${S.pending.length} ${S.pending.length > 1 ? "pessoas aguardam" : "pessoa aguarda"} aprovação</b> para acessar a agenda: ${S.pending.slice(0,3).map(p => esc(p.nome)).join(", ")}${S.pending.length > 3 ? "…" : ""}</p><button class="btn primary" type="button" id="bannerTeam">Revisar cadastros</button></div>`;
   else if (S.admin && S.members.length < 2) banner = `<div class="banner"><p>Envie o endereço desta página para a equipe criar o acesso, ou cadastre as pessoas você mesmo.</p><button class="btn primary" type="button" id="bannerTeam">Usuários e acessos</button></div>`;
-  main.innerHTML = banner + (S.view === "mes" ? monthHTML() : S.view === "equipe" ? teamHTML() : weekHTML());
+  main.innerHTML = banner + (S.view === "mes" ? monthHTML() : S.view === "equipe" ? teamHTML() : S.view === "lista" ? listHTML() : weekHTML());
   const sc = main.querySelector(".tg-scroll");
   if (sc && S.firstPaint){ const h = new Date().getHours(); sc.scrollTop = ((h >= H0 && h < H1 ? Math.max(H0, h - 1) : 8) - H0) * hourPx(); }
   S.firstPaint = false;
@@ -747,6 +800,27 @@ function teamHTML(){
   });
   const tb = `<div class="toolbar"><span class="hint">Agenda de cada pessoa em ${d.getDate()}/${pad(d.getMonth()+1)}. Clique num espaço livre na coluna de alguém para marcar com essa pessoa.</span></div>`;
   return tb + (cols.length ? gridHTML(cols) : noneSel);
+}
+function listHTML(){
+  const vis = new Set(visibleMembers().map(m => m.id)), td = todayStr();
+  if (!vis.size) return noneSel;
+  let h = `<div class="toolbar"><span class="hint">Próximos 14 dias das agendas selecionadas. Toque numa reunião para ver detalhes e o link.</span></div><div class="list">`;
+  for (let i = 0; i < 14; i++){
+    const d = addDays(S.cursor, i), k = ymd(d);
+    const evs = S.meetings.filter(mt => mt.data === k && involved(mt).some(p => vis.has(p))).sort((a,b) => a.inicio.localeCompare(b.inicio));
+    const locks = [], parts = [];
+    for (const m of visibleMembers()) for (const b of blocksFor(m.id, k)) (b.diaInteiro ? locks : parts).push({ b, m });
+    const items = [
+      ...evs.map(mt => ({ s: mt.inicio, html: `<button type="button" class="litem" data-open="${esc(mt.id)}"><span class="tm">${esc(mt.inicio)}<span>${esc(mt.fim)}</span></span><span class="bar" style="background:${esc(colorOf(mt.organizador))}"></span><div><div class="t">${mt.link?VID:""}${esc(mt.titulo)}</div><div class="s">${esc(involved(mt).map(p => first(nameOf(p))).join(", "))}${mt.local?" · "+esc(mt.local):""}</div></div>${mt.link?`<a class="join" href="${esc(mt.link)}" target="_blank" rel="noopener">Entrar</a>`:""}</button>` })),
+      ...parts.map(({ b, m }) => ({ s: b.inicio, html: `<button type="button" class="litem blkrow" data-block="${esc(b.id)}"><span class="tm">${esc(b.inicio)}<span>${esc(b.fim)}</span></span><span></span><div><div class="t">${LOCK} ${esc(m.nome)} indisponível</div><div class="s">${esc(b.motivo || "Agenda fechada neste horário")}</div></div><span></span></button>` })),
+    ].sort((a, b) => a.s.localeCompare(b.s));
+    const weekday = ["domingo","segunda","terça","quarta","quinta","sexta","sábado"][d.getDay()];
+    const empty = !items.length && !locks.length;
+    h += `<section class="lday ${k===td?"today":""} ${empty?"empty":""}"><div class="lday-h"><h3>${k===td?"Hoje":weekday}<small>${d.getDate()} de ${MESES[d.getMonth()]}${empty?" · sem reuniões":""}</small></h3><button type="button" class="addday" data-add="${k}">+ Marcar</button></div>`;
+    if (locks.length) h += `<div class="chips">${locks.map(({ b, m }) => `<button type="button" class="lock" style="cursor:pointer" data-block="${esc(b.id)}">${LOCK}${esc(first(m.nome))} · agenda fechada${b.motivo?" ("+esc(b.motivo)+")":""}</button>`).join("")}</div>`;
+    h += items.map(x => x.html).join("") + `</section>`;
+  }
+  return h + `</div>`;
 }
 function monthHTML(){
   const c = S.cursor, start = startWeek(new Date(c.getFullYear(), c.getMonth(), 1)), td = todayStr();
@@ -1012,6 +1086,7 @@ document.addEventListener("click", e => {
     return;
   }
   if (t.closest("#bannerTeam")){ openTeam(); return; }
+  const ad = t.closest("[data-add]"); if (ad){ openMeeting({ date: ad.dataset.add }); return; }
   const em = t.closest("[data-edit-m]"); if (em){ const m = byId(em.dataset.editM); if (!m) return; editingMember = m;
     $("#uNome").value = m.nome; $("#uEmail").value = m.email||""; $("#uCargo").value = m.cargo||""; $("#uPapel").value = m.papel||"usuario"; $("#uPapel").disabled = m.id === S.me.id; drawSwatches(m.cor);
     $("#uFormTitle").textContent = `Editar ${m.nome}`; $("#uSave").textContent = "Salvar"; $("#uCancel").hidden = false; $("#uNome").focus(); return; }
@@ -1050,7 +1125,7 @@ $("#btnNew").addEventListener("click", () => openMeeting({}));
 $("#btnBlock").addEventListener("click", () => openBlock(null));
 $("#btnTeam").addEventListener("click", openTeam);
 $("#btnToday").addEventListener("click", () => { S.cursor = new Date(); S.cursor.setHours(0,0,0,0); S.mini = new Date(S.cursor); S.firstPaint = true; render(); });
-const step = dir => { const c = S.cursor; S.cursor = S.view === "mes" ? new Date(c.getFullYear(), c.getMonth() + dir, 1) : addDays(c, dir * (S.view === "semana" ? 7 : 1)); S.mini = new Date(S.cursor); render(); };
+const step = dir => { const c = S.cursor; S.cursor = S.view === "mes" ? new Date(c.getFullYear(), c.getMonth() + dir, 1) : addDays(c, dir * (S.view === "semana" || S.view === "lista" ? 7 : 1)); S.mini = new Date(S.cursor); render(); };
 $("#btnPrev").addEventListener("click", () => step(-1));
 $("#btnNext").addEventListener("click", () => step(1));
 $("#miniPrev").addEventListener("click", () => { S.mini = new Date(S.mini.getFullYear(), S.mini.getMonth() - 1, 1); renderMini(); });
@@ -1060,6 +1135,26 @@ $("#toggleAll").addEventListener("click", () => { if (S.hidden.size) S.hidden.cl
 /* atualização automática: a cada 30 s com a aba visível e nenhuma janela aberta */
 setInterval(() => { if (S.code && !$("#app").hidden && document.visibilityState === "visible" && !document.querySelector("dialog[open]")) reload(); }, 30000);
 document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && S.code && !$("#app").hidden) reload(); });
+
+/* ---------- app instalável ---------- */
+(() => {
+  const standalone = matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+  if (standalone){ $("#installBox").hidden = true; }
+  const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  let deferred = null;
+  const showHow = () => { if (standalone) return; $("#howIos").hidden = !isIos; $("#howOther").hidden = isIos || !!deferred; $("#btnInstall").hidden = !deferred; };
+  showHow();
+  addEventListener("beforeinstallprompt", e => { e.preventDefault(); deferred = e; showHow(); });
+  $("#btnInstall").addEventListener("click", async () => {
+    if (!deferred) return;
+    deferred.prompt();
+    const r = await deferred.userChoice.catch(() => null);
+    deferred = null; showHow();
+    if (r && r.outcome === "accepted"){ $("#installOk").hidden = false; $("#howOther").hidden = true; }
+  });
+  addEventListener("appinstalled", () => { deferred = null; $("#btnInstall").hidden = true; $("#howOther").hidden = true; $("#howIos").hidden = true; $("#installOk").hidden = false; });
+  if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("agenda-sw.js", { scope: "./agenda.html" }).catch(() => {});
+})();
 
 /* entrada automática com código lembrado */
 if (S.code){
