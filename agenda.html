@@ -49,6 +49,14 @@ button{cursor:pointer}
 .gh p{margin:4px 0 0;opacity:.8}
 .gform{padding:20px;display:flex;flex-direction:column;gap:12px}
 .gerr{color:var(--danger);font-weight:600;font-size:14px;min-height:1em}
+.gok{color:var(--ok);font-weight:600;font-size:14px}
+.gtabs{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--line)}
+.gtabs button{border:0;background:transparent;padding:12px;font-weight:700;color:var(--muted);border-bottom:3px solid transparent}
+.gtabs button[aria-selected="true"]{color:var(--accent-tx);border-bottom-color:var(--gold)}
+.gswitch{border:0;background:none;color:var(--accent-tx);font-weight:700;padding:0;font-size:13px;text-align:left}
+.pend{display:flex;flex-direction:column;gap:8px;padding:12px;border-radius:8px;background:color-mix(in srgb,var(--gold) 14%,var(--surface));border:1px solid color-mix(in srgb,var(--gold) 45%,transparent)}
+.pend .mrow{background:var(--surface);border-radius:8px;border:1px solid var(--line-soft)}
+.count{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:var(--gold);color:#0b1a3d;font-size:12px;font-weight:800}
 
 .app{display:grid;grid-template-rows:auto 1fr;height:100%;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:12px;gap:12px}
 .top{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px}
@@ -259,13 +267,28 @@ dialog::backdrop{background:rgba(6,16,40,.5)}
 
 <section id="gate">
   <div class="gcard">
-    <div class="gh"><img src="logo-unifm.png" alt="UNIFM"><h1>AGENDA FM</h1><p>Agenda da equipe · entre com seu código de acesso</p></div>
-    <form class="gform" id="gForm" autocomplete="off">
-      <label class="fld"><span>Código de acesso</span><input id="gCode" type="password" required placeholder="XXXX-XXXX" autocomplete="current-password"></label>
+    <div class="gh"><img src="logo-unifm.png" alt="UNIFM"><h1>AGENDA FM</h1><p>Agenda da equipe</p></div>
+    <div class="gtabs" role="tablist"><button type="button" role="tab" id="tabLogin" aria-selected="true">Entrar</button><button type="button" role="tab" id="tabSignup" aria-selected="false">Criar acesso</button></div>
+    <form class="gform" id="gForm" autocomplete="on">
+      <div id="gByPass" class="gform" style="padding:0">
+        <label class="fld"><span>Nome</span><input id="gNome" autocomplete="username" placeholder="Seu nome completo"></label>
+        <label class="fld"><span>Senha</span><input id="gSenha" type="password" autocomplete="current-password"></label>
+      </div>
+      <label class="fld" id="gByCode" hidden><span>Código de acesso</span><input id="gCode" type="password" placeholder="XXXX-XXXX" autocomplete="off"></label>
       <label class="check"><input type="checkbox" id="gRemember" checked> Lembrar neste dispositivo</label>
       <div class="gerr" id="gErr" role="alert"></div>
       <button class="btn primary" type="submit" id="gBtn">Entrar</button>
-      <span class="empty" style="font-size:13px">Não tem código? Peça ao responsável pela agenda.</span>
+      <button class="gswitch" type="button" id="gToggle">Tenho um código de acesso</button>
+    </form>
+    <form class="gform" id="sForm" autocomplete="on" hidden>
+      <label class="fld"><span>Nome completo</span><input id="sNome" maxlength="80" autocomplete="name" placeholder="Como aparecerá na agenda"></label>
+      <label class="fld"><span>Cargo / setor (opcional)</span><input id="sCargo" maxlength="80"></label>
+      <label class="fld"><span>Senha</span><input id="sSenha" type="password" autocomplete="new-password" placeholder="Mínimo 6 caracteres"></label>
+      <label class="fld"><span>Confirmar senha</span><input id="sSenha2" type="password" autocomplete="new-password"></label>
+      <div class="gerr" id="sErr" role="alert"></div>
+      <div class="gok" id="sOk" role="status" hidden></div>
+      <button class="btn primary" type="submit" id="sBtn">Criar acesso</button>
+      <span class="empty" style="font-size:13px">O responsável pela agenda aprova o seu cadastro. Depois disso, é só entrar com nome e senha.</span>
     </form>
   </div>
 </section>
@@ -288,7 +311,7 @@ dialog::backdrop{background:rgba(6,16,40,.5)}
     <button class="btn" id="btnBlock" type="button"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><rect x="3" y="7" width="10" height="7" rx="1.5" stroke="currentColor" stroke-width="1.6"/><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2" stroke="currentColor" stroke-width="1.6"/></svg>Fechar agenda</button>
     <button class="btn primary" id="btnNew" type="button"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Nova reunião</button>
     <button class="btn" id="btnTeam" type="button" hidden>Usuários e acessos</button>
-    <div class="who"><div class="av" id="whoAv">?</div><span id="whoName"></span><button class="btn" type="button" id="btnLogout">Sair</button></div>
+    <div class="who"><div class="av" id="whoAv">?</div><span id="whoName"></span><button class="btn" type="button" id="btnPwd">Minha senha</button><button class="btn" type="button" id="btnLogout">Sair</button></div>
   </header>
 
   <div class="body">
@@ -386,6 +409,7 @@ dialog::backdrop{background:rgba(6,16,40,.5)}
   <div class="dlg">
     <div class="dlg-h"><h3>Usuários e acessos</h3><button class="btn ghost icon" type="button" data-close aria-label="Fechar">✕</button></div>
     <div class="dlg-b">
+      <div class="pend" id="uPend" hidden></div>
       <div class="codebox" id="uCode" hidden></div>
       <form id="formMember" class="panel" style="display:flex;flex-direction:column;gap:12px;background:var(--bg)" novalidate>
         <strong id="uFormTitle" style="font-family:var(--f-display)">Cadastrar usuário</strong>
@@ -408,14 +432,26 @@ dialog::backdrop{background:rgba(6,16,40,.5)}
       <div>
         <strong style="font-family:var(--f-display)">Como liberar o acesso</strong>
         <ol class="steps">
-          <li>Cadastre a pessoa. O painel gera um <b>código de acesso</b> só dela.</li>
-          <li>Envie o endereço desta página e o código para a pessoa (WhatsApp, e-mail). O código aparece uma única vez.</li>
-          <li>Perdeu o código? Clique em <b>Novo código</b>: o antigo para de funcionar na hora.</li>
+          <li><b>Autocadastro:</b> envie o endereço da página. A pessoa clica em <b>Criar acesso</b>, informa nome e senha, e o pedido aparece aqui para você <b>Aprovar</b>.</li>
+          <li><b>Cadastro por você:</b> preencha o formulário acima. O painel gera um <b>código de acesso</b> para enviar à pessoa (aparece uma única vez). Depois ela pode criar uma senha em <b>Minha senha</b>.</li>
+          <li>Esqueceu a senha ou o código? Clique em <b>Novo código</b>: o antigo para de funcionar na hora, e com o novo a pessoa entra e cria outra senha.</li>
           <li><b>Usuário</b> marca reuniões e fecha a própria agenda. <b>Editor</b> também cadastra pessoas e altera qualquer agenda.</li>
         </ol>
       </div>
     </div>
   </div>
+</dialog>
+
+<dialog id="dlgPwd">
+  <form class="dlg" id="formPwd" novalidate>
+    <div class="dlg-h"><h3>Minha senha</h3><button class="btn ghost icon" type="button" data-close aria-label="Fechar">✕</button></div>
+    <div class="dlg-b">
+      <p class="empty" style="margin:0" id="pwdInfo"></p>
+      <label class="fld"><span>Nova senha</span><input id="pNova" type="password" autocomplete="new-password" placeholder="Mínimo 6 caracteres"></label>
+      <label class="fld"><span>Confirmar nova senha</span><input id="pNova2" type="password" autocomplete="new-password"></label>
+    </div>
+    <div class="dlg-f"><div class="msg" id="pMsg" role="status"></div><button class="btn" type="button" data-close>Cancelar</button><button class="btn primary" type="submit" id="pSave">Salvar senha</button></div>
+  </form>
 </dialog>
 
 <script>
@@ -448,7 +484,7 @@ const store = {
 
 const S = {
   code: store.get("code", null) || (() => { try { return sessionStorage.getItem("agfm_code"); } catch { return null; } })(),
-  me: null, admin: false, members: [], meetings: [], blocks: [],
+  me: null, admin: false, members: [], meetings: [], blocks: [], pending: [],
   view: store.get("view", "semana"), cursor: new Date(), mini: new Date(),
   hidden: new Set(store.get("hidden", [])), weekend: store.get("weekend", false), firstPaint: true,
 };
@@ -467,6 +503,12 @@ const ERROS = {
   nome_obrigatorio: "Informe o nome.",
   nao_pode_remover_a_si: "Você não pode remover o seu próprio usuário.",
   nao_encontrado: "Esse registro não existe mais. A agenda foi atualizada.",
+  login_invalido: "Nome ou senha incorretos.",
+  aguardando_aprovacao: "Seu cadastro ainda está aguardando aprovação do responsável pela agenda.",
+  nome_em_uso: "Já existe alguém com esse nome. Inclua o sobrenome para diferenciar.",
+  nome_curto: "Informe o nome completo.",
+  senha_curta: "A senha precisa ter pelo menos 6 caracteres.",
+  muitos_pendentes: "Há muitos cadastros aguardando aprovação. Tente mais tarde.",
 };
 async function rpc(fn, args){
   let r;
@@ -488,8 +530,8 @@ async function reload(){
   catch (e) { if (e.code === "codigo_invalido") return logout("Seu código não é mais válido. Peça um novo ao responsável."); }
 }
 function applyData(d){
-  S.members = d.membros || []; S.meetings = d.reunioes || []; S.blocks = d.bloqueios || [];
-  S.me = S.members.find(m => m.id === d.me.id) || d.me; S.admin = d.me.papel === "editor";
+  S.members = d.membros || []; S.meetings = d.reunioes || []; S.blocks = d.bloqueios || []; S.pending = d.pendentes || [];
+  S.me = Object.assign({}, S.members.find(m => m.id === d.me.id) || {}, d.me); S.admin = d.me.papel === "editor";
   if (document.querySelector("#dlgTeam[open]")) drawMembers();
   if (document.querySelector("#dlgMeet[open]")){ drawParticipants(); drawAvail(); }
   const sc = document.querySelector(".tg-scroll"), top = sc?.scrollTop;
@@ -498,25 +540,75 @@ function applyData(d){
 }
 
 /* ---------- login ---------- */
+let byCode = false;
+function gateTab(signup){
+  $("#tabLogin").setAttribute("aria-selected", !signup); $("#tabSignup").setAttribute("aria-selected", signup);
+  $("#gForm").hidden = signup; $("#sForm").hidden = !signup; $("#gErr").textContent = ""; $("#sErr").textContent = "";
+  (signup ? $("#sNome") : (byCode ? $("#gCode") : $("#gNome"))).focus();
+}
+$("#tabLogin").addEventListener("click", () => gateTab(false));
+$("#tabSignup").addEventListener("click", () => gateTab(true));
+$("#gToggle").addEventListener("click", () => {
+  byCode = !byCode; $("#gByCode").hidden = !byCode; $("#gByPass").hidden = byCode;
+  $("#gToggle").textContent = byCode ? "Entrar com nome e senha" : "Tenho um código de acesso"; $("#gErr").textContent = "";
+  (byCode ? $("#gCode") : $("#gNome")).focus();
+});
+$("#sForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const nome = $("#sNome").value.trim(), senha = $("#sSenha").value;
+  $("#sErr").textContent = ""; $("#sOk").hidden = true;
+  if (nome.length < 3 || !nome.includes(" ")) return $("#sErr").textContent = "Informe nome e sobrenome.";
+  if (senha.length < 6) return $("#sErr").textContent = ERROS.senha_curta;
+  if (senha !== $("#sSenha2").value) return $("#sErr").textContent = "As senhas não conferem.";
+  $("#sBtn").disabled = true;
+  try {
+    await rpc("agenda_cadastrar", { p_nome: nome, p_senha: senha, p_cargo: $("#sCargo").value.trim() });
+    $("#sOk").textContent = "Cadastro enviado! Assim que o responsável aprovar, entre pela aba Entrar com seu nome e senha.";
+    $("#sOk").hidden = false; $("#gNome").value = nome;
+    ["#sNome","#sCargo","#sSenha","#sSenha2"].forEach(s => $(s).value = "");
+  } catch (err) { $("#sErr").textContent = err.message; }
+  finally { $("#sBtn").disabled = false; }
+});
 $("#gForm").addEventListener("submit", async e => {
   e.preventDefault();
-  const code = $("#gCode").value.trim(); if (!code) return;
-  $("#gBtn").disabled = true; $("#gErr").textContent = "";
+  $("#gErr").textContent = "";
+  let code;
+  if (byCode){ code = $("#gCode").value.trim(); if (!code) return $("#gErr").textContent = "Digite o código de acesso."; }
+  else if (!$("#gNome").value.trim() || !$("#gSenha").value) return $("#gErr").textContent = "Informe nome e senha.";
+  $("#gBtn").disabled = true;
   try {
+    if (!byCode) code = await rpc("agenda_login", { p_nome: $("#gNome").value.trim(), p_senha: $("#gSenha").value });
     const d = await rpc("agenda_ler", { p_code: code });
-    S.code = code;
+    S.code = code; $("#gSenha").value = "";
     if ($("#gRemember").checked) store.set("code", code); else { store.set("code", null); try { sessionStorage.setItem("agfm_code", code); } catch {} }
     enter(d);
   } catch (err) { $("#gErr").textContent = err.message; }
   finally { $("#gBtn").disabled = false; }
 });
 function enter(d){ $("#gate").hidden = true; $("#app").hidden = false; $("#gCode").value = ""; S.firstPaint = true; applyData(d); }
-function logout(msg){
+function logout(msg, server){
+  if (server && S.code && S.code.startsWith("s_")) rpc("agenda_sair", { p_code: S.code }).catch(() => {});
   S.code = null; store.set("code", null); try { sessionStorage.removeItem("agfm_code"); } catch {}
   document.querySelectorAll("dialog[open]").forEach(d => d.close());
   $("#app").hidden = true; $("#gate").hidden = false; $("#gErr").textContent = msg || "";
 }
-$("#btnLogout").addEventListener("click", () => logout(""));
+$("#btnLogout").addEventListener("click", () => logout("", true));
+$("#btnPwd").addEventListener("click", () => {
+  $("#pNova").value = ""; $("#pNova2").value = ""; $("#pMsg").textContent = ""; $("#pMsg").className = "msg";
+  $("#pwdInfo").textContent = S.me?.temSenha ? `Troque a senha que você usa para entrar como “${S.me.nome}”.` : `Crie uma senha para entrar com seu nome (“${S.me?.nome || ""}”) e senha, sem precisar do código.`;
+  $("#dlgPwd").showModal(); setTimeout(() => $("#pNova").focus(), 30);
+});
+$("#formPwd").addEventListener("submit", async e => {
+  e.preventDefault();
+  const msg = (t, k) => { $("#pMsg").textContent = t; $("#pMsg").className = "msg" + (k ? " " + k : ""); };
+  const a = $("#pNova").value;
+  if (a.length < 6) return msg(ERROS.senha_curta, "err");
+  if (a !== $("#pNova2").value) return msg("As senhas não conferem.", "err");
+  $("#pSave").disabled = true;
+  try { await call("agenda_minha_senha", { p_nova: a }); $("#dlgPwd").close(); toast("Senha salva"); await reload(); }
+  catch (err) { if (err.code === "codigo_invalido") return logout(err.message); msg(err.message, "err"); }
+  finally { $("#pSave").disabled = false; }
+});
 
 /* ---------- regras ---------- */
 const byId = id => S.members.find(m => m.id === id);
@@ -550,6 +642,7 @@ function toast(t){ let el = $(".toast"); if (!el){ el = document.createElement("
 function render(){
   if (S.me){ $("#whoAv").style.background = S.me.cor || "var(--navy)"; $("#whoAv").textContent = initials(S.me.nome); $("#whoName").textContent = S.me.nome; }
   $("#btnTeam").hidden = !S.admin;
+  $("#btnTeam").innerHTML = "Usuários e acessos" + (S.admin && S.pending.length ? ` <span class="count" aria-label="${S.pending.length} aguardando aprovação">${S.pending.length}</span>` : "");
   document.querySelectorAll(".seg button").forEach(b => b.setAttribute("aria-pressed", b.dataset.view === S.view));
   renderLabel(); renderMini(); renderPeople(); renderUpcoming(); renderMain();
 }
@@ -588,7 +681,8 @@ function renderUpcoming(){
 function renderMain(){
   const main = $("#main");
   let banner = "";
-  if (S.admin && S.members.length < 2) banner = `<div class="banner"><p>Cadastre a equipe e gere o código de acesso de cada pessoa.</p><button class="btn primary" type="button" id="bannerTeam">Usuários e acessos</button></div>`;
+  if (S.admin && S.pending.length) banner = `<div class="banner"><p><b>${S.pending.length} ${S.pending.length > 1 ? "pessoas aguardam" : "pessoa aguarda"} aprovação</b> para acessar a agenda: ${S.pending.slice(0,3).map(p => esc(p.nome)).join(", ")}${S.pending.length > 3 ? "…" : ""}</p><button class="btn primary" type="button" id="bannerTeam">Revisar cadastros</button></div>`;
+  else if (S.admin && S.members.length < 2) banner = `<div class="banner"><p>Envie o endereço desta página para a equipe criar o acesso, ou cadastre as pessoas você mesmo.</p><button class="btn primary" type="button" id="bannerTeam">Usuários e acessos</button></div>`;
   main.innerHTML = banner + (S.view === "mes" ? monthHTML() : S.view === "equipe" ? teamHTML() : weekHTML());
   const sc = main.querySelector(".tg-scroll");
   if (sc && S.firstPaint){ const h = new Date().getHours(); sc.scrollTop = ((h >= H0 && h < H1 ? Math.max(H0, h - 1) : 8) - H0) * hourPx(); }
@@ -843,7 +937,13 @@ function resetMemberForm(){
   drawSwatches();
 }
 function drawMembers(){
-  $("#uList").innerHTML = S.members.map(m => `<div class="mrow"><span class="av" style="background:${esc(m.cor)}">${esc(initials(m.nome))}</span><div><div class="nm">${esc(m.nome)} ${m.papel==="editor"?'<span class="tag ed">Editor</span>':""}</div><div class="em">${m.temCodigo?"Com código de acesso":"Sem código"}${m.cargo?" · "+esc(m.cargo):""}${m.email?" · "+esc(m.email):""}</div></div><div class="acts"><button class="btn" type="button" data-code-m="${esc(m.id)}">Novo código</button><button class="btn" type="button" data-edit-m="${esc(m.id)}">Editar</button>${m.id!==S.me.id?`<button class="btn danger" type="button" data-del-m="${esc(m.id)}">Remover</button>`:""}</div></div>`).join("");
+  const pb = $("#uPend");
+  if (S.pending.length){
+    pb.innerHTML = `<strong style="font-family:var(--f-display)">Aguardando aprovação (${S.pending.length})</strong>` + S.pending.map(p => { const dt = new Date(p.criadoEm);
+      return `<div class="mrow"><span class="av" style="background:var(--muted)">${esc(initials(p.nome))}</span><div><div class="nm">${esc(p.nome)}</div><div class="em">${p.cargo ? esc(p.cargo) + " · " : ""}pediu em ${pad(dt.getDate())}/${pad(dt.getMonth()+1)} às ${pad(dt.getHours())}:${pad(dt.getMinutes())}</div></div><div class="acts"><button class="btn primary" type="button" data-ok-p="${esc(p.id)}">Aprovar</button><button class="btn danger" type="button" data-no-p="${esc(p.id)}">Recusar</button></div></div>`; }).join("");
+    pb.hidden = false;
+  } else pb.hidden = true;
+  $("#uList").innerHTML = S.members.map(m => `<div class="mrow"><span class="av" style="background:${esc(m.cor)}">${esc(initials(m.nome))}</span><div><div class="nm">${esc(m.nome)} ${m.papel==="editor"?'<span class="tag ed">Editor</span>':""}</div><div class="em">${[m.temSenha?"Entra com senha":"", m.temCodigo?"Tem código":""].filter(Boolean).join(" · ") || "Sem senha nem código"}${m.cargo?" · "+esc(m.cargo):""}${m.email?" · "+esc(m.email):""}</div></div><div class="acts"><button class="btn" type="button" data-code-m="${esc(m.id)}">Novo código</button><button class="btn" type="button" data-edit-m="${esc(m.id)}">Editar</button>${m.id!==S.me.id?`<button class="btn danger" type="button" data-del-m="${esc(m.id)}">Remover</button>`:""}</div></div>`).join("");
 }
 function showCode(nome, cod){
   const box = $("#uCode");
@@ -874,9 +974,16 @@ async function newCode(id, btn){
   btn.disabled = true;
   try {
     const cod = await call("agenda_membro_codigo", { p_id: id });
-    if (id === S.me.id){ S.code = cod; if (store.get("code", null)) store.set("code", cod); else { try { sessionStorage.setItem("agfm_code", cod); } catch {} } }
+    if (id === S.me.id && !S.code.startsWith("s_")){ S.code = cod; if (store.get("code", null)) store.set("code", cod); else { try { sessionStorage.setItem("agfm_code", cod); } catch {} } }
     showCode(nameOf(id), cod); await reload(); drawMembers();
   } catch (err) { toast(err.message); btn.disabled = false; }
+}
+async function approve(id, ok, btn){
+  if (!ok && !btn.classList.contains("armed")){ btn.classList.add("armed"); btn.textContent = "Confirmar recusa"; return; }
+  btn.disabled = true;
+  const nome = S.pending.find(p => p.id === id)?.nome || "";
+  try { await call("agenda_aprovar", { p_id: id, p_aprovar: ok }); toast(ok ? `${first(nome)} aprovado(a). Já pode entrar com nome e senha.` : "Cadastro recusado"); await reload(); drawMembers(); }
+  catch (err) { toast(err.message); btn.disabled = false; }
 }
 async function removeMember(id, btn){
   if (!btn.classList.contains("armed")){ btn.classList.add("armed"); btn.textContent = "Confirmar remoção"; return; }
@@ -910,6 +1017,8 @@ document.addEventListener("click", e => {
     $("#uFormTitle").textContent = `Editar ${m.nome}`; $("#uSave").textContent = "Salvar"; $("#uCancel").hidden = false; $("#uNome").focus(); return; }
   const cm = t.closest("[data-code-m]"); if (cm){ newCode(cm.dataset.codeM, cm); return; }
   const dm = t.closest("[data-del-m]"); if (dm){ removeMember(dm.dataset.delM, dm); return; }
+  const okp = t.closest("[data-ok-p]"); if (okp){ approve(okp.dataset.okP, true, okp); return; }
+  const nop = t.closest("[data-no-p]"); if (nop){ approve(nop.dataset.noP, false, nop); return; }
   if (t.closest("#vEdit")){ const mt = S.meetings.find(x => x.id === $("#dlgView").dataset.id); $("#dlgView").close(); if (mt) openMeeting({ meeting: mt }); return; }
   if (t.closest("#vDel")){ deleteMeeting($("#dlgView").dataset.id, t.closest("#vDel")); return; }
   if (t.closest("#copyLink")){ copyFrom($("#linkTxt")); return; }
