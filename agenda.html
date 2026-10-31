@@ -91,6 +91,27 @@ button{cursor:pointer}
 .litem.blkrow{background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--danger) 10%,transparent) 0 6px,transparent 6px 12px);border:1px dashed color-mix(in srgb,var(--danger) 45%,transparent)}
 .litem.blkrow .t{color:var(--danger)}
 .addday{border:1px dashed var(--line);background:transparent;border-radius:8px;padding:4px 10px;font-size:13px;font-weight:700;color:var(--accent-tx)}
+.typesw{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.typesw button{border:0;background:var(--surface);padding:10px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;color:var(--muted)}
+.typesw button+button{border-left:1px solid var(--line)}
+.typesw button[aria-pressed="true"]{background:var(--accent);color:var(--accent-fg)}
+.typesw small{display:block;font-weight:500;font-size:12px;opacity:.85}
+.ev.task{background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--c) 22%,var(--surface)) 0 7px,color-mix(in srgb,var(--c) 12%,var(--surface)) 7px 14px);border-left-style:dashed}
+.ev .chk{display:inline-block;vertical-align:-1px;margin-right:3px;color:var(--c)}
+.tag.task{background:color-mix(in srgb,var(--danger) 13%,transparent);color:var(--danger)}
+.tag.kind{background:var(--sunk);color:var(--muted)}
+.bday{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:700;padding:1px 7px;border-radius:999px;background:color-mix(in srgb,var(--gold) 26%,transparent);color:var(--fg);max-width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.bday svg{flex:none;color:var(--gold)}
+.banner.party{background:linear-gradient(90deg,color-mix(in srgb,var(--gold) 30%,var(--surface)),color-mix(in srgb,var(--gold) 12%,var(--surface)));border:1px solid color-mix(in srgb,var(--gold) 55%,transparent)}
+.banner.party p{display:flex;align-items:center;gap:10px}
+.banner.party svg{flex:none;color:var(--gold)}
+.bdlist{display:flex;flex-direction:column;gap:6px;margin:0;padding:0;list-style:none}
+.bdlist li{display:flex;align-items:center;gap:8px;font-size:14px}
+.bdlist .dd{font-family:var(--f-mono);font-size:12.5px;color:var(--muted);width:44px;flex:none}
+.bdlist .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bdlist li.now .nm{font-weight:800}
+.inline-form{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.inline-form input{border:1px solid var(--line);background:var(--surface);border-radius:7px;padding:6px 10px}
 .count{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:var(--gold);color:#0b1a3d;font-size:12px;font-weight:800}
 
 .app{display:grid;grid-template-rows:auto 1fr;height:100%;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:12px;gap:12px}
@@ -220,6 +241,7 @@ dialog::backdrop{background:rgba(6,16,40,.5)}
 .dlg-h{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 18px;border-bottom:1px solid var(--line);border-top:4px solid var(--gold)}
 .dlg-h h3{font-family:var(--f-display);font-size:19px;margin:0;font-weight:700}
 .dlg-b{padding:16px 18px;overflow:auto;display:flex;flex-direction:column;gap:14px}
+.dlg-b>*{flex-shrink:0}
 .dlg-f{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;padding:12px 18px;border-top:1px solid var(--line);align-items:center}
 .dlg-f .msg{flex:1;min-width:180px;font-size:13px}
 .msg.err{color:var(--danger);font-weight:700}
@@ -327,6 +349,7 @@ dialog::backdrop{background:rgba(6,16,40,.5)}
     <form class="gform" id="sForm" autocomplete="on" hidden>
       <label class="fld"><span>Nome completo</span><input id="sNome" maxlength="80" autocomplete="name" placeholder="Como aparecerá na agenda"></label>
       <label class="fld"><span>Cargo / setor (opcional)</span><input id="sCargo" maxlength="80"></label>
+      <label class="fld"><span>Data de nascimento</span><input id="sNasc" type="date" min="1920-01-01" autocomplete="bday"><small>Usada para avisar a equipe no seu aniversário. Os colegas veem só o dia e o mês.</small></label>
       <label class="fld"><span>Senha</span><input id="sSenha" type="password" autocomplete="new-password" placeholder="Mínimo 6 caracteres"></label>
       <label class="fld"><span>Confirmar senha</span><input id="sSenha2" type="password" autocomplete="new-password"></label>
       <div class="gerr" id="sErr" role="alert"></div>
@@ -361,7 +384,7 @@ dialog::backdrop{background:rgba(6,16,40,.5)}
       <button type="button" data-view="mes" aria-pressed="false">Mês</button>
     </div>
     <button class="btn" id="btnBlock" type="button"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><rect x="3" y="7" width="10" height="7" rx="1.5" stroke="currentColor" stroke-width="1.6"/><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2" stroke="currentColor" stroke-width="1.6"/></svg>Fechar agenda</button>
-    <button class="btn primary" id="btnNew" type="button"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Nova reunião</button>
+    <button class="btn primary" id="btnNew" type="button"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Novo evento</button>
     <button class="btn" id="btnTeam" type="button" hidden>Usuários e acessos</button>
     <div class="who"><div class="av" id="whoAv">?</div><span id="whoName"></span><button class="btn" type="button" id="btnPwd">Minha senha</button><button class="btn" type="button" id="btnLogout">Sair</button></div>
   </header>
@@ -381,8 +404,12 @@ dialog::backdrop{background:rgba(6,16,40,.5)}
         <ul class="people" id="people"></ul>
       </section>
       <section class="panel">
-        <h2>Minhas próximas reuniões</h2>
+        <h2>Meus próximos compromissos</h2>
         <div class="upc" id="upcoming"></div>
+      </section>
+      <section class="panel">
+        <h2>Aniversários</h2>
+        <ul class="bdlist" id="bdays"></ul>
       </section>
     </aside>
     <main class="main" id="main"></main>
@@ -393,27 +420,32 @@ dialog::backdrop{background:rgba(6,16,40,.5)}
   <form class="dlg" id="formMeet" novalidate>
     <div class="dlg-h"><h3 id="meetTitle">Nova reunião</h3><button class="btn ghost icon" type="button" data-close aria-label="Fechar">✕</button></div>
     <div class="dlg-b">
-      <label class="fld"><span>Assunto</span><input id="mTitulo" required maxlength="140" placeholder="Ex.: Alinhamento do projeto"></label>
+      <div class="typesw" role="group" aria-label="Tipo de evento">
+        <button type="button" data-tipo="reuniao" aria-pressed="true"><span>Reunião<small>com outras pessoas</small></span></button>
+        <button type="button" data-tipo="tarefa" aria-pressed="false"><span>Tarefa<small>fecha a agenda para trabalhar</small></span></button>
+      </div>
+      <label class="fld"><span id="mTituloLbl">Assunto</span><input id="mTitulo" required maxlength="140" placeholder="Ex.: Alinhamento do projeto"></label>
       <div class="row">
         <label class="fld"><span>Data</span><input type="date" id="mData" required></label>
         <label class="fld"><span>Início</span><input type="time" id="mInicio" step="900" required></label>
         <label class="fld"><span>Término</span><input type="time" id="mFim" step="900" required></label>
       </div>
-      <label class="fld"><span>Organizador</span><select id="mOrg"></select></label>
-      <div class="fld"><span>Participantes</span>
+      <label class="check" id="mDiaWrap" hidden><input type="checkbox" id="mDia"> Dia inteiro</label>
+      <label class="fld"><span id="mOrgLbl">Organizador</span><select id="mOrg"></select></label>
+      <div class="fld" id="mPartWrap"><span>Participantes</span>
         <input id="mBusca" placeholder="Buscar pessoa…" autocomplete="off">
         <div class="plist" id="mPart"></div>
       </div>
       <div class="fld"><span>Disponibilidade no dia</span>
         <div class="avail" id="mAvail"></div>
         <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between">
-          <div class="legend"><span><i style="background:color-mix(in srgb,var(--warn) 55%,transparent)"></i>Reunião</span><span><i style="background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--danger) 55%,transparent) 0 3px,transparent 3px 6px)"></i>Agenda fechada</span><span><i style="border:2px solid var(--accent)"></i>Horário proposto</span></div>
+          <div class="legend"><span><i style="background:color-mix(in srgb,var(--warn) 55%,transparent)"></i>Reunião</span><span><i style="background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--danger) 55%,transparent) 0 3px,transparent 3px 6px)"></i>Agenda fechada ou tarefa</span><span><i style="border:2px solid var(--accent)"></i>Horário proposto</span></div>
           <button class="btn" type="button" id="btnSuggest">Sugerir horário livre</button>
         </div>
       </div>
-      <label class="fld"><span>Link da reunião</span><input id="mLink" type="url" inputmode="url" placeholder="https://teams.microsoft.com/… ou meet.google.com/…"><small>Os participantes verão um botão “Entrar” na agenda deles.</small></label>
+      <label class="fld" id="mLinkWrap"><span>Link da reunião</span><input id="mLink" type="url" inputmode="url" placeholder="https://teams.microsoft.com/… ou meet.google.com/…"><small>Os participantes verão um botão “Entrar” na agenda deles.</small></label>
       <label class="fld"><span>Local (opcional)</span><input id="mLocal" maxlength="120" placeholder="Sala 2, online…"></label>
-      <label class="fld"><span>Pauta / observações</span><textarea id="mDesc" maxlength="2000"></textarea></label>
+      <label class="fld"><span id="mDescLbl">Pauta / observações</span><textarea id="mDesc" maxlength="2000"></textarea></label>
     </div>
     <div class="dlg-f">
       <div class="msg" id="mMsg" role="status"></div>
@@ -471,6 +503,7 @@ dialog::backdrop{background:rgba(6,16,40,.5)}
         </div>
         <div class="row">
           <label class="fld"><span>Cargo / setor</span><input id="uCargo" maxlength="80"></label>
+          <label class="fld"><span>Data de nascimento</span><input id="uNasc" type="date" min="1920-01-01"></label>
           <label class="fld"><span>Perfil</span><select id="uPapel"><option value="usuario">Usuário</option><option value="editor">Editor</option></select></label>
         </div>
         <div class="fld"><span>Cor na agenda</span><div class="swatches" id="uCores"></div></div>
@@ -515,6 +548,8 @@ const CORES = ["#2563eb","#0d9488","#c026d3","#ea580c","#16a34a","#dc2626","#7c3
 const MESES = ["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
 const DIAS = ["dom","seg","ter","qua","qui","sex","sáb"];
 const LOCK = '<svg width="11" height="11" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="3" y="7" width="10" height="7" rx="1.5" stroke="currentColor" stroke-width="1.8"/><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2" stroke="currentColor" stroke-width="1.8"/></svg>';
+const CAKE = '<svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2.5 14h11M3.5 14V9.5h9V14M2.5 9.5h11V8a1 1 0 0 0-1-1h-9a1 1 0 0 0-1 1z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M8 7V5M5 7V5.5M11 7V5.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M8 2.2c.6.6.6 1.3 0 1.8-.6-.5-.6-1.2 0-1.8z" fill="currentColor"/></svg>';
+const CHK = '<svg class="chk" width="11" height="11" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="1.5" y="1.5" width="13" height="13" rx="3" stroke="currentColor" stroke-width="1.8"/><path d="m4.5 8.2 2.3 2.3 4.7-4.9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const VID = '<svg class="vid" width="11" height="11" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="1.5" y="4" width="9" height="8" rx="1.5" stroke="currentColor" stroke-width="1.8"/><path d="m10.5 7 4-2.5v7L10.5 9" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>';
 
 const $ = s => document.querySelector(s);
@@ -561,6 +596,7 @@ const ERROS = {
   nome_curto: "Informe o nome completo.",
   senha_curta: "A senha precisa ter pelo menos 6 caracteres.",
   muitos_pendentes: "Há muitos cadastros aguardando aprovação. Tente mais tarde.",
+  nascimento_invalido: "Informe uma data de nascimento válida.",
 };
 async function rpc(fn, args){
   let r;
@@ -571,6 +607,7 @@ async function rpc(fn, args){
   if (!r.ok){
     const m = (j && j.message) || "";
     const key = Object.keys(ERROS).find(k => m.startsWith(k));
+    if (m.startsWith("em_tarefa")) throw { code: "em_tarefa", message: "Em tarefa neste horário: " + m.split(":").slice(1).join(":").trim() + "." };
     if (m.startsWith("agenda_fechada")) throw { code: "agenda_fechada", message: "Agenda fechada neste horário: " + m.split(":").slice(1).join(":").trim() + "." };
     throw { code: key || "erro", message: key ? ERROS[key] : "Não foi possível concluir. Tente de novo." };
   }
@@ -612,12 +649,14 @@ $("#sForm").addEventListener("submit", async e => {
   if (nome.length < 3 || !nome.includes(" ")) return $("#sErr").textContent = "Informe nome e sobrenome.";
   if (senha.length < 6) return $("#sErr").textContent = ERROS.senha_curta;
   if (senha !== $("#sSenha2").value) return $("#sErr").textContent = "As senhas não conferem.";
+  const nasc = $("#sNasc").value;
+  if (!nasc) return $("#sErr").textContent = "Informe sua data de nascimento.";
   $("#sBtn").disabled = true;
   try {
-    await rpc("agenda_cadastrar", { p_nome: nome, p_senha: senha, p_cargo: $("#sCargo").value.trim() });
+    await rpc("agenda_cadastrar", { p_nome: nome, p_senha: senha, p_cargo: $("#sCargo").value.trim(), p_nascimento: nasc });
     $("#sOk").textContent = "Cadastro enviado! Assim que o responsável aprovar, entre pela aba Entrar com seu nome e senha.";
     $("#sOk").hidden = false; $("#gNome").value = nome;
-    ["#sNome","#sCargo","#sSenha","#sSenha2"].forEach(s => $(s).value = "");
+    ["#sNome","#sCargo","#sNasc","#sSenha","#sSenha2"].forEach(s => $(s).value = "");
   } catch (err) { $("#sErr").textContent = err.message; }
   finally { $("#sBtn").disabled = false; }
 });
@@ -666,12 +705,17 @@ $("#formPwd").addEventListener("submit", async e => {
 const byId = id => S.members.find(m => m.id === id);
 const colorOf = id => byId(id)?.cor || "#64748b";
 const nameOf = id => byId(id)?.nome || "Usuário removido";
+const isTask = mt => mt.tipo === "tarefa";
+const allDay = mt => mt.inicio === "00:00" && mt.fim === "23:59";
+const timeTxt = mt => allDay(mt) ? "Dia inteiro" : `${mt.inicio}–${mt.fim}`;
+const birthdaysOn = k => S.members.filter(m => m.aniversario && m.aniversario === k.slice(5));
+const bdayChip = m => `<span class="bday" title="Aniversário de ${esc(m.nome)}">${CAKE}${esc(first(m.nome))}</span>`;
 const involved = mt => [...new Set([mt.organizador, ...(mt.participantes||[])].filter(Boolean))];
 const blocksFor = (mid, date) => S.blocks.filter(b => b.membroId === mid && b.dataInicio <= date && date <= (b.dataFim || b.dataInicio));
 const isClosed = (mid, date) => blocksFor(mid, date).some(b => b.diaInteiro);
 function busyOf(mid, date, exclude){
   const out = [];
-  for (const mt of S.meetings) if (mt.data === date && mt.id !== exclude && involved(mt).includes(mid)) out.push({ s: toMin(mt.inicio), e: toMin(mt.fim), kind: "m" });
+  for (const mt of S.meetings) if (mt.data === date && mt.id !== exclude && involved(mt).includes(mid)) out.push({ s: toMin(mt.inicio), e: toMin(mt.fim), kind: isTask(mt) ? "t" : "m" });
   for (const b of blocksFor(mid, date)) if (!b.diaInteiro) out.push({ s: toMin(b.inicio), e: toMin(b.fim), kind: "b" });
   return out;
 }
@@ -679,9 +723,11 @@ function statusOf(mid, date, s, e, exclude){
   if (isClosed(mid, date)) return "closed";
   const bz = busyOf(mid, date, exclude).filter(x => x.s < e && s < x.e);
   if (bz.some(x => x.kind === "b")) return "closed";
+  if (bz.some(x => x.kind === "t")) return "task";
   return bz.length ? "busy" : "free";
 }
-const STATUS_TXT = { free: "Livre", busy: "Ocupado", closed: "Agenda fechada" };
+const STATUS_TXT = { free: "Livre", busy: "Ocupado", closed: "Agenda fechada", task: "Em tarefa" };
+const blocking = st => st === "closed" || st === "task";
 const canEditMeeting = mt => S.admin || mt.organizador === S.me?.id || mt.criadoPor === S.me?.id;
 const canEditBlock = b => S.admin || b.membroId === S.me?.id || b.criadoPor === S.me?.id;
 function normLink(v){ v = (v||"").trim(); if (!v) return ""; if (!/^https?:\/\//i.test(v)) v = "https://" + v; try { const u = new URL(v); return /^https?:$/.test(u.protocol) ? u.href : ""; } catch { return ""; } }
@@ -696,7 +742,7 @@ function render(){
   $("#btnTeam").hidden = !S.admin;
   $("#btnTeam").innerHTML = "Usuários e acessos" + (S.admin && S.pending.length ? ` <span class="count" aria-label="${S.pending.length} aguardando aprovação">${S.pending.length}</span>` : "");
   document.querySelectorAll(".seg button").forEach(b => b.setAttribute("aria-pressed", b.dataset.view === S.view));
-  renderLabel(); renderMini(); renderPeople(); renderUpcoming(); renderMain();
+  renderLabel(); renderMini(); renderPeople(); renderUpcoming(); renderBdays(); renderMain();
 }
 function renderLabel(){
   const c = S.cursor; let t;
@@ -728,14 +774,32 @@ function renderUpcoming(){
     .sort((a,b) => (a.data+a.inicio).localeCompare(b.data+b.inicio)).slice(0, 6);
   box.innerHTML = list.length ? list.map(x => { const d = parse(x.data);
     const when = x.data === nowK ? "Hoje" : `${DIAS[d.getDay()]} ${d.getDate()}/${pad(d.getMonth()+1)}`;
-    return `<div class="upc-item" role="button" tabindex="0" data-open="${esc(x.id)}"><span class="bar" style="background:${esc(colorOf(x.organizador))}"></span><div><div class="t">${esc(x.titulo)}</div><div class="s mono">${when} · ${esc(x.inicio)}–${esc(x.fim)}</div></div>${x.link?`<a class="join" href="${esc(x.link)}" target="_blank" rel="noopener">Entrar</a>`:""}</div>`; }).join("")
-    : `<p class="empty" style="margin:0">Nenhuma reunião marcada com você.</p>`;
+    return `<div class="upc-item" role="button" tabindex="0" data-open="${esc(x.id)}"><span class="bar" style="background:${esc(colorOf(x.organizador))}"></span><div><div class="t">${esc(x.titulo)}</div><div class="s mono">${when} · ${esc(timeTxt(x))}${isTask(x)?" · tarefa":""}</div></div>${!isTask(x)&&x.link?`<a class="join" href="${esc(x.link)}" target="_blank" rel="noopener">Entrar</a>`:""}</div>`; }).join("")
+    : `<p class="empty" style="margin:0">Nenhum compromisso marcado.</p>`;
+}
+function renderBdays(){
+  const now = new Date(); now.setHours(0,0,0,0);
+  const next = S.members.filter(m => m.aniversario).map(m => {
+    const [mm, dd] = m.aniversario.split("-").map(Number);
+    let d = new Date(now.getFullYear(), mm - 1, dd); if (d < now) d = new Date(now.getFullYear() + 1, mm - 1, dd);
+    return { m, d, days: Math.round((d - now) / 864e5) };
+  }).sort((a, b) => a.d - b.d).slice(0, 6);
+  $("#bdays").innerHTML = next.length ? next.map(({ m, d, days }) => `<li class="${days===0?"now":""}"><span class="dd">${pad(d.getDate())}/${pad(d.getMonth()+1)}</span><span class="sw" style="background:${esc(m.cor)}"></span><span class="nm">${esc(m.nome)}</span>${days===0?`<span class="bday">${CAKE}Hoje</span>`:days===1?'<span class="tag kind">Amanhã</span>':""}</li>`).join("")
+    : `<li class="empty">Ninguém informou a data ainda.</li>`;
 }
 function renderMain(){
   const main = $("#main");
   let banner = "";
-  if (S.admin && S.pending.length) banner = `<div class="banner"><p><b>${S.pending.length} ${S.pending.length > 1 ? "pessoas aguardam" : "pessoa aguarda"} aprovação</b> para acessar a agenda: ${S.pending.slice(0,3).map(p => esc(p.nome)).join(", ")}${S.pending.length > 3 ? "…" : ""}</p><button class="btn primary" type="button" id="bannerTeam">Revisar cadastros</button></div>`;
-  else if (S.admin && S.members.length < 2) banner = `<div class="banner"><p>Envie o endereço desta página para a equipe criar o acesso, ou cadastre as pessoas você mesmo.</p><button class="btn primary" type="button" id="bannerTeam">Usuários e acessos</button></div>`;
+  const tdk = todayStr(), bdToday = birthdaysOn(tdk), tm = addDays(new Date(), 1), bdTom = birthdaysOn(ymd(tm));
+  if (bdToday.length){
+    const mine = bdToday.some(m => m.id === S.me?.id), others = bdToday.filter(m => m.id !== S.me?.id);
+    const txt = [mine ? `<b>Feliz aniversário, ${esc(first(S.me.nome))}!</b> A equipe toda está sendo avisada hoje.` : "",
+      others.length ? `Hoje é aniversário de <b>${others.map(m => esc(m.nome)).join(", ")}</b>. Não esqueça de dar os parabéns!` : ""].filter(Boolean).join(" ");
+    banner += `<div class="banner party"><p>${CAKE.replace(/13/g,"28")}<span>${txt}</span></p></div>`;
+  } else if (bdTom.length) banner += `<div class="banner party"><p>${CAKE.replace(/13/g,"22")}<span>Amanhã é aniversário de <b>${bdTom.map(m => esc(m.nome)).join(", ")}</b>.</span></p></div>`;
+  if (S.me && !S.me.nascimento) banner += `<div class="banner"><p>Informe sua data de nascimento para a equipe ser avisada no seu aniversário.</p><form class="inline-form" id="myBdForm"><input type="date" id="myBd" min="1920-01-01" aria-label="Data de nascimento"><button class="btn primary" type="submit">Salvar</button></form></div>`;
+  if (S.admin && S.pending.length) banner += `<div class="banner"><p><b>${S.pending.length} ${S.pending.length > 1 ? "pessoas aguardam" : "pessoa aguarda"} aprovação</b> para acessar a agenda: ${S.pending.slice(0,3).map(p => esc(p.nome)).join(", ")}${S.pending.length > 3 ? "…" : ""}</p><button class="btn primary" type="button" id="bannerTeam">Revisar cadastros</button></div>`;
+  else if (S.admin && S.members.length < 2) banner += `<div class="banner"><p>Envie o endereço desta página para a equipe criar o acesso, ou cadastre as pessoas você mesmo.</p><button class="btn primary" type="button" id="bannerTeam">Usuários e acessos</button></div>`;
   main.innerHTML = banner + (S.view === "mes" ? monthHTML() : S.view === "equipe" ? teamHTML() : S.view === "lista" ? listHTML() : weekHTML());
   const sc = main.querySelector(".tg-scroll");
   if (sc && S.firstPaint){ const h = new Date().getHours(); sc.scrollTop = ((h >= H0 && h < H1 ? Math.max(H0, h - 1) : 8) - H0) * hourPx(); }
@@ -764,19 +828,19 @@ function gridHTML(cols){
     for (const b of c.blocks || []) { const top = y(b.s), hh = Math.max(16, y(b.e) - top); h += `<div class="blk" style="top:${top}px;height:${hh}px" data-block="${esc(b.id)}" title="${esc(b.label)}">${LOCK} ${esc(b.label)}</div>`; }
     for (const ev of layoutLanes(c.events || [])){
       const top = y(ev.s), hh = Math.max(20, y(ev.e) - top - 1), w = 100 / ev.lanes;
-      h += `<button type="button" class="ev" data-open="${esc(ev.id)}" style="--c:${esc(ev.color)};top:${top}px;height:${hh}px;left:calc(${ev.lane*w}% + 2px);width:calc(${w}% - 4px)" title="${esc(ev.title)} · ${fromMin(ev.s)}–${fromMin(ev.e)}"><span class="et">${ev.link?VID:""}${esc(ev.title)}</span>${hh > 30 ? `<span class="es mono">${fromMin(ev.s)}–${fromMin(ev.e)}</span>` : ""}${hh > 46 && ev.sub ? `<span class="es">${esc(ev.sub)}</span>` : ""}</button>`;
+      h += `<button type="button" class="ev${ev.task?" task":""}" data-open="${esc(ev.id)}" style="--c:${esc(ev.color)};top:${top}px;height:${hh}px;left:calc(${ev.lane*w}% + 2px);width:calc(${w}% - 4px)" title="${esc(ev.title)} · ${fromMin(ev.s)}–${fromMin(ev.e)}"><span class="et">${ev.task?CHK:ev.link?VID:""}${esc(ev.title)}</span>${hh > 30 ? `<span class="es mono">${fromMin(ev.s)}–${fromMin(ev.e)}</span>` : ""}${hh > 46 && ev.sub ? `<span class="es">${esc(ev.sub)}</span>` : ""}</button>`;
     }
     if (c.date === td && nowM >= H0*60 && nowM <= H1*60) h += `<div class="nowline" style="top:${y(nowM)}px"></div>`;
     h += `</div>`;
   });
   return h + `</div></div>`;
 }
-function evFrom(mt){ return { id: mt.id, s: toMin(mt.inicio), e: toMin(mt.fim), color: colorOf(mt.organizador), title: mt.titulo || "(sem assunto)", link: !!mt.link, sub: involved(mt).map(p => first(nameOf(p))).join(", ") }; }
+function evFrom(mt){ const t = isTask(mt); return { id: mt.id, s: toMin(mt.inicio), e: toMin(mt.fim), color: colorOf(mt.organizador), title: mt.titulo || "(sem assunto)", link: !t && !!mt.link, task: t, sub: t ? `Tarefa · ${first(nameOf(mt.organizador))}` : involved(mt).map(p => first(nameOf(p))).join(", ") }; }
 const noneSel = `<div class="state"><h3>Nenhuma agenda selecionada</h3><p>Marque pessoas em “Agendas visíveis”.</p></div>`;
 function weekHTML(){
   const vis = new Set(visibleMembers().map(m => m.id)), a = startWeek(S.cursor), n = S.weekend ? 7 : 5, cols = [];
   for (let i = 0; i < n; i++){
-    const d = addDays(a, i), k = ymd(d), chips = [], blocks = [];
+    const d = addDays(a, i), k = ymd(d), chips = birthdaysOn(k).map(bdayChip), blocks = [];
     for (const m of visibleMembers()) for (const b of blocksFor(m.id, k)){
       if (b.diaInteiro) chips.push(`<button type="button" class="lock" style="cursor:pointer" data-block="${esc(b.id)}" title="${esc(m.nome)}${b.motivo?": "+esc(b.motivo):""}">${LOCK}${esc(first(m.nome))}</button>`);
       else blocks.push({ id: b.id, s: toMin(b.inicio), e: toMin(b.fim), label: `${first(m.nome)}${b.motivo?" · "+b.motivo:""}` });
@@ -793,7 +857,8 @@ function teamHTML(){
     const bl = blocksFor(m.id, k), full = bl.find(b => b.diaInteiro);
     const evs = S.meetings.filter(mt => mt.data === k && involved(mt).includes(m.id)).map(evFrom);
     const busyMin = evs.reduce((s, e) => s + Math.max(0, e.e - e.s), 0);
-    const st = full ? `<span class="tag closed">Agenda fechada</span>` : busyMin === 0 ? `<span class="tag free">Livre o dia todo</span>` : `<span class="tag busy">${evs.length} reuni${evs.length>1?"ões":"ão"} · ${Math.round(busyMin/6)/10}h</span>`;
+    const bd = m.aniversario === k.slice(5) ? bdayChip(m) : "";
+    const st = bd + (full ? `<span class="tag closed">Agenda fechada</span>` : busyMin === 0 ? `<span class="tag free">Livre o dia todo</span>` : `<span class="tag busy">${evs.length} compromisso${evs.length>1?"s":""} · ${Math.round(busyMin/6)/10}h</span>`);
     return { date: k, member: m.id, closed: !!full, closedReason: full?.motivo, events: evs,
       head: `<div class="pname"><span class="av" style="background:${esc(m.cor)};width:22px;height:22px;font-size:10px">${esc(initials(m.nome))}</span><span>${esc(m.nome)}</span></div>${m.cargo?`<div class="psub">${esc(m.cargo)}</div>`:""}<div class="chips">${st}</div>`,
       blocks: bl.filter(b => !b.diaInteiro).map(b => ({ id: b.id, s: toMin(b.inicio), e: toMin(b.fim), label: b.motivo || "Indisponível" })) };
@@ -811,12 +876,14 @@ function listHTML(){
     const locks = [], parts = [];
     for (const m of visibleMembers()) for (const b of blocksFor(m.id, k)) (b.diaInteiro ? locks : parts).push({ b, m });
     const items = [
-      ...evs.map(mt => ({ s: mt.inicio, html: `<button type="button" class="litem" data-open="${esc(mt.id)}"><span class="tm">${esc(mt.inicio)}<span>${esc(mt.fim)}</span></span><span class="bar" style="background:${esc(colorOf(mt.organizador))}"></span><div><div class="t">${mt.link?VID:""}${esc(mt.titulo)}</div><div class="s">${esc(involved(mt).map(p => first(nameOf(p))).join(", "))}${mt.local?" · "+esc(mt.local):""}</div></div>${mt.link?`<a class="join" href="${esc(mt.link)}" target="_blank" rel="noopener">Entrar</a>`:""}</button>` })),
+      ...evs.map(mt => ({ s: mt.inicio, html: `<button type="button" class="litem" data-open="${esc(mt.id)}"><span class="tm">${allDay(mt)?"Dia<span>inteiro</span>":`${esc(mt.inicio)}<span>${esc(mt.fim)}</span>`}</span><span class="bar" style="background:${isTask(mt)?`repeating-linear-gradient(180deg,${esc(colorOf(mt.organizador))} 0 4px,transparent 4px 7px)`:esc(colorOf(mt.organizador))}"></span><div><div class="t">${isTask(mt)?CHK.replace('class="chk"','class="chk" style="color:'+esc(colorOf(mt.organizador))+'"'):mt.link?VID:""}${esc(mt.titulo)}</div><div class="s">${isTask(mt)?"Tarefa · "+esc(nameOf(mt.organizador)):esc(involved(mt).map(p => first(nameOf(p))).join(", "))}${mt.local?" · "+esc(mt.local):""}</div></div>${!isTask(mt)&&mt.link?`<a class="join" href="${esc(mt.link)}" target="_blank" rel="noopener">Entrar</a>`:""}</button>` })),
       ...parts.map(({ b, m }) => ({ s: b.inicio, html: `<button type="button" class="litem blkrow" data-block="${esc(b.id)}"><span class="tm">${esc(b.inicio)}<span>${esc(b.fim)}</span></span><span></span><div><div class="t">${LOCK} ${esc(m.nome)} indisponível</div><div class="s">${esc(b.motivo || "Agenda fechada neste horário")}</div></div><span></span></button>` })),
     ].sort((a, b) => a.s.localeCompare(b.s));
     const weekday = ["domingo","segunda","terça","quarta","quinta","sexta","sábado"][d.getDay()];
-    const empty = !items.length && !locks.length;
-    h += `<section class="lday ${k===td?"today":""} ${empty?"empty":""}"><div class="lday-h"><h3>${k===td?"Hoje":weekday}<small>${d.getDate()} de ${MESES[d.getMonth()]}${empty?" · sem reuniões":""}</small></h3><button type="button" class="addday" data-add="${k}">+ Marcar</button></div>`;
+    const bds = birthdaysOn(k);
+    const empty = !items.length && !locks.length && !bds.length;
+    h += `<section class="lday ${k===td?"today":""} ${empty?"empty":""}"><div class="lday-h"><h3>${k===td?"Hoje":weekday}<small>${d.getDate()} de ${MESES[d.getMonth()]}${empty?" · livre":""}</small></h3><button type="button" class="addday" data-add="${k}">+ Marcar</button></div>`;
+    if (bds.length) h += `<div class="chips">${bds.map(m => `<span class="bday">${CAKE}Aniversário de ${esc(m.nome)}</span>`).join("")}</div>`;
     if (locks.length) h += `<div class="chips">${locks.map(({ b, m }) => `<button type="button" class="lock" style="cursor:pointer" data-block="${esc(b.id)}">${LOCK}${esc(first(m.nome))} · agenda fechada${b.motivo?" ("+esc(b.motivo)+")":""}</button>`).join("")}</div>`;
     h += items.map(x => x.html).join("") + `</section>`;
   }
@@ -831,21 +898,33 @@ function monthHTML(){
     const evs = S.meetings.filter(mt => mt.data === k && involved(mt).some(p => vis.has(p))).sort((a,b) => a.inicio.localeCompare(b.inicio));
     const locks = visibleMembers().filter(m => isClosed(m.id, k));
     h += `<div class="mcell ${d.getMonth()!==c.getMonth()?"out":""} ${k===td?"today":""}" role="button" tabindex="0" data-day="${k}" aria-label="${d.getDate()} de ${MESES[d.getMonth()]}"><span class="n">${d.getDate()}</span>`;
+    const bds = birthdaysOn(k);
+    if (bds.length) h += `<div class="chips">${bds.map(bdayChip).join("")}</div>`;
     if (locks.length) h += `<div class="chips">${locks.slice(0,2).map(m => `<span class="lock">${LOCK}${esc(first(m.nome))}</span>`).join("")}${locks.length>2?`<span class="more">+${locks.length-2}</span>`:""}</div>`;
-    h += evs.slice(0,3).map(e => `<div class="mev" style="--c:${esc(colorOf(e.organizador))}" data-open="${esc(e.id)}"><i class="mono">${esc(e.inicio)}</i><span>${esc(e.titulo)}</span></div>`).join("");
-    if (evs.length > 3) h += `<span class="more">+${evs.length-3} reuniões</span>`;
+    h += evs.slice(0,3).map(e => `<div class="mev" style="--c:${esc(colorOf(e.organizador))}" data-open="${esc(e.id)}"><i class="mono">${allDay(e)?"dia":esc(e.inicio)}</i><span>${isTask(e)?"Tarefa: ":""}${esc(e.titulo)}</span></div>`).join("");
+    if (evs.length > 3) h += `<span class="more">+${evs.length-3}</span>`;
     h += `</div>`;
   }
   return h + `</div>`;
 }
 
 /* ---------- reunião ---------- */
-let editing = null, confirmConflict = false;
+let editing = null, confirmConflict = false, tipo = "reuniao";
+function setTipo(t){
+  tipo = t; const task = t === "tarefa";
+  document.querySelectorAll(".typesw button").forEach(b => b.setAttribute("aria-pressed", b.dataset.tipo === t));
+  $("#mPartWrap").hidden = task; $("#mLinkWrap").hidden = task; $("#mDiaWrap").hidden = !task;
+  if (!task && $("#mDia").checked){ $("#mDia").checked = false; $("#mInicio").disabled = $("#mFim").disabled = false; $("#mInicio").value = "09:00"; $("#mFim").value = "10:00"; }
+  $("#mTituloLbl").textContent = task ? "Tarefa" : "Assunto";
+  $("#mTitulo").placeholder = task ? "Ex.: Preparar relatório mensal" : "Ex.: Alinhamento do projeto";
+  $("#mOrgLbl").textContent = task ? "Responsável" : "Organizador";
+  $("#mDescLbl").textContent = task ? "Detalhes (opcional)" : "Pauta / observações";
+  $("#meetTitle").textContent = (editing ? "Editar " : task ? "Nova " : "Nova ") + (task ? "tarefa" : "reunião");
+  resetConfirm(); setMsg("", ""); drawParticipants(); drawAvail();
+}
 function openMeeting(opts = {}){
   editing = opts.meeting || null; confirmConflict = false;
   const mt = editing;
-  $("#meetTitle").textContent = mt ? "Editar reunião" : "Nova reunião";
-  $("#mSave").textContent = mt ? "Salvar alterações" : "Agendar";
   $("#mDelete").hidden = !mt; $("#mDelete").classList.remove("armed"); $("#mDelete").textContent = "Excluir";
   $("#mTitulo").value = mt?.titulo || "";
   $("#mData").value = mt?.data || opts.date || ymd(S.cursor);
@@ -860,7 +939,8 @@ function openMeeting(opts = {}){
   sel.delete(org);
   $("#mPart").dataset.sel = JSON.stringify([...sel]);
   $("#mBusca").value = ""; setMsg("", "");
-  drawParticipants(); drawAvail();
+  const ad = mt ? allDay(mt) : false; $("#mDia").checked = ad; $("#mInicio").disabled = $("#mFim").disabled = ad;
+  setTipo(mt ? (mt.tipo || "reuniao") : (opts.tipo || "reuniao"));
   $("#dlgMeet").showModal();
   setTimeout(() => $("#mTitulo").focus(), 30);
 }
@@ -871,18 +951,18 @@ function drawParticipants(){
   const q = $("#mBusca").value.trim().toLowerCase(), sel = selParts(), ex = editing?.id;
   $("#mPart").innerHTML = S.members.filter(m => m.id !== org && (!q || (m.nome+" "+(m.cargo||"")).toLowerCase().includes(q))).map(m => {
     const st = date && e > s ? statusOf(m.id, date, s, e, ex) : "free";
-    return `<label class="${st==="closed"&&!sel.has(m.id)?"dis":""}"><input type="checkbox" value="${esc(m.id)}" ${sel.has(m.id)?"checked":""}><span class="sw" style="background:${esc(m.cor)}"></span><span class="nm">${esc(m.nome)}${m.cargo?`<small>${esc(m.cargo)}</small>`:""}</span><span class="tag ${st}">${STATUS_TXT[st]}</span></label>`;
+    return `<label class="${blocking(st)&&!sel.has(m.id)?"dis":""}"><input type="checkbox" value="${esc(m.id)}" ${sel.has(m.id)?"checked":""}><span class="sw" style="background:${esc(m.cor)}"></span><span class="nm">${esc(m.nome)}${m.cargo?`<small>${esc(m.cargo)}</small>`:""}</span><span class="tag ${st}">${STATUS_TXT[st]}</span></label>`;
   }).join("") || `<p class="empty" style="padding:10px;margin:0">${S.members.length < 2 ? "Cadastre outras pessoas em Usuários e acessos." : "Ninguém encontrado."}</p>`;
 }
 function drawAvail(){
   const date = $("#mData").value, s = toMin($("#mInicio").value), e = toMin($("#mFim").value), org = $("#mOrg").value, ex = editing?.id;
-  const ppl = [org, ...selParts()].filter(Boolean);
+  const ppl = (tipo === "tarefa" ? [org] : [org, ...selParts()]).filter(Boolean);
   const span = (H1 - H0) * 60, pc = m => ((Math.min(Math.max(m, H0*60), H1*60) - H0*60) / span * 100);
   let h = `<div class="avail-scale"><span></span><div class="ticks mono">${[7,9,11,13,15,17,19,21].map(x => `<span>${x}h</span>`).join("")}</div></div>`;
   for (const id of ppl){
     const closed = date && isClosed(id, date);
     h += `<div class="arow"><span class="nm" title="${esc(nameOf(id))}">${esc(first(nameOf(id)))}${id===org?" · org.":""}</span><div class="abar ${closed?"closed":""}">`;
-    if (date && !closed) for (const b of busyOf(id, date, ex)) h += `<span class="bz ${b.kind==="b"?"b":""}" style="left:${pc(b.s)}%;width:${pc(b.e)-pc(b.s)}%"></span>`;
+    if (date && !closed) for (const b of busyOf(id, date, ex)) h += `<span class="bz ${b.kind!=="m"?"b":""}" style="left:${pc(b.s)}%;width:${pc(b.e)-pc(b.s)}%"></span>`;
     if (e > s) h += `<span class="pr" style="left:${pc(s)}%;width:${Math.max(.8, pc(e)-pc(s))}%"></span>`;
     h += `</div></div>`;
   }
@@ -890,7 +970,7 @@ function drawAvail(){
 }
 function suggest(){
   const date = $("#mData").value; if (!date) return;
-  const s0 = toMin($("#mInicio").value), dur = Math.max(15, (toMin($("#mFim").value) - s0) || 60), ppl = [$("#mOrg").value, ...selParts()], ex = editing?.id;
+  const s0 = toMin($("#mInicio").value), dur = Math.max(15, (toMin($("#mFim").value) - s0) || 60), ppl = tipo === "tarefa" ? [$("#mOrg").value] : [$("#mOrg").value, ...selParts()], ex = editing?.id;
   let from = 8*60;
   if (date === todayStr()){ const n = new Date(); from = Math.max(from, Math.ceil((n.getHours()*60 + n.getMinutes())/15)*15); }
   if (ppl.some(p => isClosed(p, date))) return setMsg("Alguém está com a agenda fechada neste dia. Escolha outra data.", "err");
@@ -903,33 +983,36 @@ function suggest(){
   setMsg("Não há horário livre para todos neste dia entre 08h e 19h.", "wrn");
 }
 function setMsg(t, k){ const m = $("#mMsg"); m.textContent = t; m.className = "msg" + (k ? " " + k : ""); }
-function resetConfirm(){ confirmConflict = false; $("#mSave").textContent = editing ? "Salvar alterações" : "Agendar"; }
+function resetConfirm(){ confirmConflict = false; $("#mSave").textContent = editing ? "Salvar alterações" : tipo === "tarefa" ? "Salvar tarefa" : "Agendar"; }
 async function saveMeeting(ev){
   ev.preventDefault();
   const titulo = $("#mTitulo").value.trim(), data = $("#mData").value, inicio = $("#mInicio").value, fim = $("#mFim").value, org = $("#mOrg").value;
-  const parts = [...selParts()].filter(p => p !== org && byId(p));
-  if (!titulo){ $("#mTitulo").focus(); return setMsg("Informe o assunto da reunião.", "err"); }
+  const task = tipo === "tarefa";
+  const parts = task ? [] : [...selParts()].filter(p => p !== org && byId(p));
+  if (!titulo){ $("#mTitulo").focus(); return setMsg(task ? "Descreva a tarefa." : "Informe o assunto da reunião.", "err"); }
   if (!data || !inicio || !fim) return setMsg("Preencha data, início e término.", "err");
   if (toMin(fim) <= toMin(inicio)) return setMsg("O término precisa ser depois do início.", "err");
-  if (!parts.length) return setMsg("Escolha pelo menos um participante.", "err");
-  const rawLink = $("#mLink").value.trim(), link = normLink(rawLink);
+  if (!task && !parts.length) return setMsg("Escolha pelo menos um participante.", "err");
+  const rawLink = task ? "" : $("#mLink").value.trim(), link = normLink(rawLink);
   if (rawLink && !link) return setMsg("O link não parece válido. Cole o endereço completo (https://…).", "err");
   const s = toMin(inicio), e = toMin(fim), ex = editing?.id;
   const closed = [org, ...parts].filter(p => statusOf(p, data, s, e, ex) === "closed");
   if (closed.length) return setMsg(`Agenda fechada neste horário: ${closed.map(p => first(nameOf(p))).join(", ")}.`, "err");
+  const inTask = [org, ...parts].filter(p => statusOf(p, data, s, e, ex) === "task");
+  if (inTask.length) return setMsg(`Em tarefa neste horário: ${inTask.map(p => first(nameOf(p))).join(", ")}.`, "err");
   const busy = [org, ...parts].filter(p => statusOf(p, data, s, e, ex) === "busy");
-  if (busy.length && !confirmConflict){ confirmConflict = true; $("#mSave").textContent = "Agendar mesmo assim"; return setMsg(`Conflito: ${busy.map(p => first(nameOf(p))).join(", ")} já ${busy.length>1?"têm":"tem"} reunião neste horário.`, "wrn"); }
+  if (busy.length && !confirmConflict){ confirmConflict = true; $("#mSave").textContent = "Salvar mesmo assim"; return setMsg(`Conflito: ${busy.map(p => first(nameOf(p))).join(", ")} já ${busy.length>1?"têm":"tem"} reunião neste horário.`, "wrn"); }
   $("#mSave").disabled = true;
   try {
-    await call("agenda_reuniao_salvar", { p_id: editing?.id || null, p_dados: { titulo, data, inicio, fim, organizador: org, participantes: parts, link, local: $("#mLocal").value.trim(), descricao: $("#mDesc").value.trim() } });
-    const was = !!editing; $("#dlgMeet").close(); toast(was ? "Reunião atualizada" : "Reunião agendada"); await reload();
+    await call("agenda_reuniao_salvar", { p_id: editing?.id || null, p_dados: { tipo, titulo, data, inicio, fim, organizador: org, participantes: parts, link, local: $("#mLocal").value.trim(), descricao: $("#mDesc").value.trim() } });
+    const was = !!editing; $("#dlgMeet").close(); toast(task ? (was ? "Tarefa atualizada" : "Tarefa salva. Sua agenda está fechada nesse horário.") : (was ? "Reunião atualizada" : "Reunião agendada")); await reload();
   } catch (err) { if (err.code === "codigo_invalido") return logout(err.message); setMsg(err.message, "err"); }
   finally { $("#mSave").disabled = false; }
 }
 async function deleteMeeting(id, btn){
   if (!btn.classList.contains("armed")){ btn.classList.add("armed"); btn.textContent = "Confirmar exclusão"; return; }
   btn.disabled = true;
-  try { await call("agenda_reuniao_excluir", { p_id: id }); document.querySelectorAll("dialog[open]").forEach(d => d.close()); toast("Reunião excluída"); await reload(); }
+  try { await call("agenda_reuniao_excluir", { p_id: id }); document.querySelectorAll("dialog[open]").forEach(d => d.close()); toast("Excluído"); await reload(); }
   catch (err) { toast(err.message); } finally { btn.disabled = false; }
 }
 function viewMeeting(id){
@@ -937,12 +1020,13 @@ function viewMeeting(id){
   const d = parse(mt.data), av = p => `<span class="av" style="background:${esc(colorOf(p))};width:22px;height:22px;font-size:10px">${esc(initials(nameOf(p)))}</span>`;
   $("#vTitle").textContent = mt.titulo || "(sem assunto)";
   let b = `<dl class="dt">
-    <dt>Quando</dt><dd>${["Domingo","Segunda","Terça","Quarta","Quinta","Sexta","Sábado"][d.getDay()]}, ${d.getDate()} de ${MESES[d.getMonth()]} de ${d.getFullYear()} · <span class="mono">${esc(mt.inicio)}–${esc(mt.fim)}</span></dd>
-    <dt>Organizador</dt><dd><div class="pp"><div>${av(mt.organizador)}${esc(nameOf(mt.organizador))}</div></div></dd>
-    <dt>Participantes</dt><dd><div class="pp">${(mt.participantes||[]).map(p => `<div>${av(p)}${esc(nameOf(p))}${S.me?.id===p?' <span class="tag ed">você</span>':""}</div>`).join("")}</div></dd>`;
-  if (mt.link) b += `<dt>Link</dt><dd><div class="plink"><a class="join" href="${esc(mt.link)}" target="_blank" rel="noopener">${VID.replace('class="vid"','')} Entrar no ${esc(platformOf(mt.link))}</a><button class="btn" type="button" id="copyLink">Copiar link</button></div><div class="plink" style="margin-top:6px"><code id="linkTxt">${esc(mt.link)}</code></div></dd>`;
+    <dt>Quando</dt><dd>${["Domingo","Segunda","Terça","Quarta","Quinta","Sexta","Sábado"][d.getDay()]}, ${d.getDate()} de ${MESES[d.getMonth()]} de ${d.getFullYear()} · <span class="mono">${esc(timeTxt(mt))}</span></dd>
+    <dt>Tipo</dt><dd>${isTask(mt) ? '<span class="tag task">Tarefa · agenda fechada</span>' : '<span class="tag kind">Reunião</span>'}</dd>
+    <dt>${isTask(mt) ? "Responsável" : "Organizador"}</dt><dd><div class="pp"><div>${av(mt.organizador)}${esc(nameOf(mt.organizador))}</div></div></dd>` +
+    (isTask(mt) ? "" : `<dt>Participantes</dt><dd><div class="pp">${(mt.participantes||[]).map(p => `<div>${av(p)}${esc(nameOf(p))}${S.me?.id===p?' <span class="tag ed">você</span>':""}</div>`).join("")}</div></dd>`);
+  if (mt.link && !isTask(mt)) b += `<dt>Link</dt><dd><div class="plink"><a class="join" href="${esc(mt.link)}" target="_blank" rel="noopener">${VID.replace('class="vid"','')} Entrar no ${esc(platformOf(mt.link))}</a><button class="btn" type="button" id="copyLink">Copiar link</button></div><div class="plink" style="margin-top:6px"><code id="linkTxt">${esc(mt.link)}</code></div></dd>`;
   if (mt.local) b += `<dt>Local</dt><dd>${esc(mt.local)}</dd>`;
-  if (mt.descricao) b += `<dt>Pauta</dt><dd style="white-space:pre-wrap">${esc(mt.descricao)}</dd>`;
+  if (mt.descricao) b += `<dt>${isTask(mt) ? "Detalhes" : "Pauta"}</dt><dd style="white-space:pre-wrap">${esc(mt.descricao)}</dd>`;
   $("#vBody").innerHTML = b + `</dl>`;
   $("#vFoot").innerHTML = canEditMeeting(mt) ? `<button class="btn danger" type="button" id="vDel">Excluir</button><button class="btn" type="button" data-close>Fechar</button><button class="btn primary" type="button" id="vEdit">Editar</button>` : `<button class="btn" type="button" data-close>Fechar</button>`;
   $("#dlgView").dataset.id = id;
@@ -1006,7 +1090,7 @@ function drawSwatches(sel){
 }
 function resetMemberForm(){
   editingMember = null;
-  $("#uNome").value = ""; $("#uEmail").value = ""; $("#uCargo").value = ""; $("#uPapel").value = "usuario"; $("#uPapel").disabled = false;
+  $("#uNome").value = ""; $("#uEmail").value = ""; $("#uCargo").value = ""; $("#uNasc").value = ""; $("#uPapel").value = "usuario"; $("#uPapel").disabled = false;
   $("#uFormTitle").textContent = "Cadastrar usuário"; $("#uSave").textContent = "Cadastrar e gerar código"; $("#uCancel").hidden = true; $("#uMsg").textContent = "";
   drawSwatches();
 }
@@ -1017,7 +1101,7 @@ function drawMembers(){
       return `<div class="mrow"><span class="av" style="background:var(--muted)">${esc(initials(p.nome))}</span><div><div class="nm">${esc(p.nome)}</div><div class="em">${p.cargo ? esc(p.cargo) + " · " : ""}pediu em ${pad(dt.getDate())}/${pad(dt.getMonth()+1)} às ${pad(dt.getHours())}:${pad(dt.getMinutes())}</div></div><div class="acts"><button class="btn primary" type="button" data-ok-p="${esc(p.id)}">Aprovar</button><button class="btn danger" type="button" data-no-p="${esc(p.id)}">Recusar</button></div></div>`; }).join("");
     pb.hidden = false;
   } else pb.hidden = true;
-  $("#uList").innerHTML = S.members.map(m => `<div class="mrow"><span class="av" style="background:${esc(m.cor)}">${esc(initials(m.nome))}</span><div><div class="nm">${esc(m.nome)} ${m.papel==="editor"?'<span class="tag ed">Editor</span>':""}</div><div class="em">${[m.temSenha?"Entra com senha":"", m.temCodigo?"Tem código":""].filter(Boolean).join(" · ") || "Sem senha nem código"}${m.cargo?" · "+esc(m.cargo):""}${m.email?" · "+esc(m.email):""}</div></div><div class="acts"><button class="btn" type="button" data-code-m="${esc(m.id)}">Novo código</button><button class="btn" type="button" data-edit-m="${esc(m.id)}">Editar</button>${m.id!==S.me.id?`<button class="btn danger" type="button" data-del-m="${esc(m.id)}">Remover</button>`:""}</div></div>`).join("");
+  $("#uList").innerHTML = S.members.map(m => `<div class="mrow"><span class="av" style="background:${esc(m.cor)}">${esc(initials(m.nome))}</span><div><div class="nm">${esc(m.nome)} ${m.papel==="editor"?'<span class="tag ed">Editor</span>':""}</div><div class="em">${[m.temSenha?"Entra com senha":"", m.temCodigo?"Tem código":""].filter(Boolean).join(" · ") || "Sem senha nem código"}${m.cargo?" · "+esc(m.cargo):""}${m.nascimento?" · nasc. "+m.nascimento.split("-").reverse().join("/"):" · sem data de nascimento"}</div></div><div class="acts"><button class="btn" type="button" data-code-m="${esc(m.id)}">Novo código</button><button class="btn" type="button" data-edit-m="${esc(m.id)}">Editar</button>${m.id!==S.me.id?`<button class="btn danger" type="button" data-del-m="${esc(m.id)}">Remover</button>`:""}</div></div>`).join("");
 }
 function showCode(nome, cod){
   const box = $("#uCode");
@@ -1032,7 +1116,7 @@ async function saveMember(ev){
   const nome = $("#uNome").value.trim(), email = $("#uEmail").value.trim().toLowerCase();
   if (!nome) return msg("Informe o nome.", "err");
   if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return msg("E-mail inválido.", "err");
-  const dados = { nome, email, cargo: $("#uCargo").value.trim(), papel: $("#uPapel").value, cor: (document.querySelector('input[name="uCor"]:checked')||{}).value || CORES[0] };
+  const dados = { nome, email, cargo: $("#uCargo").value.trim(), nascimento: $("#uNasc").value || null, papel: $("#uPapel").value, cor: (document.querySelector('input[name="uCor"]:checked')||{}).value || CORES[0] };
   const novo = !editingMember;
   $("#uSave").disabled = true;
   try {
@@ -1086,9 +1170,10 @@ document.addEventListener("click", e => {
     return;
   }
   if (t.closest("#bannerTeam")){ openTeam(); return; }
+  const tp = t.closest(".typesw button"); if (tp){ setTipo(tp.dataset.tipo); return; }
   const ad = t.closest("[data-add]"); if (ad){ openMeeting({ date: ad.dataset.add }); return; }
   const em = t.closest("[data-edit-m]"); if (em){ const m = byId(em.dataset.editM); if (!m) return; editingMember = m;
-    $("#uNome").value = m.nome; $("#uEmail").value = m.email||""; $("#uCargo").value = m.cargo||""; $("#uPapel").value = m.papel||"usuario"; $("#uPapel").disabled = m.id === S.me.id; drawSwatches(m.cor);
+    $("#uNome").value = m.nome; $("#uEmail").value = m.email||""; $("#uCargo").value = m.cargo||""; $("#uNasc").value = m.nascimento||""; $("#uPapel").value = m.papel||"usuario"; $("#uPapel").disabled = m.id === S.me.id; drawSwatches(m.cor);
     $("#uFormTitle").textContent = `Editar ${m.nome}`; $("#uSave").textContent = "Salvar"; $("#uCancel").hidden = false; $("#uNome").focus(); return; }
   const cm = t.closest("[data-code-m]"); if (cm){ newCode(cm.dataset.codeM, cm); return; }
   const dm = t.closest("[data-del-m]"); if (dm){ removeMember(dm.dataset.delM, dm); return; }
@@ -1099,6 +1184,12 @@ document.addEventListener("click", e => {
   if (t.closest("#copyLink")){ copyFrom($("#linkTxt")); return; }
   if (t.closest("#copyCode")){ copyFrom($("#codeTxt")); return; }
 });
+document.addEventListener("submit", async e => {
+  if (e.target.id !== "myBdForm") return;
+  e.preventDefault();
+  const v = $("#myBd").value; if (!v) return toast("Escolha a data.");
+  try { await call("agenda_meu_nascimento", { p_nascimento: v }); toast("Data de nascimento salva"); await reload(); } catch (err) { toast(err.message); }
+});
 document.addEventListener("keydown", e => { if ((e.key === "Enter" || e.key === " ") && e.target.matches(".mcell[data-day], .upc-item[data-open]")){ e.preventDefault(); e.target.click(); } });
 document.addEventListener("change", e => {
   const t = e.target;
@@ -1106,6 +1197,7 @@ document.addEventListener("change", e => {
   if (t.id === "chkWeekend"){ S.weekend = t.checked; store.set("weekend", S.weekend); render(); return; }
   if (t.matches("#mPart input")){ const sel = selParts(); t.checked ? sel.add(t.value) : sel.delete(t.value); $("#mPart").dataset.sel = JSON.stringify([...sel]); resetConfirm(); drawParticipants(); drawAvail(); return; }
   if (t.id === "bDia"){ $("#bHoras").hidden = t.checked; return; }
+  if (t.id === "mDia"){ if (t.checked){ $("#mInicio").value = "00:00"; $("#mFim").value = "23:59"; } else { $("#mInicio").value = "09:00"; $("#mFim").value = "10:00"; } $("#mInicio").disabled = $("#mFim").disabled = t.checked; resetConfirm(); drawAvail(); return; }
   if (t.id === "bIni" && $("#bFim").value < t.value) $("#bFim").value = t.value;
 });
 ["mData","mInicio","mFim","mOrg"].forEach(id => $("#"+id).addEventListener("input", () => {
