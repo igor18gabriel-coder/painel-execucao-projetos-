@@ -772,9 +772,7 @@ $("csv").addEventListener("click",async()=>{
 let sv="tasks";
 const POS=[
  {k:"est",ico:"📦",t:"Sobras e fechamento de estoque",c:"#ffac03",items:["Conferir sobras de alimentos e perecíveis","Conferir sobras de bebidas","Contar o estoque final","Registrar perdas, quebras e avarias","Devolver, doar ou descartar o que sobrou","Guardar e organizar o estoque restante","Fechar a planilha de estoque"]},
- {k:"cus",ico:"💰",t:"Fechamento de custos",c:"#12b76a",items:["Reunir notas fiscais e comprovantes","Lançar todas as despesas","Conferir pagamentos pendentes a fornecedores","Comparar previsto x realizado","Calcular o custo por participante","Fechar o relatório de custos"]},
- {k:"par",ico:"💬",t:"Feedback dos participantes",c:"#4d8dff",items:["Enviar o formulário de pesquisa aos participantes","Cobrar quem ainda não respondeu","Consolidar as respostas","Registrar elogios e pontos de melhoria","Compartilhar o resultado com a diretoria"]},
- {k:"eq",ico:"🤝",t:"Feedback da equipe",c:"#b57bff",items:["Marcar a reunião de retrospectiva","Ouvir cada área (o que funcionou e o que não)","Registrar as lições aprendidas","Definir melhorias para o próximo evento"]}
+ {k:"cus",ico:"💰",t:"Fechamento de custos",c:"#12b76a",items:["Reunir notas fiscais e comprovantes","Lançar todas as despesas","Conferir pagamentos pendentes a fornecedores","Comparar previsto x realizado","Calcular o custo por participante","Fechar o relatório de custos"]}
 ];
 const posDoc=k=>(store.meta&&store.meta["pos_"+cur+"_"+k])||{};
 const posItems=S=>{const it=posDoc(S.k).it;return Array.isArray(it)?it.map(String):S.items};
@@ -798,20 +796,13 @@ function renderPos(){
     if(canWrite)h+='<div class="ci add"><input class="itx" data-pnew="1" placeholder="Novo item desta etapa" aria-label="Novo item" autocomplete="off"><button class="btn" type="button" data-pa="add">Adicionar</button></div>';
     h+='<div class="sf"><div class="wide"><label class="lbl" for="pr-'+k+'">Responsável</label><input id="pr-'+k+'" data-pf="resp" list="teamList" autocomplete="off" value="'+esc(d.resp||"")+'"'+dis+'></div>';
     if(k==="cus"){
-      h+='<div><label class="lbl" for="pp-'+k+'">Custo previsto (R$)</label><input id="pp-'+k+'" data-pf="prev" inputmode="decimal" value="'+esc(d.prev||"")+'" placeholder="0,00"'+dis+'></div><div><label class="lbl" for="pq-'+k+'">Custo realizado (R$)</label><input id="pq-'+k+'" data-pf="real" inputmode="decimal" value="'+esc(d.real||"")+'" placeholder="0,00"'+dis+'></div>';
-    }
-    if(k==="par"){
-      h+='<div><label class="lbl" for="pn-'+k+'">Respostas recebidas</label><input id="pn-'+k+'" data-pf="n" type="number" min="0" inputmode="numeric" value="'+esc(d.n||"")+'"'+dis+'></div><div><label class="lbl" for="pt-'+k+'">Nota média (0 a 10)</label><input id="pt-'+k+'" data-pf="nota" inputmode="decimal" value="'+esc(d.nota||"")+'"'+dis+'></div>';
-    }
-    if(k==="eq"){
-      h+='<div class="wide"><label class="lbl" for="pl-'+k+'">Lições aprendidas e melhorias</label><textarea id="pl-'+k+'" rows="3" data-pf="lic"'+dis+'>'+esc(d.lic||"")+'</textarea></div>';
+      h+='<div><label class="lbl" for="pq-'+k+'">Custo realizado (R$)</label><input id="pq-'+k+'" data-pf="real" inputmode="decimal" value="'+esc(d.real||"")+'" placeholder="0,00"'+dis+'></div>';
     }
     h+='<div class="wide"><label class="lbl" for="po-'+k+'">Observações</label><textarea id="po-'+k+'" rows="2" data-pf="obs"'+dis+'>'+esc(d.obs||"")+'</textarea></div></div>';
     if(k==="cus"){
-      const a=nf(d.prev),b=nf(d.real),df=a!=null&&b!=null?b-a:null;
-      h+='<div class="calc"><div class="'+(df==null?'':df>0?'neg':'pos')+'"><small>Diferença (real − previsto)</small><b>'+(df==null?'–':(df>0?'+':'')+brl(df))+'</b></div><div><small>Custo por participante</small><b>'+(b!=null&&ppl?brl(b/ppl):'–')+'</b></div></div>';
+      const b=nf(d.real);
+      h+='<div class="calc"><div><small>Custo por participante</small><b>'+(b!=null&&ppl?brl(b/ppl):'–')+'</b></div></div>';
     }
-    if(k==="par"&&ppl&&nf(d.n)!=null)h+='<div class="calc"><div><small>Taxa de resposta</small><b>'+Math.round(100*nf(d.n)/ppl)+'%</b></div></div>';
     h+='</div>';
   });
   h+='</div><div style="margin-top:16px"><button class="btn pri" type="button" id="posPdf">🖨️ Gerar checklist pós-evento em PDF</button></div>';
@@ -860,10 +851,8 @@ function posPdf(){
     posItems(S).forEach(t=>{doc.setFont("helvetica","normal");doc.setFontSize(11.5);doc.setTextColor(0);const ln=doc.splitTextToSize(t,B-12),h=Math.max(8,ln.length*5.4+3);need(h);doc.setDrawColor(0);doc.setLineWidth(.5);doc.rect(M,y,5,5);doc.text(ln,M+9,y+4);doc.setDrawColor(225);doc.setLineWidth(.2);doc.line(M+9,y+h-1.2,W-M,y+h-1.2);y+=h});
     y+=3;need(30);
     line("Responsável",M,B/2-4);
-    if(S.k==="cus"){line("Previsto (R$)",M+B/2,40);line("Realizado (R$)",M+B/2+46,40)}
-    else if(S.k==="par"){line("Respostas",M+B/2,40);line("Nota média",M+B/2+46,40)}
+    if(S.k==="cus"){line("Realizado (R$)",M+B/2,40)}
     y+=12;
-    if(S.k==="eq"){need(40);line("Lições aprendidas e melhorias",M,B);y+=10;doc.line(M,y+6,W-M,y+6);y+=10;doc.line(M,y+6,W-M,y+6);y+=12}
     line("Observações",M,B);y+=16;
   });
   foot();
