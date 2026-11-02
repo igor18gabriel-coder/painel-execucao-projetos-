@@ -432,10 +432,12 @@ dialog::backdrop{background:rgba(6,16,40,.5)}
       </div>
       <label class="check" id="mDiaWrap" hidden><input type="checkbox" id="mDia"> Dia inteiro</label>
       <label class="fld"><span id="mOrgLbl">Organizador</span><select id="mOrg"></select></label>
-      <div class="fld" id="mPartWrap"><span>Participantes</span>
+      <div class="fld" id="mPartWrap"><span>Participantes da equipe (opcional)</span>
         <input id="mBusca" placeholder="Buscar pessoa…" autocomplete="off">
         <div class="plist" id="mPart"></div>
+        <small id="mSolo"></small>
       </div>
+      <label class="fld" id="mExtWrap"><span>Participantes externos (opcional)</span><input id="mExt" maxlength="300" placeholder="Ex.: João Silva (Empresa X), fornecedor ABC"><small>Pessoas de fora da empresa. Elas não têm acesso à agenda: envie o link por conta própria.</small></label>
       <div class="fld"><span>Disponibilidade no dia</span>
         <div class="avail" id="mAvail"></div>
         <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between">
@@ -607,7 +609,7 @@ async function rpc(fn, args){
   if (!r.ok){
     const m = (j && j.message) || "";
     const key = Object.keys(ERROS).find(k => m.startsWith(k));
-    if (m.startsWith("em_tarefa")) throw { code: "em_tarefa", message: "Em tarefa neste horário: " + m.split(":").slice(1).join(":").trim() + "." };
+    if (m.startsWith("em_tarefa")) throw { code: "em_tarefa", message: "Agenda fechada (tarefa ou reunião externa) neste horário: " + m.split(":").slice(1).join(":").trim() + "." };
     if (m.startsWith("agenda_fechada")) throw { code: "agenda_fechada", message: "Agenda fechada neste horário: " + m.split(":").slice(1).join(":").trim() + "." };
     throw { code: key || "erro", message: key ? ERROS[key] : "Não foi possível concluir. Tente de novo." };
   }
@@ -706,6 +708,9 @@ const byId = id => S.members.find(m => m.id === id);
 const colorOf = id => byId(id)?.cor || "#64748b";
 const nameOf = id => byId(id)?.nome || "Usuário removido";
 const isTask = mt => mt.tipo === "tarefa";
+const isSolo = mt => !isTask(mt) && !(mt.participantes||[]).length;
+const isBlocking = mt => isTask(mt) || isSolo(mt);
+const extTxt = mt => (mt.externos||"").trim();
 const allDay = mt => mt.inicio === "00:00" && mt.fim === "23:59";
 const timeTxt = mt => allDay(mt) ? "Dia inteiro" : `${mt.inicio}–${mt.fim}`;
 const birthdaysOn = k => S.members.filter(m => m.aniversario && m.aniversario === k.slice(5));
@@ -715,7 +720,7 @@ const blocksFor = (mid, date) => S.blocks.filter(b => b.membroId === mid && b.da
 const isClosed = (mid, date) => blocksFor(mid, date).some(b => b.diaInteiro);
 function busyOf(mid, date, exclude){
   const out = [];
-  for (const mt of S.meetings) if (mt.data === date && mt.id !== exclude && involved(mt).includes(mid)) out.push({ s: toMin(mt.inicio), e: toMin(mt.fim), kind: isTask(mt) ? "t" : "m" });
+  for (const mt of S.meetings) if (mt.data === date && mt.id !== exclude && involved(mt).includes(mid)) out.push({ s: toMin(mt.inicio), e: toMin(mt.fim), kind: isBlocking(mt) ? "t" : "m" });
   for (const b of blocksFor(mid, date)) if (!b.diaInteiro) out.push({ s: toMin(b.inicio), e: toMin(b.fim), kind: "b" });
   return out;
 }
@@ -726,7 +731,7 @@ function statusOf(mid, date, s, e, exclude){
   if (bz.some(x => x.kind === "t")) return "task";
   return bz.length ? "busy" : "free";
 }
-const STATUS_TXT = { free: "Livre", busy: "Ocupado", closed: "Agenda fechada", task: "Em tarefa" };
+const STATUS_TXT = { free: "Livre", busy: "Ocupado", closed: "Agenda fechada", task: "Indisponível" };
 const blocking = st => st === "closed" || st === "task";
 const canEditMeeting = mt => S.admin || mt.organizador === S.me?.id || mt.criadoPor === S.me?.id;
 const canEditBlock = b => S.admin || b.membroId === S.me?.id || b.criadoPor === S.me?.id;
@@ -835,7 +840,7 @@ function gridHTML(cols){
   });
   return h + `</div></div>`;
 }
-function evFrom(mt){ const t = isTask(mt); return { id: mt.id, s: toMin(mt.inicio), e: toMin(mt.fim), color: colorOf(mt.organizador), title: mt.titulo || "(sem assunto)", link: !t && !!mt.link, task: t, sub: t ? `Tarefa · ${first(nameOf(mt.organizador))}` : involved(mt).map(p => first(nameOf(p))).join(", ") }; }
+function evFrom(mt){ const t = isTask(mt); return { id: mt.id, s: toMin(mt.inicio), e: toMin(mt.fim), color: colorOf(mt.organizador), title: mt.titulo || "(sem assunto)", link: !t && !!mt.link, task: t, sub: t ? `Tarefa · ${first(nameOf(mt.organizador))}` : isSolo(mt) ? `${first(nameOf(mt.organizador))} · externa${extTxt(mt) ? ": " + extTxt(mt) : ""}` : involved(mt).map(p => first(nameOf(p))).join(", ") + (extTxt(mt) ? " + externos" : "") }; }
 const noneSel = `<div class="state"><h3>Nenhuma agenda selecionada</h3><p>Marque pessoas em “Agendas visíveis”.</p></div>`;
 function weekHTML(){
   const vis = new Set(visibleMembers().map(m => m.id)), a = startWeek(S.cursor), n = S.weekend ? 7 : 5, cols = [];
@@ -876,7 +881,7 @@ function listHTML(){
     const locks = [], parts = [];
     for (const m of visibleMembers()) for (const b of blocksFor(m.id, k)) (b.diaInteiro ? locks : parts).push({ b, m });
     const items = [
-      ...evs.map(mt => ({ s: mt.inicio, html: `<button type="button" class="litem" data-open="${esc(mt.id)}"><span class="tm">${allDay(mt)?"Dia<span>inteiro</span>":`${esc(mt.inicio)}<span>${esc(mt.fim)}</span>`}</span><span class="bar" style="background:${isTask(mt)?`repeating-linear-gradient(180deg,${esc(colorOf(mt.organizador))} 0 4px,transparent 4px 7px)`:esc(colorOf(mt.organizador))}"></span><div><div class="t">${isTask(mt)?CHK.replace('class="chk"','class="chk" style="color:'+esc(colorOf(mt.organizador))+'"'):mt.link?VID:""}${esc(mt.titulo)}</div><div class="s">${isTask(mt)?"Tarefa · "+esc(nameOf(mt.organizador)):esc(involved(mt).map(p => first(nameOf(p))).join(", "))}${mt.local?" · "+esc(mt.local):""}</div></div>${!isTask(mt)&&mt.link?`<a class="join" href="${esc(mt.link)}" target="_blank" rel="noopener">Entrar</a>`:""}</button>` })),
+      ...evs.map(mt => ({ s: mt.inicio, html: `<button type="button" class="litem" data-open="${esc(mt.id)}"><span class="tm">${allDay(mt)?"Dia<span>inteiro</span>":`${esc(mt.inicio)}<span>${esc(mt.fim)}</span>`}</span><span class="bar" style="background:${isTask(mt)?`repeating-linear-gradient(180deg,${esc(colorOf(mt.organizador))} 0 4px,transparent 4px 7px)`:esc(colorOf(mt.organizador))}"></span><div><div class="t">${isTask(mt)?CHK.replace('class="chk"','class="chk" style="color:'+esc(colorOf(mt.organizador))+'"'):mt.link?VID:""}${esc(mt.titulo)}</div><div class="s">${isTask(mt)?"Tarefa · "+esc(nameOf(mt.organizador)):isSolo(mt)?esc(nameOf(mt.organizador))+" · reunião externa"+(extTxt(mt)?": "+esc(extTxt(mt)):""):esc(involved(mt).map(p => first(nameOf(p))).join(", "))+(extTxt(mt)?" + "+esc(extTxt(mt)):"")}${mt.local?" · "+esc(mt.local):""}</div></div>${!isTask(mt)&&mt.link?`<a class="join" href="${esc(mt.link)}" target="_blank" rel="noopener">Entrar</a>`:""}</button>` })),
       ...parts.map(({ b, m }) => ({ s: b.inicio, html: `<button type="button" class="litem blkrow" data-block="${esc(b.id)}"><span class="tm">${esc(b.inicio)}<span>${esc(b.fim)}</span></span><span></span><div><div class="t">${LOCK} ${esc(m.nome)} indisponível</div><div class="s">${esc(b.motivo || "Agenda fechada neste horário")}</div></div><span></span></button>` })),
     ].sort((a, b) => a.s.localeCompare(b.s));
     const weekday = ["domingo","segunda","terça","quarta","quinta","sexta","sábado"][d.getDay()];
@@ -913,7 +918,7 @@ let editing = null, confirmConflict = false, tipo = "reuniao";
 function setTipo(t){
   tipo = t; const task = t === "tarefa";
   document.querySelectorAll(".typesw button").forEach(b => b.setAttribute("aria-pressed", b.dataset.tipo === t));
-  $("#mPartWrap").hidden = task; $("#mLinkWrap").hidden = task; $("#mDiaWrap").hidden = !task;
+  $("#mPartWrap").hidden = task; $("#mLinkWrap").hidden = task; $("#mExtWrap").hidden = task; $("#mDiaWrap").hidden = !task;
   if (!task && $("#mDia").checked){ $("#mDia").checked = false; $("#mInicio").disabled = $("#mFim").disabled = false; $("#mInicio").value = "09:00"; $("#mFim").value = "10:00"; }
   $("#mTituloLbl").textContent = task ? "Tarefa" : "Assunto";
   $("#mTitulo").placeholder = task ? "Ex.: Preparar relatório mensal" : "Ex.: Alinhamento do projeto";
@@ -931,7 +936,7 @@ function openMeeting(opts = {}){
   const s = mt ? mt.inicio : (opts.start || nextSlot());
   $("#mInicio").value = s;
   $("#mFim").value = mt ? mt.fim : fromMin(Math.min(toMin(s) + 60, 23*60+45));
-  $("#mLink").value = mt?.link || ""; $("#mLocal").value = mt?.local || ""; $("#mDesc").value = mt?.descricao || "";
+  $("#mLink").value = mt?.link || ""; $("#mExt").value = mt?.externos || ""; $("#mLocal").value = mt?.local || ""; $("#mDesc").value = mt?.descricao || "";
   const org = mt?.organizador || S.me.id;
   $("#mOrg").innerHTML = S.members.map(m => `<option value="${esc(m.id)}" ${m.id===org?"selected":""}>${esc(m.nome)}</option>`).join("");
   $("#mOrg").disabled = !S.admin;
@@ -946,7 +951,13 @@ function openMeeting(opts = {}){
 }
 function nextSlot(){ const n = new Date(); let m = Math.ceil((n.getHours()*60 + n.getMinutes())/30)*30; if (ymd(S.cursor) !== todayStr() || m < H0*60 || m > (H1-1)*60) m = 9*60; return fromMin(m); }
 const selParts = () => new Set(JSON.parse($("#mPart").dataset.sel || "[]"));
+function drawSolo(){
+  const el = $("#mSolo"); if (!el) return;
+  const none = tipo !== "tarefa" && !selParts().size;
+  el.textContent = none ? "Sem ninguém da equipe, a reunião fecha a agenda do organizador nesse horário (ideal para reuniões externas)." : "";
+}
 function drawParticipants(){
+  drawSolo();
   const date = $("#mData").value, s = toMin($("#mInicio").value), e = toMin($("#mFim").value), org = $("#mOrg").value;
   const q = $("#mBusca").value.trim().toLowerCase(), sel = selParts(), ex = editing?.id;
   $("#mPart").innerHTML = S.members.filter(m => m.id !== org && (!q || (m.nome+" "+(m.cargo||"")).toLowerCase().includes(q))).map(m => {
@@ -992,20 +1003,19 @@ async function saveMeeting(ev){
   if (!titulo){ $("#mTitulo").focus(); return setMsg(task ? "Descreva a tarefa." : "Informe o assunto da reunião.", "err"); }
   if (!data || !inicio || !fim) return setMsg("Preencha data, início e término.", "err");
   if (toMin(fim) <= toMin(inicio)) return setMsg("O término precisa ser depois do início.", "err");
-  if (!task && !parts.length) return setMsg("Escolha pelo menos um participante.", "err");
   const rawLink = task ? "" : $("#mLink").value.trim(), link = normLink(rawLink);
   if (rawLink && !link) return setMsg("O link não parece válido. Cole o endereço completo (https://…).", "err");
   const s = toMin(inicio), e = toMin(fim), ex = editing?.id;
   const closed = [org, ...parts].filter(p => statusOf(p, data, s, e, ex) === "closed");
   if (closed.length) return setMsg(`Agenda fechada neste horário: ${closed.map(p => first(nameOf(p))).join(", ")}.`, "err");
   const inTask = [org, ...parts].filter(p => statusOf(p, data, s, e, ex) === "task");
-  if (inTask.length) return setMsg(`Em tarefa neste horário: ${inTask.map(p => first(nameOf(p))).join(", ")}.`, "err");
+  if (inTask.length) return setMsg(`Agenda fechada (tarefa ou reunião externa) neste horário: ${inTask.map(p => first(nameOf(p))).join(", ")}.`, "err");
   const busy = [org, ...parts].filter(p => statusOf(p, data, s, e, ex) === "busy");
   if (busy.length && !confirmConflict){ confirmConflict = true; $("#mSave").textContent = "Salvar mesmo assim"; return setMsg(`Conflito: ${busy.map(p => first(nameOf(p))).join(", ")} já ${busy.length>1?"têm":"tem"} reunião neste horário.`, "wrn"); }
   $("#mSave").disabled = true;
   try {
-    await call("agenda_reuniao_salvar", { p_id: editing?.id || null, p_dados: { tipo, titulo, data, inicio, fim, organizador: org, participantes: parts, link, local: $("#mLocal").value.trim(), descricao: $("#mDesc").value.trim() } });
-    const was = !!editing; $("#dlgMeet").close(); toast(task ? (was ? "Tarefa atualizada" : "Tarefa salva. Sua agenda está fechada nesse horário.") : (was ? "Reunião atualizada" : "Reunião agendada")); await reload();
+    await call("agenda_reuniao_salvar", { p_id: editing?.id || null, p_dados: { tipo, titulo, data, inicio, fim, organizador: org, participantes: parts, externos: task ? "" : $("#mExt").value.trim(), link, local: $("#mLocal").value.trim(), descricao: $("#mDesc").value.trim() } });
+    const was = !!editing; $("#dlgMeet").close(); toast(task ? (was ? "Tarefa atualizada" : "Tarefa salva. Sua agenda está fechada nesse horário.") : !parts.length ? (was ? "Reunião atualizada" : "Reunião externa agendada. A agenda está fechada nesse horário.") : (was ? "Reunião atualizada" : "Reunião agendada")); await reload();
   } catch (err) { if (err.code === "codigo_invalido") return logout(err.message); setMsg(err.message, "err"); }
   finally { $("#mSave").disabled = false; }
 }
@@ -1021,9 +1031,10 @@ function viewMeeting(id){
   $("#vTitle").textContent = mt.titulo || "(sem assunto)";
   let b = `<dl class="dt">
     <dt>Quando</dt><dd>${["Domingo","Segunda","Terça","Quarta","Quinta","Sexta","Sábado"][d.getDay()]}, ${d.getDate()} de ${MESES[d.getMonth()]} de ${d.getFullYear()} · <span class="mono">${esc(timeTxt(mt))}</span></dd>
-    <dt>Tipo</dt><dd>${isTask(mt) ? '<span class="tag task">Tarefa · agenda fechada</span>' : '<span class="tag kind">Reunião</span>'}</dd>
+    <dt>Tipo</dt><dd>${isTask(mt) ? '<span class="tag task">Tarefa · agenda fechada</span>' : isSolo(mt) ? '<span class="tag task">Reunião externa · agenda fechada</span>' : '<span class="tag kind">Reunião</span>'}</dd>
     <dt>${isTask(mt) ? "Responsável" : "Organizador"}</dt><dd><div class="pp"><div>${av(mt.organizador)}${esc(nameOf(mt.organizador))}</div></div></dd>` +
-    (isTask(mt) ? "" : `<dt>Participantes</dt><dd><div class="pp">${(mt.participantes||[]).map(p => `<div>${av(p)}${esc(nameOf(p))}${S.me?.id===p?' <span class="tag ed">você</span>':""}</div>`).join("")}</div></dd>`);
+    (isTask(mt) || isSolo(mt) ? "" : `<dt>Participantes</dt><dd><div class="pp">${(mt.participantes||[]).map(p => `<div>${av(p)}${esc(nameOf(p))}${S.me?.id===p?' <span class="tag ed">você</span>':""}</div>`).join("")}</div></dd>`);
+  if (extTxt(mt) && !isTask(mt)) b += `<dt>Externos</dt><dd>${esc(extTxt(mt))}</dd>`;
   if (mt.link && !isTask(mt)) b += `<dt>Link</dt><dd><div class="plink"><a class="join" href="${esc(mt.link)}" target="_blank" rel="noopener">${VID.replace('class="vid"','')} Entrar no ${esc(platformOf(mt.link))}</a><button class="btn" type="button" id="copyLink">Copiar link</button></div><div class="plink" style="margin-top:6px"><code id="linkTxt">${esc(mt.link)}</code></div></dd>`;
   if (mt.local) b += `<dt>Local</dt><dd>${esc(mt.local)}</dd>`;
   if (mt.descricao) b += `<dt>${isTask(mt) ? "Detalhes" : "Pauta"}</dt><dd style="white-space:pre-wrap">${esc(mt.descricao)}</dd>`;
