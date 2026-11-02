@@ -12,6 +12,8 @@ header{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:s
 .brand{display:flex;gap:12px;align-items:center;min-width:0}
 .brand img{height:48px;width:auto;border-radius:8px}
 h1{font-size:22px;margin:0;letter-spacing:.02em}
+.h1i{font-size:22px;font-weight:700;letter-spacing:.02em;width:min(420px,100%);padding:2px 8px;background:transparent;border-color:transparent}
+.h1i:hover,.h1i:focus{border-color:var(--bd);background:var(--inp)}
 .sub{color:var(--mut);font-size:13px}
 .btn{font:inherit;font-size:14px;padding:8px 12px;border:1px solid var(--bd);border-radius:8px;background:var(--card);color:var(--tx);cursor:pointer}
 .btn:hover{border-color:var(--ac)}
@@ -59,7 +61,7 @@ textarea{width:100%;resize:vertical}
 </style></head><body>
 <div class="wrap">
 <header>
-  <div class="brand"><img src="logo-unifm.png" alt="Fastfood Milionário"><div><h1>PLANO DE AÇÃO</h1><div class="sub" id="sub">Tarefas, prazos e checagem</div></div></div>
+  <div class="brand"><img src="logo-unifm.png" alt="Fastfood Milionário"><div><h1 id="h1">PLANO DE AÇÃO</h1><input id="h1i" class="h1i" aria-label="Nome da página" maxlength="60" hidden><div class="sub" id="sub">Tarefas, prazos e checagem</div></div></div>
   <div class="row"><button class="btn" id="pdf" type="button">🖨️ Imprimir / PDF</button><button class="btn" id="logout" type="button" hidden>Sair</button></div>
 </header>
 
@@ -104,7 +106,7 @@ const SB_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZ
 const $=id=>document.getElementById(id);
 const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const P="pa_";
-let code="",me="",canWrite=false,docs={},writing=0,pollT=null,sig="",openObs={},pend=false;
+let cfgName="",code="",me="",canWrite=false,docs={},writing=0,pollT=null,sig="",openObs={},pend=false;
 const lsGet=k=>{try{return localStorage.getItem(k)||""}catch(e){return""}};
 const lsSet=(k,v)=>{try{v?localStorage.setItem(k,v):localStorage.removeItem(k)}catch(e){}};
 function rpc(fn,args){
@@ -118,7 +120,7 @@ const hoje=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth(
 const fd=s=>{const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(s||"");return m?m[3]+"/"+m[2]+"/"+m[1]:"sem data"};
 const fdt=ms=>{if(!ms)return"";const d=new Date(ms);return String(d.getDate()).padStart(2,"0")+"/"+String(d.getMonth()+1).padStart(2,"0")+" "+String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0")};
 const dias=(a,b)=>Math.round((Date.parse(b+"T12:00:00")-Date.parse(a+"T12:00:00"))/864e5);
-function load(r){const n={};(r.docs||[]).forEach(d=>{if(d.col==="meta"&&d.id.indexOf(P)===0)n[d.id.slice(P.length)]=d.data});docs=n}
+function load(r){const c=(r.docs||[]).find(d=>d.col==="meta"&&d.id==="pacfg");cfgName=c&&c.data&&c.data.name?String(c.data.name):"";const n={};(r.docs||[]).forEach(d=>{if(d.col==="meta"&&d.id.indexOf(P)===0)n[d.id.slice(P.length)]=d.data});docs=n}
 async function write(id,patch,modo){
   if(!canWrite)return;writing++;
   try{
@@ -192,6 +194,9 @@ function render(){
       (op?'<div class="obs"><textarea rows="3" data-a="obstxt" placeholder="Observação"'+dis+' aria-label="Observação">'+esc(x.obs||"")+'</textarea></div>':'')+
       '</div>'}).join(""):'<div class="empty">'+(tot?"Nenhuma tarefa com esses filtros.":(canWrite?"Nenhuma tarefa ainda. Adicione a primeira acima.":"Nenhuma tarefa cadastrada."))+'</div>';
   $("foot").textContent=canWrite?"":"Modo somente leitura.";
+  const nm=cfgName||"PLANO DE AÇÃO";$("h1").textContent=nm;document.title=nm;
+  if(document.activeElement!==$("h1i"))$("h1i").value=nm;
+  $("h1").hidden=canWrite;$("h1i").hidden=!canWrite;
   $("sub").textContent=hj?hj+" tarefa(s) vencem hoje":"Tarefas, prazos e checagem";
 }
 $("addF").addEventListener("submit",e=>{
@@ -220,6 +225,12 @@ $("list").addEventListener("click",e=>{
 });
 document.addEventListener("focusout",()=>{if(pend)setTimeout(render,0)});
 ["q","fS","fR"].forEach(i=>$(i).addEventListener("input",render));
+$("h1i").addEventListener("change",async()=>{
+  const v=$("h1i").value.trim();if(!canWrite)return;if(!v){$("h1i").value=cfgName||"PLANO DE AÇÃO";return}
+  if(v===(cfgName||"PLANO DE AÇÃO"))return;cfgName=v;writing++;
+  try{await rpc("painel_gravar",{p_code:code,p_col:"meta",p_id:"pacfg",p_dados:{name:v,upd:Date.now()},p_modo:"update"})}catch(e){alert("Não consegui salvar o nome.")}
+  finally{writing--;poll()}render()});
+$("h1i").addEventListener("keydown",e=>{if(e.key==="Enter")e.target.blur()});
 $("pdf").addEventListener("click",()=>window.print());
 function setLock(on){$("gate").hidden=!on;$("app").hidden=on;$("logout").hidden=on}
 function logout(msg){code="";lsSet("pe_code","");clearInterval(pollT);docs={};canWrite=false;setLock(true);$("gErr").textContent=msg||""}
