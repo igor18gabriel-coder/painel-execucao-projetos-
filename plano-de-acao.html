@@ -56,12 +56,14 @@ textarea{width:100%;resize:vertical}
 .chip{font-size:12px;padding:3px 10px;border-radius:12px;background:var(--bluebg);color:var(--ac);font-weight:600;white-space:nowrap}
 .chip.ok{background:var(--grnbg);color:var(--grn)}.chip.bad{background:var(--redbg);color:var(--red)}.chip.warn{background:var(--ambbg);color:var(--amb)}
 .obs{margin:8px 0 0 32px;border-top:1px solid var(--bd);padding-top:10px;display:grid;gap:10px}
+.etb{display:flex;gap:8px;align-items:center;width:calc(100% - 32px);margin:8px 0 0 32px;text-align:left;font:inherit;font-size:14px;color:var(--tx);background:var(--inp);border:1px dashed var(--bd);border-radius:8px;padding:7px 10px;cursor:pointer}
+.etb:hover{border-color:var(--ac)}.etb .et{flex:1;min-width:0;overflow-wrap:anywhere}.etb i{color:var(--mut)}
 .g2{display:grid;grid-template-columns:200px 1fr;gap:8px}
 .stp{display:flex;gap:8px;align-items:flex-start;padding:6px 8px;background:var(--inp);border:1px solid var(--bd);border-radius:8px;font-size:14px}
 .stp .tx{flex:1;min-width:0;overflow-wrap:anywhere}.stp small{color:var(--mut);display:block;font-size:12px}
 .stp button{border:0;background:transparent;color:var(--mut);cursor:pointer;font-size:15px;padding:0 4px}
 .empty{text-align:center;color:var(--mut);padding:30px 10px;border:1px dashed var(--bd);border-radius:12px}
-@media (max-width:720px){.top{grid-template-columns:auto 1fr auto}.top .d,.top .r{grid-column:2/-1}.meta,.obs{margin-left:0}.g2{grid-template-columns:1fr}}
+@media (max-width:720px){.top{grid-template-columns:auto 1fr auto}.top .d,.top .r{grid-column:2/-1}.meta,.obs{margin-left:0}.etb{margin-left:0;width:100%}.g2{grid-template-columns:1fr}}
 #gate[hidden],[hidden]{display:none!important}
 .err{color:var(--red);margin-top:8px}
 @media print{body::before{display:none}body{background:#fff;color:#000}.add,.filters,.acts,#logout,#pdf{display:none}.task{border-color:#999;background:#fff;color:#000}.k{background:#fff;border-color:#999}}
@@ -202,7 +204,8 @@ function render(){
       '<input class="d" type="date" data-a="due" value="'+esc(x.due||"")+'" aria-label="Data"'+dis+'>'+
       '<input class="r" data-a="resp" list="team" value="'+esc(x.resp||"")+'" placeholder="Responsável" aria-label="Responsável" autocomplete="off"'+dis+'>'+
       '<div class="acts"><button class="ib'+(hasO||op?" on":"")+'" type="button" data-a="obs" title="Andamento e observação" aria-label="Andamento e observação">📝</button>'+(canWrite?'<button class="ib" type="button" data-a="del" title="Excluir" aria-label="Excluir tarefa">🗑</button>':'')+'</div></div>'+
-      '<div class="meta">'+chip+sit+etp+(x.due?'<span class="sub">'+esc(fd(x.due))+'</span>':'')+lst+'</div>'+
+      '<div class="meta">'+chip+sit+(x.due?'<span class="sub">'+esc(fd(x.due))+'</span>':'')+lst+'</div>'+
+      '<button type="button" class="etb" data-a="obs" aria-expanded="'+op+'"><span class="ar">'+(op?'▾':'▸')+'</span><span class="et">'+((x.etapa||'').trim()?'📍 <b>Etapa:</b> '+esc(x.etapa.trim()):'<i>'+(canWrite?'Registrar etapa e andamento':'Sem etapa registrada')+'</i>')+'</span>'+(stp.length?'<span class="sub">'+stp.length+' passo(s)</span>':'')+'</button>'+
       (op?'<div class="obs"><div class="g2"><div><label class="lbl">Situação</label><select data-a="st" style="width:100%"'+dis+'><option value="">Não informada</option><option value="and"'+(x.st==="and"?" selected":"")+'>Em andamento</option><option value="agu"'+(x.st==="agu"?" selected":"")+'>Aguardando</option><option value="par"'+(x.st==="par"?" selected":"")+'>Parada</option></select></div><div><label class="lbl">Etapa em que está / o que está aguardando</label><input data-a="etapa" style="width:100%" value="'+esc(x.etapa||"")+'" placeholder="Ex.: aguardando aprovação da diretoria" autocomplete="off"'+dis+'></div></div>'+
         '<div><label class="lbl">Passos (descreva o andamento, o mais recente fica no topo)</label>'+(canWrite?'<div class="row" style="flex-wrap:wrap;margin-bottom:6px"><input data-a="stepnew" style="flex:1;min-width:0" placeholder="Ex.: enviei o pedido ao fornecedor" autocomplete="off"><input type="date" data-a="stepd" value="'+hoje()+'" aria-label="Data de atuação" title="Data de atuação" style="width:150px"><button class="btn pri" type="button" data-a="stepadd">Registrar</button></div>':'')+
         (stp.length?stp.map((q,i)=>({q,i})).sort((m,n)=>(n.q.d||"").localeCompare(m.q.d||"")||n.i-m.i).map(o=>'<div class="stp"><div class="tx">'+esc(o.q.t)+'<small>Registrado '+esc(fdt(o.q.at))+(o.q.by?' · '+esc(o.q.by):'')+'</small></div><div style="display:grid;gap:2px"><label class="lbl" style="margin:0">Atuação</label><input type="date" data-a="stepdate" data-i="'+o.i+'" value="'+esc(o.q.d||"")+'" style="width:140px;padding:4px 6px"'+dis+'></div>'+(canWrite?'<button type="button" data-a="stepdel" data-i="'+o.i+'" aria-label="Excluir passo">✕</button>':'')+'</div>').join(""):'<div class="sub">Nenhum passo registrado.</div>')+'</div>'+
