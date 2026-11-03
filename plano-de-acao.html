@@ -195,7 +195,7 @@ function render(){
     const hasO=!!((x.obs||"").trim()||(x.etapa||"").trim()||stp.length||x.st),op=openObs[x.id]||false;
     const sit=!x.done&&x.st&&SX[x.st]?'<span class="'+SX[x.st][1]+'">'+SX[x.st][0]+'</span>':"";
     const etp=!x.done&&(x.etapa||"").trim()?'<span class="chip">📍 '+esc(x.etapa.trim())+'</span>':"";
-    const lst=!x.done&&last?'<span class="sub">Último passo: '+esc(last.t)+(last.at?" ("+esc(fdt(last.at))+")":"")+'</span>':"";
+    const lst=!x.done&&last?'<span class="sub">Último passo: '+esc(last.t)+(last.d?" ("+esc(fd(last.d))+")":last.at?" ("+esc(fdt(last.at))+")":"")+'</span>':"";
     return '<div class="task'+cls+'" data-id="'+esc(x.id)+'"><div class="top">'+
       '<input type="checkbox" data-a="chk"'+(x.done?" checked":"")+dis+' aria-label="Marcar como realizada">'+
       '<input class="ti" data-a="t" value="'+esc(x.t)+'" aria-label="Tarefa"'+dis+'>'+
@@ -204,8 +204,8 @@ function render(){
       '<div class="acts"><button class="ib'+(hasO||op?" on":"")+'" type="button" data-a="obs" title="Andamento e observação" aria-label="Andamento e observação">📝</button>'+(canWrite?'<button class="ib" type="button" data-a="del" title="Excluir" aria-label="Excluir tarefa">🗑</button>':'')+'</div></div>'+
       '<div class="meta">'+chip+sit+etp+(x.due?'<span class="sub">'+esc(fd(x.due))+'</span>':'')+lst+'</div>'+
       (op?'<div class="obs"><div class="g2"><div><label class="lbl">Situação</label><select data-a="st" style="width:100%"'+dis+'><option value="">Não informada</option><option value="and"'+(x.st==="and"?" selected":"")+'>Em andamento</option><option value="agu"'+(x.st==="agu"?" selected":"")+'>Aguardando</option><option value="par"'+(x.st==="par"?" selected":"")+'>Parada</option></select></div><div><label class="lbl">Etapa em que está / o que está aguardando</label><input data-a="etapa" style="width:100%" value="'+esc(x.etapa||"")+'" placeholder="Ex.: aguardando aprovação da diretoria" autocomplete="off"'+dis+'></div></div>'+
-        '<div><label class="lbl">Passos (descreva o andamento, o mais recente fica no topo)</label>'+(canWrite?'<div class="row" style="flex-wrap:nowrap;margin-bottom:6px"><input data-a="stepnew" style="flex:1" placeholder="Ex.: enviei o pedido ao fornecedor" autocomplete="off"><button class="btn pri" type="button" data-a="stepadd">Registrar</button></div>':'')+
-        (stp.length?stp.map((q,i)=>({q,i})).reverse().map(o=>'<div class="stp"><div class="tx">'+esc(o.q.t)+'<small>'+esc(fdt(o.q.at))+(o.q.by?' · '+esc(o.q.by):'')+'</small></div>'+(canWrite?'<button type="button" data-a="stepdel" data-i="'+o.i+'" aria-label="Excluir passo">✕</button>':'')+'</div>').join(""):'<div class="sub">Nenhum passo registrado.</div>')+'</div>'+
+        '<div><label class="lbl">Passos (descreva o andamento, o mais recente fica no topo)</label>'+(canWrite?'<div class="row" style="flex-wrap:wrap;margin-bottom:6px"><input data-a="stepnew" style="flex:1;min-width:0" placeholder="Ex.: enviei o pedido ao fornecedor" autocomplete="off"><input type="date" data-a="stepd" value="'+hoje()+'" aria-label="Data de atuação" title="Data de atuação" style="width:150px"><button class="btn pri" type="button" data-a="stepadd">Registrar</button></div>':'')+
+        (stp.length?stp.map((q,i)=>({q,i})).sort((m,n)=>(n.q.d||"").localeCompare(m.q.d||"")||n.i-m.i).map(o=>'<div class="stp"><div class="tx">'+esc(o.q.t)+'<small>Registrado '+esc(fdt(o.q.at))+(o.q.by?' · '+esc(o.q.by):'')+'</small></div><div style="display:grid;gap:2px"><label class="lbl" style="margin:0">Atuação</label><input type="date" data-a="stepdate" data-i="'+o.i+'" value="'+esc(o.q.d||"")+'" style="width:140px;padding:4px 6px"'+dis+'></div>'+(canWrite?'<button type="button" data-a="stepdel" data-i="'+o.i+'" aria-label="Excluir passo">✕</button>':'')+'</div>').join(""):'<div class="sub">Nenhum passo registrado.</div>')+'</div>'+
         '<div><label class="lbl">Observação</label><textarea rows="3" data-a="obstxt" placeholder="Observação"'+dis+' aria-label="Observação">'+esc(x.obs||"")+'</textarea></div></div>':'')+
       '</div>'}).join(""):'<div class="empty">'+(tot?"Nenhuma tarefa com esses filtros.":(canWrite?"Nenhuma tarefa ainda. Adicione a primeira acima.":"Nenhuma tarefa cadastrada."))+'</div>';
   $("foot").textContent=canWrite?"":"Modo somente leitura.";
@@ -228,14 +228,15 @@ $("list").addEventListener("change",e=>{
   else if(a==="resp"){const v=el.value.trim();if(v!==(cur.resp||""))write(id,{resp:v,upd:Date.now()})}
   else if(a==="st"){if((el.value||"")!==(cur.st||""))write(id,{st:el.value||"",upd:Date.now()})}
   else if(a==="etapa"){const v=el.value.trim();if(v!==(cur.etapa||""))write(id,{etapa:v,upd:Date.now()})}
+  else if(a==="stepdate"){const st=((cur.steps)||[]).map((q,i)=>i===+el.dataset.i?Object.assign({},q,{d:el.value||""}):q);write(id,{steps:st,upd:Date.now()})}
   else if(a==="obstxt"){const v=el.value.trim();if(v!==(cur.obs||""))write(id,{obs:v,upd:Date.now()})}
 });
 function addStep(card){
   if(!canWrite||!card)return;const inp=card.querySelector('[data-a="stepnew"]'),v=inp?inp.value.trim():"";if(!v)return;
-  const id=card.dataset.id,st=((docs[id]&&docs[id].steps)||[]).concat([{t:v,at:Date.now(),by:me||""}]);
+  const id=card.dataset.id,st=((docs[id]&&docs[id].steps)||[]).concat([{t:v,at:Date.now(),by:me||"",d:(card.querySelector('[data-a="stepd"]')||{}).value||hoje()}]);
   inp.value="";write(id,{steps:st,upd:Date.now()});
 }
-$("list").addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.dataset&&e.target.dataset.a==="stepnew"){e.preventDefault();addStep(e.target.closest(".task"));e.target.blur()}});
+$("list").addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.dataset&&(e.target.dataset.a==="stepnew"||e.target.dataset.a==="stepd")){e.preventDefault();addStep(e.target.closest(".task"));e.target.blur()}});
 let delArm=null;
 $("list").addEventListener("click",e=>{
   const b=e.target.closest("button[data-a]");if(!b)return;const id=b.closest(".task").dataset.id;
