@@ -115,7 +115,7 @@ const SB_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZ
 const $=id=>document.getElementById(id);
 const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const P="pa_";
-let cfgName="",cfgSize=22,code="",me="",canWrite=false,docs={},writing=0,pollT=null,sig="",openObs={},pend=false;
+let lastH="",cfgName="",cfgSize=22,code="",me="",canWrite=false,docs={},writing=0,pollT=null,sig="",openObs={},pend=false;
 const lsGet=k=>{try{return localStorage.getItem(k)||""}catch(e){return""}};
 const lsSet=(k,v)=>{try{v?localStorage.setItem(k,v):localStorage.removeItem(k)}catch(e){}};
 function rpc(fn,args){
@@ -184,7 +184,7 @@ function render(){
     if(q&&!((x.t||"")+" "+(x.resp||"")).toLowerCase().includes(q))return false;return true});
   L.sort((x,y)=>(x.done?1:0)-(y.done?1:0)||(x.due||"9999").localeCompare(y.due||"9999")||(x.ord||0)-(y.ord||0));
   const dis=canWrite?"":" disabled";
-  $("list").innerHTML=L.length?L.map(x=>{
+  const H=L.length?L.map(x=>{
     const cls=x.done?" done":x.late?" late":x.today?" today":"";
     let chip;
     if(x.done)chip='<span class="chip ok">✓ Concluída'+(x.doneAt?" em "+esc(fdt(x.doneAt)):"")+(x.by?" por "+esc(x.by):"")+'</span>';
@@ -211,6 +211,7 @@ function render(){
         (stp.length?stp.map((q,i)=>({q,i})).sort((m,n)=>(n.q.d||"").localeCompare(m.q.d||"")||n.i-m.i).map(o=>'<div class="stp"><div class="tx">'+esc(o.q.t)+'<small>Registrado '+esc(fdt(o.q.at))+(o.q.by?' · '+esc(o.q.by):'')+'</small></div><div style="display:grid;gap:2px"><label class="lbl" style="margin:0">Atuação</label><input type="date" data-a="stepdate" data-i="'+o.i+'" value="'+esc(o.q.d||"")+'" style="width:140px;padding:4px 6px"'+dis+'></div>'+(canWrite?'<button type="button" data-a="stepdel" data-i="'+o.i+'" aria-label="Excluir passo">✕</button>':'')+'</div>').join(""):'<div class="sub">Nenhum passo registrado.</div>')+'</div>'+
         '<div><label class="lbl">Observação</label><textarea rows="3" data-a="obstxt" placeholder="Observação"'+dis+' aria-label="Observação">'+esc(x.obs||"")+'</textarea></div></div>':'')+
       '</div>'}).join(""):'<div class="empty">'+(tot?"Nenhuma tarefa com esses filtros.":(canWrite?"Nenhuma tarefa ainda. Adicione a primeira acima.":"Nenhuma tarefa cadastrada."))+'</div>';
+  if(H!==lastH){$("list").innerHTML=H;lastH=H}
   $("foot").textContent=canWrite?"":"Modo somente leitura.";
   const nm=cfgName||"PLANO DE AÇÃO";$("h1").textContent=nm;document.title=nm;
   if(document.activeElement!==$("h1i"))$("h1i").value=nm;
@@ -268,7 +269,7 @@ $("szm").addEventListener("click",()=>setSize(-4));$("szp").addEventListener("cl
 $("h1i").addEventListener("keydown",e=>{if(e.key==="Enter")e.target.blur()});
 $("pdf").addEventListener("click",()=>window.print());
 function setLock(on){$("gate").hidden=!on;$("app").hidden=on;$("logout").hidden=on}
-function logout(msg){code="";lsSet("pe_code","");clearInterval(pollT);docs={};canWrite=false;setLock(true);$("gErr").textContent=msg||""}
+function logout(msg){lastH="";code="";lsSet("pe_code","");clearInterval(pollT);docs={};canWrite=false;setLock(true);$("gErr").textContent=msg||""}
 async function login(c,name,silent){
   c=normCode(c);$("gBtn").disabled=true;$("gErr").textContent="";
   try{
