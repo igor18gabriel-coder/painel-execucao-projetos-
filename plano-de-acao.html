@@ -185,7 +185,7 @@ function render(){
     if(fs==="p"&&x.done)return false;if(fs==="c"&&!x.done)return false;if(fs==="l"&&!x.late)return false;
     if(rs&&(x.resp||"").trim()!==rs)return false;
     if(q&&!((x.t||"")+" "+(x.resp||"")).toLowerCase().includes(q))return false;return true});
-  L.sort((x,y)=>(x.done?1:0)-(y.done?1:0)||(x.due||"9999").localeCompare(y.due||"9999")||(x.ord||0)-(y.ord||0));
+  L.sort((x,y)=>(x.done?1:0)-(y.done?1:0)||(y.upd||y.ord||0)-(x.upd||x.ord||0));
   const dis=canWrite?"":" disabled";
   const H=L.length?L.map(x=>{
     const cls=x.done?" done":x.late?" late":x.today?" today":"";
