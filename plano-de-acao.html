@@ -156,7 +156,8 @@ async function poll(){
 }
 function rid(){return"a"+Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
 function ets(x){return Array.isArray(x.etapas)?x.etapas:((x.etapa||"").trim()?[{n:x.etapa.trim(),desc:"",d:"",done:false}]:[])}
-function saveEts(id,E){write(id,{etapas:E,etapa:"",upd:Date.now()})}
+function saveEts(id,E){const n=Date.now();write(id,{etapas:E,etapa:"",eupd:n,upd:n})}
+const lastUp=x=>ets(x).length?(x.eupd||x.upd||0):0;
 function list(){
   const t=hoje();
   return Object.keys(docs).map(id=>Object.assign({id},docs[id])).map(x=>{
@@ -185,7 +186,7 @@ function render(){
     if(fs==="p"&&x.done)return false;if(fs==="c"&&!x.done)return false;if(fs==="l"&&!x.late)return false;
     if(rs&&(x.resp||"").trim()!==rs)return false;
     if(q&&!((x.t||"")+" "+(x.resp||"")).toLowerCase().includes(q))return false;return true});
-  L.sort((x,y)=>(x.done?1:0)-(y.done?1:0)||(y.upd||y.ord||0)-(x.upd||x.ord||0));
+  L.sort((x,y)=>(x.done?1:0)-(y.done?1:0)||lastUp(y)-lastUp(x)||(y.ord||0)-(x.ord||0));
   const dis=canWrite?"":" disabled";
   const H=L.length?L.map(x=>{
     const cls=x.done?" done":x.late?" late":x.today?" today":"";
@@ -206,7 +207,7 @@ function render(){
       '<input class="d" type="date" data-a="due" value="'+esc(x.due||"")+'" aria-label="Prazo final" title="Prazo final do checklist"'+dis+'>'+
       '<input class="r" data-a="resp" list="team" value="'+esc(x.resp||"")+'" placeholder="Responsável" aria-label="Responsável" autocomplete="off"'+dis+'>'+
       '<div class="acts"><button class="ib'+(hasO||op?" on":"")+'" type="button" data-a="obs" title="Andamento e observação" aria-label="Andamento e observação">📝</button>'+(canWrite?'<button class="ib" type="button" data-a="del" title="Excluir" aria-label="Excluir tarefa">🗑</button>':'')+'</div></div>'+
-      '<div class="meta">'+chip+sit+'<span class="sub">📅 <b>Prazo final:</b> '+esc(fd(x.due))+'</span><span class="sub">🔄 <b>Última atualização:</b> '+(x.upd?esc(fdt(x.upd,1)):'–')+'</span></div>'+
+      '<div class="meta">'+chip+sit+'<span class="sub">📅 <b>Prazo final:</b> '+esc(fd(x.due))+'</span><span class="sub">🔄 <b>Última atualização:</b> '+(lastUp(x)?esc(fdt(lastUp(x),1)):'sem etapa')+'</span></div>'+
       '<button type="button" class="etb" data-a="obs" aria-expanded="'+op+'"><span class="ar">'+(op?'▾':'▸')+'</span><span class="et">'+barTx+'</span>'+(E.length?'<span class="sub">'+nd+'/'+E.length+' etapas</span>':'')+'</button>'+
       (op?'<div class="obs"><div style="max-width:240px"><label class="lbl">Situação</label><select data-a="st" style="width:100%"'+dis+'><option value="">Não informada</option><option value="and"'+(x.st==="and"?" selected":"")+'>Em andamento</option><option value="agu"'+(x.st==="agu"?" selected":"")+'>Aguardando</option><option value="par"'+(x.st==="par"?" selected":"")+'>Parada</option></select></div>'+
         '<div><label class="lbl">Etapas (ordenadas pela data de atuação; marque quando a etapa for concluída)</label>'+
