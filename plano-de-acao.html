@@ -164,7 +164,12 @@ async function poll(){
 }
 function rid(){return"a"+Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
 function ets(x){return Array.isArray(x.etapas)?x.etapas:((x.etapa||"").trim()?[{n:x.etapa.trim(),desc:"",d:"",done:false}]:[])}
-function saveEts(id,E){const n=Date.now();write(id,{etapas:E,etapa:"",eupd:n,upd:n})}
+async function saveEts(id,E){
+  if(!code)return;const n=Date.now();writing++;
+  try{docs[id]=Object.assign({},docs[id],{etapas:E,etapa:"",eupd:n,upd:n});render();
+    await rpc("plano_etapas",{p_code:code,p_id:P+id,p_etapas:E})}
+  catch(e){alert("Não consegui salvar a etapa. Verifique a internet e tente de novo.")}
+  finally{writing--;poll()}}
 const lastUp=x=>ets(x).length?(x.eupd||x.upd||0):0;
 function renderTabs(){
   const a=document.activeElement;if(a&&a.classList&&a.classList.contains("tab")&&a.tagName==="INPUT")return;
@@ -212,7 +217,7 @@ function render(){
     if(rs&&(x.resp||"").trim()!==rs)return false;
     if(q&&!((x.t||"")+" "+(x.resp||"")).toLowerCase().includes(q))return false;return true});
   L.sort((x,y)=>(x.done?1:0)-(y.done?1:0)||lastUp(y)-lastUp(x)||(y.ord||0)-(x.ord||0));
-  const dis=canWrite?"":" disabled";
+  const dis=canWrite?"":" disabled",disE=code?"":" disabled";
   const H=L.length?L.map(x=>{
     const cls=x.done?" done":x.late?" late":x.today?" today":"";
     let chip;
@@ -225,7 +230,7 @@ function render(){
     const E=ets(x),nd=E.filter(q=>q.done).length,EO=E.map((q,i)=>({q,i})).sort((m,n)=>(m.q.d||"9999").localeCompare(n.q.d||"9999")||m.i-n.i),cu=EO.findIndex(o=>!o.q.done),cq=cu<0?null:EO[cu].q;
     const hasO=!!((x.obs||"").trim()||E.length||x.st),op=openObs[x.id]||false;
     const sit=!x.done&&x.st&&SX[x.st]?'<span class="'+SX[x.st][1]+'">'+SX[x.st][0]+'</span>':"";
-    const barTx=!E.length?'<i>'+(canWrite?"Registrar etapas e andamento":"Sem etapas registradas")+'</i>':(cu<0?"✅ <b>Todas as etapas concluídas</b>":"📍 <b>Etapa atual:</b> "+esc(cq.n||"(sem nome)")+(cq.d?' <span class="sub">· '+esc(fd(cq.d))+(cq.d<hoje()?' · <b style="color:var(--red)">atrasada</b>':cq.d===hoje()?' · <b style="color:var(--amb)">hoje</b>':"")+"</span>":""));
+    const barTx=!E.length?'<i>'+(code?"Registrar etapas e andamento":"Sem etapas registradas")+'</i>':(cu<0?"✅ <b>Todas as etapas concluídas</b>":"📍 <b>Etapa atual:</b> "+esc(cq.n||"(sem nome)")+(cq.d?' <span class="sub">· '+esc(fd(cq.d))+(cq.d<hoje()?' · <b style="color:var(--red)">atrasada</b>':cq.d===hoje()?' · <b style="color:var(--amb)">hoje</b>':"")+"</span>":""));
     return '<div class="task'+cls+'" data-id="'+esc(x.id)+'"><div class="top">'+
       '<input type="checkbox" data-a="chk"'+(x.done?" checked":"")+dis+' aria-label="Marcar como realizada">'+
       '<input class="ti" data-a="t" value="'+esc(x.t)+'" aria-label="Tarefa"'+dis+'>'+
@@ -236,12 +241,12 @@ function render(){
       '<button type="button" class="etb" data-a="obs" aria-expanded="'+op+'"><span class="ar">'+(op?'▾':'▸')+'</span><span class="et">'+barTx+'</span>'+(E.length?'<span class="sub">'+nd+'/'+E.length+' etapas</span>':'')+'</button>'+
       (op?'<div class="obs"><div style="max-width:240px"><label class="lbl">Situação</label><select data-a="st" style="width:100%"'+dis+'><option value="">Não informada</option><option value="and"'+(x.st==="and"?" selected":"")+'>Em andamento</option><option value="agu"'+(x.st==="agu"?" selected":"")+'>Aguardando</option><option value="par"'+(x.st==="par"?" selected":"")+'>Parada</option></select></div>'+
         '<div><label class="lbl">Etapas (ordenadas pela data de atuação; marque quando a etapa for concluída)</label>'+
-        (E.length?EO.map(o=>{const q=o.q,i=o.i;return '<div class="stp'+(q.done?' ok':'')+(!q.done&&q.d&&q.d<hoje()?' late':'')+'"><input type="checkbox" data-a="etchk" data-i="'+i+'"'+(q.done?' checked':'')+dis+' aria-label="Etapa concluída"><div class="etc"><div class="row" style="flex-wrap:nowrap"><span class="sub">'+(i+1)+'.</span><input data-a="etn" data-i="'+i+'" value="'+esc(q.n||"")+'" placeholder="Nome da etapa" style="flex:1;font-weight:600"'+dis+'><input type="date" data-a="etd" data-i="'+i+'" value="'+esc(q.d||"")+'" title="Data de atuação" aria-label="Data de atuação" style="width:145px"'+dis+'>'+(canWrite?'<button type="button" data-a="etdel" data-i="'+i+'" aria-label="Excluir etapa">✕</button>':'')+'</div><textarea rows="2" data-a="etdesc" data-i="'+i+'" placeholder="Descreva o que foi feito nesta etapa"'+dis+'>'+esc(q.desc||"")+'</textarea>'+(q.done?'<small>✓ Concluída'+(q.doneAt?' em '+esc(fdt(q.doneAt)):'')+(q.by?' por '+esc(q.by):'')+'</small>':'')+'</div></div>'}).join(""):'<div class="sub">Nenhuma etapa registrada.</div>')+
-        (canWrite?'<div class="row" style="flex-wrap:wrap;margin-top:6px"><input data-a="etnew" style="flex:1;min-width:0" placeholder="Nova etapa (ex.: Pedir orçamento)" autocomplete="off"><input type="date" data-a="etnewd" value="'+hoje()+'" title="Data de atuação" aria-label="Data de atuação" style="width:150px"><button class="btn pri" type="button" data-a="etadd">Adicionar etapa</button></div>':'')+'</div>'+
+        (E.length?EO.map(o=>{const q=o.q,i=o.i;return '<div class="stp'+(q.done?' ok':'')+(!q.done&&q.d&&q.d<hoje()?' late':'')+'"><input type="checkbox" data-a="etchk" data-i="'+i+'"'+(q.done?' checked':'')+disE+' aria-label="Etapa concluída"><div class="etc"><div class="row" style="flex-wrap:nowrap"><span class="sub">'+(i+1)+'.</span><input data-a="etn" data-i="'+i+'" value="'+esc(q.n||"")+'" placeholder="Nome da etapa" style="flex:1;font-weight:600"'+disE+'><input type="date" data-a="etd" data-i="'+i+'" value="'+esc(q.d||"")+'" title="Data de atuação" aria-label="Data de atuação" style="width:145px"'+disE+'>'+(canWrite?'<button type="button" data-a="etdel" data-i="'+i+'" aria-label="Excluir etapa">✕</button>':'')+'</div><textarea rows="2" data-a="etdesc" data-i="'+i+'" placeholder="Descreva o que foi feito nesta etapa"'+disE+'>'+esc(q.desc||"")+'</textarea>'+(q.done?'<small>✓ Concluída'+(q.doneAt?' em '+esc(fdt(q.doneAt)):'')+(q.by?' por '+esc(q.by):'')+'</small>':'')+'</div></div>'}).join(""):'<div class="sub">Nenhuma etapa registrada.</div>')+
+        '<div class="row" style="flex-wrap:wrap;margin-top:6px"><input data-a="etnew" style="flex:1;min-width:0" placeholder="Nova etapa (ex.: Pedir orçamento)" autocomplete="off"><input type="date" data-a="etnewd" value="'+hoje()+'" title="Data de atuação" aria-label="Data de atuação" style="width:150px"><button class="btn pri" type="button" data-a="etadd">Adicionar etapa</button></div></div>'+
         '<div><label class="lbl">Observação</label><textarea rows="3" data-a="obstxt" placeholder="Observação"'+dis+' aria-label="Observação">'+esc(x.obs||"")+'</textarea></div></div>':'')+
       '</div>'}).join(""):'<div class="empty">'+(tot?"Nenhuma tarefa com esses filtros.":(canWrite?"Nenhuma tarefa ainda. Adicione a primeira acima.":"Nenhuma tarefa cadastrada."))+'</div>';
   if(H!==lastH){$("list").innerHTML=H;lastH=H}
-  $("foot").textContent=canWrite?"":"Modo somente leitura.";
+  $("foot").textContent=canWrite?"":"Modo checagem: você pode criar etapas, descrever e marcar. Tarefas, prazos e situação só o editor altera.";
   const nm=cfgName||"PLANO DE AÇÃO";$("h1").textContent=nm;document.title=nm;
   if(document.activeElement!==$("h1i"))$("h1i").value=nm;
   document.documentElement.style.setProperty("--hs",cfgSize+"px");$("sz").hidden=!canWrite;
@@ -254,7 +259,8 @@ $("addF").addEventListener("submit",e=>{
   $("nT").value="";$("nT").focus();
 });
 $("list").addEventListener("change",e=>{
-  const el=e.target,card=el.closest(".task");if(!card||!canWrite)return;const id=card.dataset.id,a=el.dataset.a,cur=docs[id]||{};
+  const el=e.target,card=el.closest(".task");if(!card||!code)return;const id=card.dataset.id,a=el.dataset.a,cur=docs[id]||{};
+  if(!canWrite&&!/^et(chk|n|d|desc)$/.test(a))return;
   if(a==="chk")write(id,el.checked?{done:true,doneAt:Date.now(),by:me||"",upd:Date.now()}:{done:false,doneAt:0,by:"",upd:Date.now()});
   else if(a==="t"){const v=el.value.trim();if(!v){render();return}if(v!==cur.t)write(id,{t:v,upd:Date.now()})}
   else if(a==="due"){if((el.value||"")!==(cur.due||""))write(id,{due:el.value||"",upd:Date.now()})}
@@ -270,7 +276,7 @@ $("list").addEventListener("change",e=>{
   else if(a==="obstxt"){const v=el.value.trim();if(v!==(cur.obs||""))write(id,{obs:v,upd:Date.now()})}
 });
 function addEt(card){
-  if(!canWrite||!card)return;const inp=card.querySelector('[data-a="etnew"]'),v=inp?inp.value.trim():"";if(!v)return;
+  if(!code||!card)return;const inp=card.querySelector('[data-a="etnew"]'),v=inp?inp.value.trim():"";if(!v)return;
   const id=card.dataset.id,d=(card.querySelector('[data-a="etnewd"]')||{}).value||hoje();
   inp.value="";saveEts(id,ets(docs[id]||{}).concat([{n:v,desc:"",d,done:false}]));
 }
