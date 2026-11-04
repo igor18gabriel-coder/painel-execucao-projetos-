@@ -170,6 +170,12 @@ dialog::backdrop{background:rgba(3,10,35,.72)}
 <dialog id="dlg" aria-labelledby="dlgT">
   <form id="dlgF" method="dialog">
     <h2 id="dlgT" style="margin:0 0 12px;font-size:20px">Nova tarefa</h2>
+    <div class="lbl">O que você quer criar?</div>
+    <div class="tpick" id="dMode">
+      <label class="tpc"><input type="radio" name="dmode" value="m" checked><span><b>📌 Tarefa macro</b><small>Uma tarefa nova, que pode ter várias etapas</small></span></label>
+      <label class="tpc"><input type="radio" name="dmode" value="l"><span><b>🔗 Etapa de uma macro existente</b><small>Adiciona etapas a uma tarefa que já existe, sem abrir a tarefa</small></span></label>
+    </div>
+    <div id="dMacro" style="margin-top:14px">
     <div class="lbl">Esta tarefa é estratégica ou operacional? *</div>
     <div class="tpick" id="dTp">
       <label class="tpc"><input type="radio" name="dtp" value="e" required><span><b>🎯 Estratégica</b><small>Direção, decisões e entregas que movem os objetivos</small></span></label>
@@ -180,7 +186,9 @@ dialog::backdrop{background:rgba(3,10,35,.72)}
       <div><label class="lbl" for="dD">Prazo final da tarefa</label><input id="dD" type="date" style="width:100%"></div>
       <div><label class="lbl" for="dR">Responsável pela tarefa</label><input id="dR" list="team" style="width:100%" autocomplete="off"></div>
     </div>
-    <div style="margin-top:14px"><div class="lbl">Etapas (opcional) — quebre a tarefa em quantos passos precisar</div>
+    </div>
+    <div id="dLink" style="margin-top:14px" hidden><label class="lbl" for="dMac">Vincular à tarefa macro *</label><select id="dMac" style="width:100%"></select></div>
+    <div style="margin-top:14px"><div class="lbl" id="dLbl">Etapas (opcional) — quebre a tarefa em quantos passos precisar</div>
       <div id="dEts"></div>
       <button type="button" class="btn" id="dAdd">＋ Adicionar etapa</button>
     </div>
@@ -263,7 +271,7 @@ function calItems(){
 const canDrag=k=>k==="t"?canWrite:!!code;
 function chip(o,full){
   const sel=calSel&&calSel.k===o.k&&calSel.id===o.id&&calSel.i===o.i;
-  return '<div class="cc k-'+o.k+' '+o.cls+(o.done&&o.k==="e"?' dim':'')+(sel?' sel':'')+'" draggable="'+canDrag(o.k)+'" data-k="'+o.k+'" data-id="'+esc(o.id)+'" data-i="'+o.i+'" title="'+esc((o.k==="t"?"Prazo final: ":"Etapa: ")+o.t+(o.sub?" — "+o.sub:"")+(o.r?" · Resp.: "+o.r:""))+'">'+(o.k==="e"?"▸ ":"")+esc(o.t)+(full&&o.sub?'<small>'+esc(o.k==="e"?"Tarefa: "+o.sub:"Responsável: "+o.sub)+'</small>':'')+'</div>';
+  return '<div class="cc k-'+o.k+' '+o.cls+(o.done&&o.k==="e"?' dim':'')+(sel?' sel':'')+'" draggable="'+canDrag(o.k)+'" data-k="'+o.k+'" data-id="'+esc(o.id)+'" data-i="'+o.i+'" title="'+esc((o.k==="t"?"Prazo final: ":"Etapa: ")+o.t+(o.sub?" — "+o.sub:"")+(o.r?" · Resp.: "+o.r:""))+'">'+(o.k==="e"?"▸ ":"")+esc(o.t)+(o.k==="e"&&!full&&o.sub?' <span style="opacity:.7">· '+esc(o.sub)+'</span>':"")+(full&&o.sub?'<small>'+esc(o.k==="e"?"Tarefa: "+o.sub:"Responsável: "+o.sub)+'</small>':'')+'</div>';
 }
 function cell(d,items,opt){
   const its=items.filter(o=>o.d===d).sort((a,b)=>(a.k===b.k?0:a.k==="t"?-1:1));
@@ -305,7 +313,7 @@ function renderCal(){
   }
   const html='<div class="ct"><button class="btn" type="button" data-cal="prev" aria-label="Anterior">‹</button><button class="btn" type="button" data-cal="today">Hoje</button><button class="btn" type="button" data-cal="next" aria-label="Próximo">›</button><h2>'+esc(title)+'</h2>'+
     '<div class="seg" role="group" aria-label="Visualização">'+[["month","Mês"],["week","Semana"],["day","Dia"]].map(v=>'<button type="button" class="btn'+(calV===v[0]?' on':'')+'" data-view="'+v[0]+'">'+v[1]+'</button>').join("")+'</div></div>'+
-    '<div class="cf"><label><input type="checkbox" data-flt="t"'+(calT?" checked":"")+'> Prazos finais</label><label><input type="checkbox" data-flt="e"'+(calE?" checked":"")+'> Etapas</label>'+(canWrite||code?'<span>Arraste para mudar a data</span>':'')+'</div>'+grid+tray+det;
+    '<div class="cf"><label><input type="checkbox" data-flt="t"'+(calT?" checked":"")+'> Prazos finais</label><label><input type="checkbox" data-flt="e"'+(calE?" checked":"")+'> Etapas vinculadas às macros</label>'+(canWrite||code?'<span>Arraste para mudar a data</span>':'')+'</div>'+grid+tray+det;
   if(html!==calH){root.innerHTML=html;calH=html}
 }
 function applyDate(k,id,i,d){
@@ -449,8 +457,19 @@ function addNRow(focus){
   d.innerHTML='<span class="sub nn"></span><input class="ne-n" placeholder="Descreva a etapa (ex.: Mapear as informações do crachá)" aria-label="Etapa" autocomplete="off"><input class="ne-r" list="team" placeholder="Responsável" aria-label="Responsável pela etapa" autocomplete="off"><input class="ne-d" type="date" aria-label="Prazo da etapa" title="Prazo da etapa"><button type="button" class="ib ne-x" aria-label="Remover etapa">✕</button>';
   $("dEts").appendChild(d);renumN();if(focus)d.querySelector(".ne-n").focus();
 }
+function setMode(m){
+  $("dMacro").hidden=m!=="m";$("dLink").hidden=m!=="l";
+  $("dT").required=m==="m";document.querySelectorAll("input[name=dtp]").forEach(r=>r.required=m==="m");$("dMac").required=m==="l";
+  $("dLbl").textContent=m==="m"?"Etapas (opcional) — quebre a tarefa em quantos passos precisar":"Etapas a adicionar nessa tarefa macro *";
+  $("dOk").textContent=m==="m"?"Criar tarefa":"Adicionar etapas";$("dlgT").textContent=m==="m"?"Nova tarefa":"Nova etapa";
+  if(m==="l"&&!$("dEts").children.length)addNRow(false);
+}
+$("dMode").addEventListener("change",e=>{if(e.target.name==="dmode")setMode(e.target.value)});
 $("newBtn").addEventListener("click",()=>{
   if(!canWrite)return;$("dlgF").reset();$("dEts").innerHTML="";
+  const macs=listPlan().sort((x,y)=>(x.done?1:0)-(y.done?1:0)||(x.t||"").localeCompare(y.t||"","pt-BR"));
+  $("dMac").innerHTML=macs.length?'<option value="">Escolha a tarefa macro…</option>'+macs.map(x=>'<option value="'+esc(x.id)+'">'+(x.tp==="e"?"🎯 ":"⚙️ ")+esc(x.t||"(sem nome)")+(x.done?" (concluída)":"")+'</option>').join(""):'<option value="">Nenhuma tarefa criada ainda</option>';
+  setMode("m");
   if(tpF){const r=document.querySelector('input[name=dtp][value="'+tpF+'"]');if(r)r.checked=true}
   if(typeof dlg.showModal==="function")dlg.showModal();else dlg.setAttribute("open","");
   $("dT").focus();
@@ -464,8 +483,16 @@ $("dEts").addEventListener("keydown",e=>{
 });
 $("dlgF").addEventListener("submit",e=>{
   e.preventDefault();if(!canWrite)return;
-  const tp=(document.querySelector("input[name=dtp]:checked")||{}).value,t=$("dT").value.trim();if(!tp||!t)return;
+  const mode=(document.querySelector("input[name=dmode]:checked")||{}).value||"m";
   const E=[...$("dEts").children].map(r=>({n:r.querySelector(".ne-n").value.trim(),desc:"",r:r.querySelector(".ne-r").value.trim(),d:r.querySelector(".ne-d").value||"",done:false})).filter(q=>q.n);
+  if(mode==="l"){
+    const id=$("dMac").value;if(!id||!docs[id]){$("dMac").focus();return}
+    if(!E.length){const f=$("dEts").querySelector(".ne-n");if(f)f.focus();return}
+    saveEts(id,ets(docs[id]).concat(E));
+    const first=E.find(q=>q.d);if(first){calD=first.d;calH=""}
+    openObs[id]=true;dlg.close();return;
+  }
+  const tp=(document.querySelector("input[name=dtp]:checked")||{}).value,t=$("dT").value.trim();if(!tp||!t)return;
   const n=Date.now(),doc={pl:curPl,tp,t,due:$("dD").value||"",resp:$("dR").value.trim(),done:false,obs:"",ord:n,upd:n};
   if(E.length){doc.etapas=E;doc.eupd=n}
   if(tpF&&tpF!==tp){tpF="";try{localStorage.setItem("pa_tp","")}catch(x){}}
