@@ -29,6 +29,12 @@ textarea{width:100%;resize:vertical}
 .notice{background:var(--card);border:1px solid var(--bd);border-left:5px solid var(--ac);border-radius:12px;padding:12px;margin-bottom:14px}
 .notice p{margin:2px 0 0;color:var(--mut);font-size:14px}
 .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.tab{font:inherit;font-size:15px;font-weight:700;padding:9px 16px;border:1px solid var(--bd);border-radius:10px 10px 0 0;background:var(--card);color:var(--mut);cursor:pointer}
+.tab:hover{color:var(--tx);border-color:var(--ac)}
+.tab.on{background:var(--yl);border-color:var(--yl);color:#0a2a6b}
+input.tab.on{cursor:text;text-align:center}
+.tab small{font-weight:400;opacity:.8}
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:12px}
 .k{background:var(--card);border:1px solid var(--bd);border-top:4px solid var(--kc,var(--yl));border-radius:12px;padding:12px}
 .k small{display:block;font-size:13px;font-weight:600;opacity:.92}
@@ -89,6 +95,7 @@ textarea{width:100%;resize:vertical}
 </section>
 
 <main id="app" hidden>
+  <div class="tabs" id="tabs" role="tablist"></div>
   <div class="kpis" id="kpis"></div>
   <div class="pb"><i id="bar" style="width:0"></i></div>
   <form class="add" id="addF" hidden>
@@ -116,7 +123,8 @@ const SB_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZ
 const $=id=>document.getElementById(id);
 const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const P="pa_";
-let lastH="",cfgName="",cfgSize=22,code="",me="",canWrite=false,docs={},writing=0,pollT=null,sig="",openObs={},pend=false;
+let lastH="",curPl=lsPl(),cfgPlans=[{id:"p1",name:"FACULDADE 100%"},{id:"p2",name:"Plano 2"}],cfgName="",cfgSize=22,code="",me="",canWrite=false,docs={},writing=0,pollT=null,sig="",openObs={},pend=false;
+function lsPl(){try{return localStorage.getItem("pa_plan")||"p1"}catch(e){return"p1"}}
 const lsGet=k=>{try{return localStorage.getItem(k)||""}catch(e){return""}};
 const lsSet=(k,v)=>{try{v?localStorage.setItem(k,v):localStorage.removeItem(k)}catch(e){}};
 function rpc(fn,args){
@@ -130,7 +138,7 @@ const hoje=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth(
 const fd=s=>{const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(s||"");return m?m[3]+"/"+m[2]+"/"+m[1]:"sem data"};
 const fdt=(ms,y)=>{if(!ms)return"";const d=new Date(ms);return String(d.getDate()).padStart(2,"0")+"/"+String(d.getMonth()+1).padStart(2,"0")+(y?"/"+d.getFullYear():"")+" "+String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0")};
 const dias=(a,b)=>Math.round((Date.parse(b+"T12:00:00")-Date.parse(a+"T12:00:00"))/864e5);
-function load(r){const c=(r.docs||[]).find(d=>d.col==="meta"&&d.id==="pacfg");cfgName=c&&c.data&&c.data.name?String(c.data.name):"";cfgSize=c&&c.data&&+c.data.size?Math.min(80,Math.max(14,+c.data.size)):22;const n={};(r.docs||[]).forEach(d=>{if(d.col==="meta"&&d.id.indexOf(P)===0)n[d.id.slice(P.length)]=d.data});docs=n}
+function load(r){const c=(r.docs||[]).find(d=>d.col==="meta"&&d.id==="pacfg");cfgName=c&&c.data&&c.data.name?String(c.data.name):"";cfgPlans=c&&c.data&&Array.isArray(c.data.plans)&&c.data.plans.length?c.data.plans:[{id:"p1",name:"FACULDADE 100%"},{id:"p2",name:"Plano 2"}];if(!cfgPlans.some(q=>q.id===curPl))curPl=cfgPlans[0].id;cfgSize=c&&c.data&&+c.data.size?Math.min(80,Math.max(14,+c.data.size)):22;const n={};(r.docs||[]).forEach(d=>{if(d.col==="meta"&&d.id.indexOf(P)===0)n[d.id.slice(P.length)]=d.data});docs=n}
 async function write(id,patch,modo){
   if(!canWrite)return;writing++;
   try{
@@ -158,16 +166,33 @@ function rid(){return"a"+Date.now().toString(36)+Math.random().toString(36).slic
 function ets(x){return Array.isArray(x.etapas)?x.etapas:((x.etapa||"").trim()?[{n:x.etapa.trim(),desc:"",d:"",done:false}]:[])}
 function saveEts(id,E){const n=Date.now();write(id,{etapas:E,etapa:"",eupd:n,upd:n})}
 const lastUp=x=>ets(x).length?(x.eupd||x.upd||0):0;
+function renderTabs(){
+  const a=document.activeElement;if(a&&a.classList&&a.classList.contains("tab")&&a.tagName==="INPUT")return;
+  const cnt={};Object.keys(docs).forEach(id=>{const k=docs[id].pl||"p1";cnt[k]=(cnt[k]||0)+1});
+  $("tabs").innerHTML=cfgPlans.map(q=>q.id===curPl&&canWrite
+    ?'<input class="tab on" data-pl="'+esc(q.id)+'" value="'+esc(q.name)+'" size="'+Math.max(8,q.name.length+2)+'" maxlength="40" aria-label="Nome da aba (clique para renomear)" title="Clique para renomear">'
+    :'<button type="button" class="tab'+(q.id===curPl?' on':'')+'" role="tab" aria-selected="'+(q.id===curPl)+'" data-pl="'+esc(q.id)+'">'+esc(q.name)+' <small>('+(cnt[q.id]||0)+')</small></button>').join("");
+}
+$("tabs").addEventListener("click",e=>{const b=e.target.closest("button[data-pl]");if(!b)return;curPl=b.dataset.pl;try{localStorage.setItem("pa_plan",curPl)}catch(x){}lastH="";openObs={};render()});
+$("tabs").addEventListener("input",e=>{if(e.target.tagName==="INPUT")e.target.size=Math.max(8,e.target.value.length+2)});
+$("tabs").addEventListener("change",async e=>{
+  const i=e.target;if(i.tagName!=="INPUT"||!canWrite)return;const v=i.value.trim();
+  if(!v){i.value=(cfgPlans.find(q=>q.id===i.dataset.pl)||{}).name||"";return}
+  cfgPlans=cfgPlans.map(q=>q.id===i.dataset.pl?Object.assign({},q,{name:v}):q);writing++;
+  try{await rpc("painel_gravar",{p_code:code,p_col:"meta",p_id:"pacfg",p_dados:{plans:cfgPlans,upd:Date.now()},p_modo:"update"})}catch(x){alert("Não consegui salvar o nome da aba.")}
+  finally{writing--;poll()}render()});
+$("tabs").addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.tagName==="INPUT")e.target.blur()});
 function list(){
   const t=hoje();
   return Object.keys(docs).map(id=>Object.assign({id},docs[id])).map(x=>{
-    x.late=!x.done&&!!x.due&&x.due<t;x.today=!x.done&&x.due===t;return x});
+    x.late=!x.done&&!!x.due&&x.due<t;x.today=!x.done&&x.due===t;return x}).filter(x=>(x.pl||"p1")===curPl);
 }
 function render(){
   if(!code)return;
   const a=document.activeElement;
   if(a&&$("list").contains(a)&&/INPUT|TEXTAREA/.test(a.tagName)&&a.type!=="checkbox"){pend=true;return}
   pend=false;
+  renderTabs();
   const all=list(),tot=all.length,dn=all.filter(x=>x.done).length,lt=all.filter(x=>x.late).length,hj=all.filter(x=>x.today).length,pc=tot?Math.round(100*dn/tot):0;
   $("kpis").innerHTML=
    '<div class="k" style="--kc:#8db4ff"><small>Total</small><b>'+tot+'</b></div>'+
@@ -225,7 +250,7 @@ function render(){
 }
 $("addF").addEventListener("submit",e=>{
   e.preventDefault();const t=$("nT").value.trim();if(!t||!canWrite)return;
-  write(rid(),{t,due:$("nD").value||"",resp:$("nR").value.trim(),done:false,obs:"",ord:Date.now(),upd:Date.now()},"set");
+  write(rid(),{pl:curPl,t,due:$("nD").value||"",resp:$("nR").value.trim(),done:false,obs:"",ord:Date.now(),upd:Date.now()},"set");
   $("nT").value="";$("nT").focus();
 });
 $("list").addEventListener("change",e=>{
