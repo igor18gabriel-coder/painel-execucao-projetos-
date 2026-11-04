@@ -80,8 +80,6 @@ textarea.etdesc{min-height:150px;line-height:1.5;font-size:15px;padding:10px 12p
 @media (max-width:720px){.top{grid-template-columns:auto 1fr auto}.top .d,.top .r{grid-column:2/-1}.meta,.obs{margin-left:0}.etb{margin-left:0;width:100%}}
 #gate[hidden],[hidden]{display:none!important}
 .err{color:var(--red);margin-top:8px}
-@media (min-width:1100px){.wrap{max-width:1500px}.split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:16px;align-items:start}#colR{position:sticky;top:8px}.vsw{display:none}}
-@media (max-width:1099px){.split[data-v=list] #colR{display:none}.split[data-v=cal] #colL{display:none}.vsw{display:flex;gap:6px;margin-bottom:12px}.vsw .btn{flex:1}.vsw .btn.on{background:var(--yl);border-color:var(--yl);color:#0a2a6b;font-weight:700}}
 #cal{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:10px}
 .ct{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:8px}
 .ct h2{font-size:17px;margin:0 6px;flex:1;min-width:140px;display:block}.ct h2::first-letter{text-transform:uppercase}
@@ -106,8 +104,19 @@ textarea.etdesc{min-height:150px;line-height:1.5;font-size:15px;padding:10px 12p
 .cdet{margin-top:10px;border:1px solid var(--bd);border-radius:10px;padding:10px;background:var(--inp);display:grid;gap:8px}
 .tray{margin-top:10px;border:1px dashed var(--bd);border-radius:10px;padding:8px}.tray .cc{display:inline-block;margin:2px 4px 2px 0;max-width:100%}
 .flash{animation:fl 1.6s}@keyframes fl{0%,60%{box-shadow:0 0 0 3px var(--yl)}100%{box-shadow:none}}
-@media print{#cal,.vsw,.tpbar,.addbar{display:none}}
-.addbar{margin-bottom:12px}
+@media print{#cal,.vsw,.tpbar,.viewbar{display:none}}
+@media (min-width:1100px){.wrap{max-width:1500px}}
+.split[data-v=list] #colR{display:none}.split[data-v=cal] #colL{display:none}
+.viewbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+.vsw{display:flex;gap:6px;flex:1;min-width:260px}
+.vsw .btn{flex:1;font-size:15px;font-weight:700;padding:11px 14px;border-width:2px}
+.vsw .btn.on{background:var(--yl);border-color:var(--yl);color:#0a2a6b}
+.mcsel{margin-left:auto;font-weight:600;max-width:260px}
+.gmx{display:flex;gap:6px;align-items:center;font-size:14px;color:var(--mut);cursor:pointer;white-space:nowrap}
+.mh{font-size:16px;margin:14px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--bd)}.mh small{font-weight:400;color:var(--mut);font-size:13px}
+.chip.mc{background:#2b3b7a;color:#cdd8ff}
+.tp3{grid-template-columns:1fr 1fr 1fr}
+@media (max-width:720px){.tp3{grid-template-columns:1fr}}
 .tpbar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
 .tpb{font:inherit;font-size:15px;font-weight:700;padding:10px 16px;border:2px solid var(--bd);border-radius:12px;background:var(--card);color:var(--tx);cursor:pointer;display:flex;gap:8px;align-items:center}
 .tpb:hover{border-color:var(--ac)}.tpb.on{background:var(--yl);border-color:var(--yl);color:#0a2a6b}
@@ -147,17 +156,21 @@ dialog::backdrop{background:rgba(3,10,35,.72)}
 <main id="app" hidden>
   <div class="tabs" id="tabs" role="tablist"></div>
   <div class="tpbar" id="tpbar" role="group" aria-label="Tipo de tarefa"></div>
-  <div class="kpis" id="kpis"></div>
-  <div class="pb"><i id="bar" style="width:0"></i></div>
-  <div class="addbar"><button class="btn pri" id="newBtn" type="button" hidden>＋ Nova tarefa</button></div>
+  <div class="viewbar">
+    <div class="vsw" id="vsw"><button type="button" class="btn" data-mv="cal">📅 Visualizar calendário</button><button type="button" class="btn" data-mv="list">☰ Visualizar tarefas</button></div>
+    <button class="btn pri" id="newBtn" type="button" hidden>＋ Nova tarefa</button>
+  </div>
+  <div id="kpiw"><div class="kpis" id="kpis"></div>
+  <div class="pb"><i id="bar" style="width:0"></i></div></div>
   <datalist id="team"></datalist>
-  <div class="vsw" id="vsw"><button type="button" class="btn on" data-mv="list">☰ Lista</button><button type="button" class="btn" data-mv="cal">📅 Calendário</button></div>
-  <div class="split" id="split" data-v="list">
+  <div class="split" id="split" data-v="cal">
     <div id="colL">
   <div class="filters">
     <input id="q" placeholder="Buscar tarefa ou responsável" aria-label="Buscar">
     <select id="fS" aria-label="Situação"><option value="">Todas</option><option value="p">Pendentes</option><option value="l">Atrasadas</option><option value="c">Concluídas</option></select>
     <select id="fR" aria-label="Responsável"><option value="">Todos os responsáveis</option></select>
+    <select id="fO" aria-label="Ordenar por"><option value="prio">Prioridade: prazo mais próximo</option><option value="far">Prazo mais distante primeiro</option><option value="new">Criadas: mais recentes primeiro</option><option value="old">Criadas: mais antigas primeiro</option><option value="upd">Última atualização</option></select>
+    <label class="gmx"><input type="checkbox" id="gM"> Agrupar por macro</label>
   </div>
   <div id="list"></div>
   <div class="sub" id="foot" style="margin-top:10px"></div>
@@ -171,24 +184,30 @@ dialog::backdrop{background:rgba(3,10,35,.72)}
   <form id="dlgF" method="dialog">
     <h2 id="dlgT" style="margin:0 0 12px;font-size:20px">Nova tarefa</h2>
     <div class="lbl">O que você quer criar?</div>
-    <div class="tpick" id="dMode">
-      <label class="tpc"><input type="radio" name="dmode" value="m" checked><span><b>📌 Tarefa macro</b><small>Uma tarefa nova, que pode ter várias etapas</small></span></label>
-      <label class="tpc"><input type="radio" name="dmode" value="l"><span><b>🔗 Etapa de uma macro existente</b><small>Adiciona etapas a uma tarefa que já existe, sem abrir a tarefa</small></span></label>
+    <div class="tpick tp3" id="dMode">
+      <label class="tpc"><input type="radio" name="dmode" value="t" checked><span><b>✅ Tarefa</b><small>O que será executado, com data e etapas. Aparece no calendário</small></span></label>
+      <label class="tpc"><input type="radio" name="dmode" value="k"><span><b>📁 Macro</b><small>Só uma etiqueta que agrupa tarefas (ex.: Recepção). Não aparece no calendário</small></span></label>
+      <label class="tpc"><input type="radio" name="dmode" value="l"><span><b>🔗 Etapas numa tarefa</b><small>Adiciona etapas a uma tarefa que já existe</small></span></label>
     </div>
+    <div id="dKname" style="margin-top:14px" hidden><label class="lbl" for="dK">Nome da macro *</label><input id="dK" style="width:100%" placeholder="Ex.: Recepção" autocomplete="off"></div>
     <div id="dMacro" style="margin-top:14px">
-    <div class="lbl">Esta tarefa é estratégica ou operacional? *</div>
-    <div class="tpick" id="dTp">
-      <label class="tpc"><input type="radio" name="dtp" value="e" required><span><b>🎯 Estratégica</b><small>Direção, decisões e entregas que movem os objetivos</small></span></label>
-      <label class="tpc"><input type="radio" name="dtp" value="o" required><span><b>⚙️ Operacional</b><small>Execução do dia a dia e tarefas práticas</small></span></label>
+      <div class="lbl">Esta tarefa é estratégica ou operacional? *</div>
+      <div class="tpick" id="dTp">
+        <label class="tpc"><input type="radio" name="dtp" value="e" required><span><b>🎯 Estratégica</b><small>Direção, decisões e entregas que movem os objetivos</small></span></label>
+        <label class="tpc"><input type="radio" name="dtp" value="o" required><span><b>⚙️ Operacional</b><small>Execução do dia a dia e tarefas práticas</small></span></label>
+      </div>
+      <div style="margin-top:12px"><label class="lbl" for="dT">Nome da tarefa *</label><input id="dT" style="width:100%" placeholder="Ex.: Confecção dos crachás" required autocomplete="off"></div>
+      <div class="g3">
+        <div><label class="lbl" for="dMc">Esta tarefa está dentro de qual macro?</label><select id="dMc" style="width:100%"></select></div>
+        <div id="dMcNw" hidden><label class="lbl" for="dMcN">Nome da nova macro *</label><input id="dMcN" style="width:100%" placeholder="Ex.: Recepção" autocomplete="off"></div>
+      </div>
+      <div class="g3">
+        <div><label class="lbl" for="dD">Prazo final da tarefa</label><input id="dD" type="date" style="width:100%"></div>
+        <div><label class="lbl" for="dR">Responsável pela tarefa</label><input id="dR" list="team" style="width:100%" autocomplete="off"></div>
+      </div>
     </div>
-    <div style="margin-top:12px"><label class="lbl" for="dT">Nome da tarefa *</label><input id="dT" style="width:100%" placeholder="Ex.: Confeccionar o crachá" required autocomplete="off"></div>
-    <div class="g3">
-      <div><label class="lbl" for="dD">Prazo final da tarefa</label><input id="dD" type="date" style="width:100%"></div>
-      <div><label class="lbl" for="dR">Responsável pela tarefa</label><input id="dR" list="team" style="width:100%" autocomplete="off"></div>
-    </div>
-    </div>
-    <div id="dLink" style="margin-top:14px" hidden><label class="lbl" for="dMac">Vincular à tarefa macro *</label><select id="dMac" style="width:100%"></select></div>
-    <div style="margin-top:14px"><div class="lbl" id="dLbl">Etapas (opcional) — quebre a tarefa em quantos passos precisar</div>
+    <div id="dLink" style="margin-top:14px" hidden><label class="lbl" for="dMac">Em qual tarefa? *</label><select id="dMac" style="width:100%"></select></div>
+    <div id="dEtsBox" style="margin-top:14px"><div class="lbl" id="dLbl">Etapas (opcional) — quebre a tarefa em quantos passos precisar</div>
       <div id="dEts"></div>
       <button type="button" class="btn" id="dAdd">＋ Adicionar etapa</button>
     </div>
@@ -203,7 +222,7 @@ const SB_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZ
 const $=id=>document.getElementById(id);
 const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const P="pa_";
-let lastH="",curPl=lsPl(),cfgPlans=[{id:"p1",name:"FACULDADE 100%"},{id:"p2",name:"Plano 2"}],cfgName="",cfgSize=22,code="",me="",canWrite=false,docs={},writing=0,pollT=null,sig="",openObs={},pend=false;
+let cfgMacros=[],mcF="",lastH="",curPl=lsPl(),cfgPlans=[{id:"p1",name:"FACULDADE 100%"},{id:"p2",name:"Plano 2"}],cfgName="",cfgSize=22,code="",me="",canWrite=false,docs={},writing=0,pollT=null,sig="",openObs={},pend=false;
 function lsPl(){try{return localStorage.getItem("pa_plan")||"p1"}catch(e){return"p1"}}
 const lsGet=k=>{try{return localStorage.getItem(k)||""}catch(e){return""}};
 const lsSet=(k,v)=>{try{v?localStorage.setItem(k,v):localStorage.removeItem(k)}catch(e){}};
@@ -218,7 +237,7 @@ const hoje=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth(
 const fd=s=>{const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(s||"");return m?m[3]+"/"+m[2]+"/"+m[1]:"sem data"};
 const fdt=(ms,y)=>{if(!ms)return"";const d=new Date(ms);return String(d.getDate()).padStart(2,"0")+"/"+String(d.getMonth()+1).padStart(2,"0")+(y?"/"+d.getFullYear():"")+" "+String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0")};
 const dias=(a,b)=>Math.round((Date.parse(b+"T12:00:00")-Date.parse(a+"T12:00:00"))/864e5);
-function load(r){const c=(r.docs||[]).find(d=>d.col==="meta"&&d.id==="pacfg");cfgName=c&&c.data&&c.data.name?String(c.data.name):"";cfgPlans=c&&c.data&&Array.isArray(c.data.plans)&&c.data.plans.length?c.data.plans:[{id:"p1",name:"FACULDADE 100%"},{id:"p2",name:"Plano 2"}];if(!cfgPlans.some(q=>q.id===curPl))curPl=cfgPlans[0].id;cfgSize=c&&c.data&&+c.data.size?Math.min(80,Math.max(14,+c.data.size)):22;const n={};(r.docs||[]).forEach(d=>{if(d.col==="meta"&&d.id.indexOf(P)===0)n[d.id.slice(P.length)]=d.data});docs=n}
+function load(r){const c=(r.docs||[]).find(d=>d.col==="meta"&&d.id==="pacfg");cfgName=c&&c.data&&c.data.name?String(c.data.name):"";cfgMacros=c&&c.data&&Array.isArray(c.data.macros)?c.data.macros:[];cfgPlans=c&&c.data&&Array.isArray(c.data.plans)&&c.data.plans.length?c.data.plans:[{id:"p1",name:"FACULDADE 100%"},{id:"p2",name:"Plano 2"}];if(!cfgPlans.some(q=>q.id===curPl))curPl=cfgPlans[0].id;cfgSize=c&&c.data&&+c.data.size?Math.min(80,Math.max(14,+c.data.size)):22;const n={};(r.docs||[]).forEach(d=>{if(d.col==="meta"&&d.id.indexOf(P)===0)n[d.id.slice(P.length)]=d.data});docs=n}
 async function write(id,patch,modo){
   if(!canWrite)return;writing++;
   try{
@@ -259,19 +278,23 @@ const parseD=s=>{const m=s.split("-").map(Number);return new Date(m[0],m[1]-1,m[
 const addDays=(s,n)=>{const d=parseD(s);d.setDate(d.getDate()+n);return isoD(d)};
 const MES=["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
 const DOW=["dom","seg","ter","qua","qui","sex","sáb"],DOWL=["domingo","segunda-feira","terça-feira","quarta-feira","quinta-feira","sexta-feira","sábado"];
-let tpF=lsGet("pa_tp")||"",calV=lsGet("pa_calv")||"month",calD=hoje(),calT=true,calE=true,calSel=null,dragging=false,calH="",mainV="list";
+let tpF=lsGet("pa_tp")||"",calV=lsGet("pa_calv")||"month",calD=hoje(),calT=true,calE=true,calSel=null,dragging=false,calH="",mainV=lsGet("pa_view")||"cal";
 function calItems(){
   const out=[];
   list().forEach(x=>{
-    if(calT&&x.due)out.push({k:"t",id:x.id,i:-1,d:x.due,t:x.t||"(sem nome)",sub:x.resp||"",cls:x.done?"ok":x.late?"bad":x.today?"warn":"",done:!!x.done});
-    if(calE)ets(x).forEach((q,i)=>{if(q.d)out.push({k:"e",id:x.id,i,d:q.d,t:q.n||"(etapa)",sub:x.t||"",cls:q.done?"ok":(q.d<hoje()?"bad":""),done:!!q.done,r:q.r||""})});
+    const E=ets(x),R=etRank(x),mn=macName(x.mc),dated=E.some(q=>q.d);
+    if(calE)E.forEach((q,i)=>{if(q.d)out.push({k:"e",id:x.id,i,d:q.d,t:q.n||"(etapa)",tk:x.t||"(sem nome)",pos:R.rank[i],n:R.n,mc:mn,sub:x.t||"",cls:q.done?"ok":(q.d<hoje()?"bad":""),done:!!q.done,r:q.r||x.resp||""})});
+    if(calT&&x.due&&(!dated||!E.some(q=>q.d===x.due)))out.push({k:"t",id:x.id,i:-1,d:x.due,t:x.t||"(sem nome)",mc:mn,sub:x.resp||"",r:x.resp||"",cls:x.done?"ok":x.late?"bad":x.today?"warn":"",done:!!x.done});
   });
   return out;
 }
 const canDrag=k=>k==="t"?canWrite:!!code;
 function chip(o,full){
   const sel=calSel&&calSel.k===o.k&&calSel.id===o.id&&calSel.i===o.i;
-  return '<div class="cc k-'+o.k+' '+o.cls+(o.done&&o.k==="e"?' dim':'')+(sel?' sel':'')+'" draggable="'+canDrag(o.k)+'" data-k="'+o.k+'" data-id="'+esc(o.id)+'" data-i="'+o.i+'" title="'+esc((o.k==="t"?"Prazo final: ":"Etapa: ")+o.t+(o.sub?" — "+o.sub:"")+(o.r?" · Resp.: "+o.r:""))+'">'+(o.k==="e"?"▸ ":"")+esc(o.t)+(o.k==="e"&&!full&&o.sub?' <span style="opacity:.7">· '+esc(o.sub)+'</span>':"")+(full&&o.sub?'<small>'+esc(o.k==="e"?"Tarefa: "+o.sub:"Responsável: "+o.sub)+'</small>':'')+'</div>';
+  const lab=o.k==="e"?'<b>'+esc(o.tk)+' '+o.pos+'/'+o.n+'</b> · '+esc(o.t):'🏁 '+esc(o.t);
+  const small=full&&(o.mc||o.r)?'<small>'+[o.mc?'📁 '+esc(o.mc):'',o.r?'👤 '+esc(o.r):''].filter(Boolean).join(' · ')+'</small>':'';
+  const tip=(o.k==="e"?o.tk+" — etapa "+o.pos+" de "+o.n+": "+o.t:"Prazo final: "+o.t)+(o.mc?" · Macro: "+o.mc:"")+(o.r?" · Resp.: "+o.r:"");
+  return '<div class="cc k-'+o.k+' '+o.cls+(o.done&&o.k==="e"?' dim':'')+(sel?' sel':'')+'" draggable="'+canDrag(o.k)+'" data-k="'+o.k+'" data-id="'+esc(o.id)+'" data-i="'+o.i+'" title="'+esc(tip)+'">'+lab+small+'</div>';
 }
 function cell(d,items,opt){
   const its=items.filter(o=>o.d===d).sort((a,b)=>(a.k===b.k?0:a.k==="t"?-1:1));
@@ -300,20 +323,20 @@ function renderCal(){
     title=DOWL[ad.getDay()]+", "+ad.getDate()+" de "+MES[ad.getMonth()]+" de "+ad.getFullYear();
     grid='<div class="cg d1">'+cell(calD,items,{full:true,label:"Neste dia"})+'</div>';
   }
-  const und=canWrite&&calT?list().filter(x=>!x.due&&!x.done):[];
-  const tray=und.length?'<div class="tray"><div class="sub" style="margin-bottom:4px">Sem prazo final — arraste para um dia (ou clique para escolher a data):</div>'+und.map(x=>chip({k:"t",id:x.id,i:-1,t:x.t||"(sem nome)",sub:x.resp||"",cls:"",done:false})).join("")+'</div>':"";
+  const und=canWrite&&calT?list().filter(x=>!x.due&&!x.done&&!ets(x).some(q=>q.d)):[];
+  const tray=und.length?'<div class="tray"><div class="sub" style="margin-bottom:4px">Sem prazo final — arraste para um dia (ou clique para escolher a data):</div>'+und.map(x=>chip({k:"t",id:x.id,i:-1,t:x.t||"(sem nome)",sub:x.resp||"",cls:"",done:false,mc:macName(x.mc),r:x.resp||""})).join("")+'</div>':"";
   let det="";
   if(calSel){
     const x=docs[calSel.id];
     if(x){
       const q=calSel.k==="e"?ets(x)[calSel.i]:null,d=calSel.k==="t"?(x.due||""):(q&&q.d)||"",ok=calSel.k==="t"?canWrite:!!code;
-      if(calSel.k==="t"||q)det='<div class="cdet"><div><b>'+(calSel.k==="t"?"Prazo final da tarefa":"Etapa")+':</b> '+esc(calSel.k==="t"?x.t:(q.n||"(etapa)"))+(calSel.k==="e"?'<div class="sub">Tarefa: '+esc(x.t||"")+'</div>':'')+(calSel.k==="e"&&q&&q.r?'<div class="sub">Responsável pela etapa: '+esc(q.r)+'</div>':'')+(x.resp?'<div class="sub">Responsável pela tarefa: '+esc(x.resp)+'</div>':'')+'</div>'+
+      if(calSel.k==="t"||q)det='<div class="cdet"><div><b>'+(calSel.k==="t"?"Prazo final da tarefa":"Etapa")+':</b> '+esc(calSel.k==="t"?x.t:(q.n||"(etapa)"))+(calSel.k==="e"?'<div class="sub">Tarefa: '+esc(x.t||"")+'</div>':'')+(calSel.k==="e"?'<div class="sub">Etapa '+(etRank(x).rank[calSel.i]||"?")+' de '+etRank(x).n+' · '+etRank(x).done+' concluída(s)</div>':'')+(x.mc?'<div class="sub">📁 Macro: '+esc(macName(x.mc)||"")+'</div>':'')+(calSel.k==="e"&&q&&q.r?'<div class="sub">Responsável pela etapa: '+esc(q.r)+'</div>':'')+(x.resp?'<div class="sub">Responsável pela tarefa: '+esc(x.resp)+'</div>':'')+'</div>'+
         '<div class="row"><label class="lbl" style="margin:0">'+(calSel.k==="t"?"Prazo final":"Data de atuação")+'</label><input type="date" data-cal="date" value="'+esc(d)+'"'+(ok?"":" disabled")+'><button class="btn pri" type="button" data-cal="open">Abrir na lista</button><button class="btn" type="button" data-cal="close">Fechar</button></div>'+(ok?'':'<div class="sub">Só o editor muda o prazo final da tarefa.</div>')+'</div>';
     }
   }
   const html='<div class="ct"><button class="btn" type="button" data-cal="prev" aria-label="Anterior">‹</button><button class="btn" type="button" data-cal="today">Hoje</button><button class="btn" type="button" data-cal="next" aria-label="Próximo">›</button><h2>'+esc(title)+'</h2>'+
     '<div class="seg" role="group" aria-label="Visualização">'+[["month","Mês"],["week","Semana"],["day","Dia"]].map(v=>'<button type="button" class="btn'+(calV===v[0]?' on':'')+'" data-view="'+v[0]+'">'+v[1]+'</button>').join("")+'</div></div>'+
-    '<div class="cf"><label><input type="checkbox" data-flt="t"'+(calT?" checked":"")+'> Prazos finais</label><label><input type="checkbox" data-flt="e"'+(calE?" checked":"")+'> Etapas vinculadas às macros</label>'+(canWrite||code?'<span>Arraste para mudar a data</span>':'')+'</div>'+grid+tray+det;
+    '<div class="cf"><label><input type="checkbox" data-flt="t"'+(calT?" checked":"")+'> Prazos finais (tarefas sem etapa)</label><label><input type="checkbox" data-flt="e"'+(calE?" checked":"")+'> Etapas das tarefas</label>'+(canWrite||code?'<span>Arraste para mudar a data</span>':'')+'</div>'+grid+tray+det;
   if(html!==calH){root.innerHTML=html;calH=html}
 }
 function applyDate(k,id,i,d){
@@ -322,8 +345,7 @@ function applyDate(k,id,i,d){
   else{if(!code)return;const E=ets(cur).map(q=>Object.assign({},q));if(!E[i]||E[i].d===d)return;E[i].d=d;saveEts(id,E)}
 }
 function openInList(k,id,i){
-  $("q").value="";$("fS").value="";$("fR").value="";openObs[id]=true;mainV="list";$("split").dataset.v="list";
-  [...$("vsw").children].forEach(b=>b.classList.toggle("on",b.dataset.mv==="list"));
+  $("q").value="";$("fS").value="";$("fR").value="";openObs[id]=true;mainV="list";mcF="";
   render();
   const el=document.querySelector('.task[data-id="'+id+'"]');if(el){el.scrollIntoView({behavior:"smooth",block:"center"});el.classList.add("flash");setTimeout(()=>el.classList.remove("flash"),1700)}
 }
@@ -361,12 +383,30 @@ calEl.addEventListener("drop",e=>{
   let o;try{o=JSON.parse(e.dataTransfer.getData("text/plain"))}catch(x){return}
   c.classList.remove("over");applyDate(o.k,o.id,o.i,c.dataset.date);calH="";renderCal();
 });
-$("vsw").addEventListener("click",e=>{const b=e.target.closest("[data-mv]");if(!b)return;mainV=b.dataset.mv;$("split").dataset.v=mainV;[...$("vsw").children].forEach(x=>x.classList.toggle("on",x===b));renderCal()});
-function list(){return listPlan().filter(x=>!tpF||(x.tp||"o")===tpF)}
+$("vsw").addEventListener("click",e=>{const b=e.target.closest("[data-mv]");if(!b)return;mainV=b.dataset.mv;try{localStorage.setItem("pa_view",mainV)}catch(x){}lastH="";render()});
+function list(){return listPlan().filter(x=>(!tpF||(x.tp||"o")===tpF)&&(!mcF||(mcF==="__none"?!x.mc:(x.mc||"")===mcF)))}
+const macName=id=>{const m=cfgMacros.find(q=>q.id===id);return m?m.name:""};
+const plMacros=()=>cfgMacros.filter(q=>q.pl===curPl);
+async function saveMacros(arr){
+  cfgMacros=arr;writing++;
+  try{await rpc("painel_gravar",{p_code:code,p_col:"meta",p_id:"pacfg",p_dados:{macros:arr,upd:Date.now()},p_modo:"update"})}
+  catch(e){alert("Não consegui salvar a macro. Verifique a internet e tente de novo.")}
+  finally{writing--;poll()}render()}
+function etRank(x){
+  const E=ets(x),o=E.map((q,i)=>({q,i})).sort((m,n)=>(m.q.d||"9999").localeCompare(n.q.d||"9999")||m.i-n.i),rank={};
+  o.forEach((v,p)=>{rank[v.i]=p+1});return{rank,n:E.length,done:E.filter(q=>q.done).length};
+}
+function groupHtml(L,parts){
+  const g={};L.forEach((x,i)=>{const k=x.mc||"";(g[k]=g[k]||[]).push(parts[i])});
+  const keys=Object.keys(g).sort((a,b)=>!a?1:!b?-1:macName(a).localeCompare(macName(b),"pt-BR"));
+  return keys.map(k=>'<h3 class="mh">'+(k?'📁 '+esc(macName(k)||"(macro)"):'Sem macro')+' <small>'+g[k].length+' tarefa(s)</small></h3>'+g[k].join("")).join("");
+}
 function renderTp(){
   const all=listPlan(),ce=all.filter(x=>x.tp==="e").length,co=all.length-ce;
-  $("tpbar").innerHTML=[["","Mapa completo",all.length],["e","🎯 Estratégicas",ce],["o","⚙️ Operacionais",co]].map(v=>'<button type="button" class="tpb'+(tpF===v[0]?' on':'')+'" data-tp="'+v[0]+'" aria-pressed="'+(tpF===v[0])+'">'+v[1]+' <small>'+v[2]+'</small></button>').join("");
+  $("tpbar").innerHTML=[["","Mapa completo",all.length],["e","🎯 Estratégicas",ce],["o","⚙️ Operacionais",co]].map(v=>'<button type="button" class="tpb'+(tpF===v[0]?' on':'')+'" data-tp="'+v[0]+'" aria-pressed="'+(tpF===v[0])+'">'+v[1]+' <small>'+v[2]+'</small></button>').join("")+
+    '<select id="mcF" class="mcsel" aria-label="Filtrar por macro"><option value="">📁 Todas as macros</option>'+plMacros().map(m=>'<option value="'+esc(m.id)+'"'+(mcF===m.id?" selected":"")+'>📁 '+esc(m.name)+'</option>').join("")+'<option value="__none"'+(mcF==="__none"?" selected":"")+'>Sem macro</option></select>';
 }
+$("tpbar").addEventListener("change",e=>{if(e.target.id==="mcF"){mcF=e.target.value;lastH="";calH="";render()}});
 $("tpbar").addEventListener("click",e=>{const b=e.target.closest("[data-tp]");if(!b)return;tpF=b.dataset.tp;try{localStorage.setItem("pa_tp",tpF)}catch(x){}lastH="";calH="";render()});
 function renderTabs(){
   const a=document.activeElement;if(a&&a.classList&&a.classList.contains("tab")&&a.tagName==="INPUT")return;
@@ -395,6 +435,7 @@ function render(){
   if(a&&$("list").contains(a)&&/INPUT|TEXTAREA/.test(a.tagName)&&a.type!=="checkbox"){pend=true;return}
   pend=false;
   renderTabs();renderTp();renderCal();
+  $("split").dataset.v=mainV;$("kpiw").hidden=mainV!=="list";[...$("vsw").children].forEach(b=>b.classList.toggle("on",b.dataset.mv===mainV));
   const all=list(),tot=all.length,dn=all.filter(x=>x.done).length,lt=all.filter(x=>x.late).length,hj=all.filter(x=>x.today).length,pc=tot?Math.round(100*dn/tot):0;
   $("kpis").innerHTML=
    '<div class="k" style="--kc:#8db4ff"><small>Total</small><b>'+tot+'</b></div>'+
@@ -413,9 +454,17 @@ function render(){
     if(fs==="p"&&x.done)return false;if(fs==="c"&&!x.done)return false;if(fs==="l"&&!x.late)return false;
     if(rs&&(x.resp||"").trim()!==rs)return false;
     if(q&&!((x.t||"")+" "+(x.resp||"")).toLowerCase().includes(q))return false;return true});
-  L.sort((x,y)=>(x.done?1:0)-(y.done?1:0)||lastUp(y)-lastUp(x)||(y.ord||0)-(x.ord||0));
+  const fo=$("fO").value||"prio",gM=$("gM").checked,dk=x=>x.due||"9999-99-99";
+  L.sort((x,y)=>{
+    const d=(x.done?1:0)-(y.done?1:0);if(d)return d;
+    if(fo==="far")return dk(y).localeCompare(dk(x))||(y.ord||0)-(x.ord||0);
+    if(fo==="new")return (y.ord||0)-(x.ord||0);
+    if(fo==="old")return (x.ord||0)-(y.ord||0);
+    if(fo==="upd")return lastUp(y)-lastUp(x)||(y.ord||0)-(x.ord||0);
+    return dk(x).localeCompare(dk(y))||(x.ord||0)-(y.ord||0);
+  });
   const dis=canWrite?"":" disabled",disE=code?"":" disabled";
-  const H=L.length?L.map(x=>{
+  const parts=L.map(x=>{
     const cls=x.done?" done":x.late?" late":x.today?" today":"";
     let chip;
     if(x.done)chip='<span class="chip ok">✓ Concluída'+(x.doneAt?" em "+esc(fdt(x.doneAt)):"")+(x.by?" por "+esc(x.by):"")+'</span>';
@@ -434,14 +483,16 @@ function render(){
       '<input class="d" type="date" data-a="due" value="'+esc(x.due||"")+'" aria-label="Prazo final" title="Prazo final do checklist"'+dis+'>'+
       '<input class="r" data-a="resp" list="team" value="'+esc(x.resp||"")+'" placeholder="Responsável" aria-label="Responsável" autocomplete="off"'+dis+'>'+
       '<div class="acts"><button class="ib'+(hasO||op?" on":"")+'" type="button" data-a="obs" title="Andamento e observação" aria-label="Andamento e observação">📝</button>'+(canWrite?'<button class="ib" type="button" data-a="del" title="Excluir" aria-label="Excluir tarefa">🗑</button>':'')+'</div></div>'+
-      '<div class="meta">'+chip+'<button type="button" class="chip tpchip '+((x.tp==="e")?'est':'op')+(canWrite?' can':'')+'" data-a="tp" title="'+(canWrite?'Clique para trocar entre estratégica e operacional':'Tipo da tarefa')+'">'+((x.tp==="e")?'🎯 Estratégica':'⚙️ Operacional')+'</button>'+sit+'<span class="sub">📅 <b>Prazo final:</b> '+esc(fd(x.due))+'</span><span class="sub">🔄 <b>Última atualização:</b> '+(lastUp(x)?esc(fdt(lastUp(x),1)):'sem etapa')+'</span></div>'+
+      '<div class="meta">'+chip+(x.mc?'<span class="chip mc">📁 '+esc(macName(x.mc)||"(macro)")+'</span>':'')+'<button type="button" class="chip tpchip '+((x.tp==="e")?'est':'op')+(canWrite?' can':'')+'" data-a="tp" title="'+(canWrite?'Clique para trocar entre estratégica e operacional':'Tipo da tarefa')+'">'+((x.tp==="e")?'🎯 Estratégica':'⚙️ Operacional')+'</button>'+sit+'<span class="sub">📅 <b>Prazo final:</b> '+esc(fd(x.due))+'</span><span class="sub">🔄 <b>Última atualização:</b> '+(lastUp(x)?esc(fdt(lastUp(x),1)):'sem etapa')+'</span></div>'+
       '<button type="button" class="etb" data-a="obs" aria-expanded="'+op+'"><span class="ar">'+(op?'▾':'▸')+'</span><span class="et">'+barTx+'</span>'+(E.length?'<span class="sub">'+nd+'/'+E.length+' etapas</span>':'')+'</button>'+
       (op?'<div class="obs"><div style="max-width:240px"><label class="lbl">Situação</label><select data-a="st" style="width:100%"'+dis+'><option value="">Não informada</option><option value="and"'+(x.st==="and"?" selected":"")+'>Em andamento</option><option value="agu"'+(x.st==="agu"?" selected":"")+'>Aguardando</option><option value="par"'+(x.st==="par"?" selected":"")+'>Parada</option></select></div>'+
+        '<div style="max-width:320px"><label class="lbl">Macro (agrupador)</label><select data-a="mc" style="width:100%"'+dis+'><option value="">Sem macro</option>'+plMacros().map(m=>'<option value="'+esc(m.id)+'"'+(x.mc===m.id?" selected":"")+'>'+esc(m.name)+'</option>').join("")+'</select></div>'+
         '<div><label class="lbl">Etapas (ordenadas pela data de atuação; marque quando a etapa for concluída)</label>'+
-        (E.length?EO.map(o=>{const q=o.q,i=o.i;return '<div class="stp'+(q.done?' ok':'')+(!q.done&&q.d&&q.d<hoje()?' late':'')+'"><input type="checkbox" data-a="etchk" data-i="'+i+'"'+(q.done?' checked':'')+disE+' aria-label="Etapa concluída"><div class="etc"><div class="row" style="flex-wrap:wrap"><span class="sub">'+(i+1)+'.</span><input data-a="etn" data-i="'+i+'" value="'+esc(q.n||"")+'" placeholder="Nome da etapa" style="flex:1;min-width:150px;font-weight:600"'+disE+'><input data-a="etr" data-i="'+i+'" list="team" value="'+esc(q.r||"")+'" placeholder="Responsável" aria-label="Responsável pela etapa" style="width:140px" autocomplete="off"'+disE+'><input type="date" data-a="etd" data-i="'+i+'" value="'+esc(q.d||"")+'" title="Data de atuação" aria-label="Data de atuação" style="width:145px"'+disE+'>'+(canWrite?'<button type="button" data-a="etdel" data-i="'+i+'" aria-label="Excluir etapa">✕</button>':'')+'</div><textarea rows="6" class="etdesc" data-a="etdesc" data-i="'+i+'" placeholder="Descreva o que foi feito nesta etapa"'+disE+'>'+esc(q.desc||"")+'</textarea>'+(q.done?'<small>✓ Concluída'+(q.doneAt?' em '+esc(fdt(q.doneAt)):'')+(q.by?' por '+esc(q.by):'')+'</small>':'')+'</div></div>'}).join(""):'<div class="sub">Nenhuma etapa registrada.</div>')+
+        (E.length?EO.map((o,pos)=>{const q=o.q,i=o.i;return '<div class="stp'+(q.done?' ok':'')+(!q.done&&q.d&&q.d<hoje()?' late':'')+'"><input type="checkbox" data-a="etchk" data-i="'+i+'"'+(q.done?' checked':'')+disE+' aria-label="Etapa concluída"><div class="etc"><div class="row" style="flex-wrap:wrap"><span class="sub">'+(pos+1)+'/'+E.length+'</span><input data-a="etn" data-i="'+i+'" value="'+esc(q.n||"")+'" placeholder="Nome da etapa" style="flex:1;min-width:150px;font-weight:600"'+disE+'><input data-a="etr" data-i="'+i+'" list="team" value="'+esc(q.r||"")+'" placeholder="Responsável" aria-label="Responsável pela etapa" style="width:140px" autocomplete="off"'+disE+'><input type="date" data-a="etd" data-i="'+i+'" value="'+esc(q.d||"")+'" title="Data de atuação" aria-label="Data de atuação" style="width:145px"'+disE+'>'+(canWrite?'<button type="button" data-a="etdel" data-i="'+i+'" aria-label="Excluir etapa">✕</button>':'')+'</div><textarea rows="6" class="etdesc" data-a="etdesc" data-i="'+i+'" placeholder="Descreva o que foi feito nesta etapa"'+disE+'>'+esc(q.desc||"")+'</textarea>'+(q.done?'<small>✓ Concluída'+(q.doneAt?' em '+esc(fdt(q.doneAt)):'')+(q.by?' por '+esc(q.by):'')+'</small>':'')+'</div></div>'}).join(""):'<div class="sub">Nenhuma etapa registrada.</div>')+
         '<div class="row" style="flex-wrap:wrap;margin-top:6px"><input data-a="etnew" style="flex:1;min-width:0" placeholder="Nova etapa (ex.: Pedir orçamento)" autocomplete="off"><input data-a="etnewr" list="team" placeholder="Responsável" aria-label="Responsável pela etapa" style="width:140px" autocomplete="off"><input type="date" data-a="etnewd" value="'+hoje()+'" title="Data de atuação" aria-label="Data de atuação" style="width:150px"><button class="btn pri" type="button" data-a="etadd">Adicionar etapa</button></div></div>'+
         '<div><label class="lbl">Observação</label><textarea rows="3" data-a="obstxt" placeholder="Observação"'+dis+' aria-label="Observação">'+esc(x.obs||"")+'</textarea></div></div>':'')+
-      '</div>'}).join(""):'<div class="empty">'+(tot?"Nenhuma tarefa com esses filtros.":(canWrite?"Nenhuma tarefa ainda. Adicione a primeira acima.":"Nenhuma tarefa cadastrada."))+'</div>';
+      '</div>'});
+  const H=L.length?(gM?groupHtml(L,parts):parts.join("")):'<div class="empty">'+(tot?"Nenhuma tarefa com esses filtros.":(canWrite?"Nenhuma tarefa ainda. Adicione a primeira acima.":"Nenhuma tarefa cadastrada."))+'</div>';
   if(H!==lastH){$("list").innerHTML=H;lastH=H;fitDesc()}
   $("foot").textContent=canWrite?"":"Modo checagem: você pode criar etapas, descrever e marcar. Tarefas, prazos e situação só o editor altera.";
   const nm=cfgName||"PLANO DE AÇÃO";$("h1").textContent=nm;document.title=nm;
@@ -458,18 +509,24 @@ function addNRow(focus){
   $("dEts").appendChild(d);renumN();if(focus)d.querySelector(".ne-n").focus();
 }
 function setMode(m){
-  $("dMacro").hidden=m!=="m";$("dLink").hidden=m!=="l";
-  $("dT").required=m==="m";document.querySelectorAll("input[name=dtp]").forEach(r=>r.required=m==="m");$("dMac").required=m==="l";
-  $("dLbl").textContent=m==="m"?"Etapas (opcional) — quebre a tarefa em quantos passos precisar":"Etapas a adicionar nessa tarefa macro *";
-  $("dOk").textContent=m==="m"?"Criar tarefa":"Adicionar etapas";$("dlgT").textContent=m==="m"?"Nova tarefa":"Nova etapa";
+  $("dKname").hidden=m!=="k";$("dK").required=m==="k";
+  $("dMacro").hidden=m!=="t";$("dT").required=m==="t";document.querySelectorAll("input[name=dtp]").forEach(r=>r.required=m==="t");
+  $("dLink").hidden=m!=="l";$("dMac").required=m==="l";$("dEtsBox").hidden=m==="k";
+  $("dLbl").textContent=m==="t"?"Etapas (opcional) — quebre a tarefa em quantos passos precisar":"Etapas a adicionar nessa tarefa *";
+  $("dOk").textContent=m==="t"?"Criar tarefa":m==="k"?"Criar macro":"Adicionar etapas";
+  $("dlgT").textContent=m==="t"?"Nova tarefa":m==="k"?"Nova macro":"Novas etapas";
   if(m==="l"&&!$("dEts").children.length)addNRow(false);
 }
 $("dMode").addEventListener("change",e=>{if(e.target.name==="dmode")setMode(e.target.value)});
+$("dMc").addEventListener("change",()=>{const n=$("dMc").value==="__new";$("dMcNw").hidden=!n;$("dMcN").required=n;if(n)$("dMcN").focus()});
 $("newBtn").addEventListener("click",()=>{
   if(!canWrite)return;$("dlgF").reset();$("dEts").innerHTML="";
   const macs=listPlan().sort((x,y)=>(x.done?1:0)-(y.done?1:0)||(x.t||"").localeCompare(y.t||"","pt-BR"));
-  $("dMac").innerHTML=macs.length?'<option value="">Escolha a tarefa macro…</option>'+macs.map(x=>'<option value="'+esc(x.id)+'">'+(x.tp==="e"?"🎯 ":"⚙️ ")+esc(x.t||"(sem nome)")+(x.done?" (concluída)":"")+'</option>').join(""):'<option value="">Nenhuma tarefa criada ainda</option>';
-  setMode("m");
+  $("dMac").innerHTML=macs.length?'<option value="">Escolha a tarefa…</option>'+macs.map(x=>'<option value="'+esc(x.id)+'">'+(x.tp==="e"?"🎯 ":"⚙️ ")+esc(x.t||"(sem nome)")+(x.done?" (concluída)":"")+'</option>').join(""):'<option value="">Nenhuma tarefa criada ainda</option>';
+  $("dMc").innerHTML='<option value="">Sem macro</option>'+plMacros().map(m=>'<option value="'+esc(m.id)+'">📁 '+esc(m.name)+'</option>').join("")+'<option value="__new">＋ Criar nova macro…</option>';
+  if(mcF&&mcF!=="__none")$("dMc").value=mcF;
+  $("dMcNw").hidden=true;$("dMcN").required=false;
+  setMode("t");
   if(tpF){const r=document.querySelector('input[name=dtp][value="'+tpF+'"]');if(r)r.checked=true}
   if(typeof dlg.showModal==="function")dlg.showModal();else dlg.setAttribute("open","");
   $("dT").focus();
@@ -481,9 +538,14 @@ $("dEts").addEventListener("keydown",e=>{
   if(e.key!=="Enter"||e.target.tagName!=="INPUT")return;e.preventDefault();
   const row=e.target.closest(".nrow");if(row&&row.querySelector(".ne-n").value.trim()&&row===$("dEts").lastElementChild)addNRow(true);
 });
+const newMid=()=>"m"+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
 $("dlgF").addEventListener("submit",e=>{
   e.preventDefault();if(!canWrite)return;
-  const mode=(document.querySelector("input[name=dmode]:checked")||{}).value||"m";
+  const mode=(document.querySelector("input[name=dmode]:checked")||{}).value||"t";
+  if(mode==="k"){
+    const nm=$("dK").value.trim();if(!nm){$("dK").focus();return}
+    saveMacros(cfgMacros.concat([{id:newMid(),name:nm,pl:curPl}]));dlg.close();return;
+  }
   const E=[...$("dEts").children].map(r=>({n:r.querySelector(".ne-n").value.trim(),desc:"",r:r.querySelector(".ne-r").value.trim(),d:r.querySelector(".ne-d").value||"",done:false})).filter(q=>q.n);
   if(mode==="l"){
     const id=$("dMac").value;if(!id||!docs[id]){$("dMac").focus();return}
@@ -493,7 +555,10 @@ $("dlgF").addEventListener("submit",e=>{
     openObs[id]=true;dlg.close();return;
   }
   const tp=(document.querySelector("input[name=dtp]:checked")||{}).value,t=$("dT").value.trim();if(!tp||!t)return;
-  const n=Date.now(),doc={pl:curPl,tp,t,due:$("dD").value||"",resp:$("dR").value.trim(),done:false,obs:"",ord:n,upd:n};
+  let mc=$("dMc").value;
+  if(mc==="__new"){const nm=$("dMcN").value.trim();if(!nm){$("dMcN").focus();return}mc=newMid();saveMacros(cfgMacros.concat([{id:mc,name:nm,pl:curPl}]))}
+  let due=$("dD").value||"";if(!due){const ds=E.map(q=>q.d).filter(Boolean).sort();if(ds.length)due=ds[ds.length-1]}
+  const n=Date.now(),doc={pl:curPl,tp,t,mc:mc||"",due,resp:$("dR").value.trim(),done:false,obs:"",ord:n,upd:n};
   if(E.length){doc.etapas=E;doc.eupd=n}
   if(tpF&&tpF!==tp){tpF="";try{localStorage.setItem("pa_tp","")}catch(x){}}
   write(rid(),doc,"set");dlg.close();
@@ -505,6 +570,7 @@ $("list").addEventListener("change",e=>{
   else if(a==="t"){const v=el.value.trim();if(!v){render();return}if(v!==cur.t)write(id,{t:v,upd:Date.now()})}
   else if(a==="due"){if((el.value||"")!==(cur.due||""))write(id,{due:el.value||"",upd:Date.now()})}
   else if(a==="resp"){const v=el.value.trim();if(v!==(cur.resp||""))write(id,{resp:v,upd:Date.now()})}
+  else if(a==="mc"){if((el.value||"")!==(cur.mc||""))write(id,{mc:el.value||"",upd:Date.now()})}
   else if(a==="st"){if((el.value||"")!==(cur.st||""))write(id,{st:el.value||"",upd:Date.now()})}
   else if(a==="etchk"||a==="etn"||a==="etd"||a==="etr"||a==="etdesc"){
     const E=ets(cur).map(q=>Object.assign({},q)),i=+el.dataset.i;if(!E[i])return;
@@ -538,7 +604,8 @@ $("list").addEventListener("click",e=>{
 });
 $("list").addEventListener("input",e=>{if(e.target.classList&&e.target.classList.contains("etdesc"))fitDesc(e.target.parentNode)});
 document.addEventListener("focusout",()=>{if(pend)setTimeout(render,0)});
-["q","fS","fR"].forEach(i=>$(i).addEventListener("input",render));
+try{$("fO").value=lsGet("pa_fo")||"prio";$("gM").checked=lsGet("pa_gm")==="1"}catch(e){}
+["q","fS","fR","fO","gM"].forEach(i=>$(i).addEventListener("input",()=>{try{localStorage.setItem("pa_fo",$("fO").value);localStorage.setItem("pa_gm",$("gM").checked?"1":"0")}catch(e){}render()}));
 $("h1i").addEventListener("change",async()=>{
   const v=$("h1i").value.trim();if(!canWrite)return;if(!v){$("h1i").value=cfgName||"PLANO DE AÇÃO";return}
   if(v===(cfgName||"PLANO DE AÇÃO"))return;cfgName=v;writing++;
