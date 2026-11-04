@@ -137,6 +137,38 @@ body.lock .tabs,body.lock #ovView,body.lock #evView,body.lock #logout,body.lock 
 @media (max-width:640px){.rform,.rrow{grid-template-columns:1fr 1fr}.rform>:first-child,.rrow>:first-child{grid-column:1/-1}.rform button,.rrow button{grid-column:1/-1}}
 
 body.pub .wrap{display:none!important}
+/* tema visual "ffm" (formulário público) */
+body.pub.th-ffm{background:#08142f!important;color:#fff;font-family:"Montserrat",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;position:relative;overflow-x:hidden}
+body.pub.th-ffm .brand{display:none}
+body.pub.th-ffm::before{content:"";position:fixed;inset:0;z-index:0;opacity:1;pointer-events:none;background:
+ linear-gradient(135deg,#ffc20e 0 7%,transparent 7.1%) no-repeat,
+ linear-gradient(135deg,transparent 0 92.5%,#ffc20e 92.6%) no-repeat,
+ radial-gradient(120% 60% at 50% 0,#12295e 0,#08142f 70%);}
+body.pub.th-ffm::after{content:"";position:fixed;left:0;right:0;bottom:0;height:5px;z-index:2;background:linear-gradient(90deg,transparent,#ffc20e 20%,#ff9d00 80%,transparent);box-shadow:0 0 18px 4px rgba(255,170,0,.55)}
+.th-ffm .pw{position:relative;z-index:1;max-width:660px;padding-top:26px}
+.th-ffm .pw h1{font-family:inherit;font-weight:900;font-style:italic;letter-spacing:-.02em;line-height:1.18;text-shadow:0 3px 14px rgba(0,0,0,.45)}
+.th-ffm .pw h1 em{font-style:italic;display:inline-block;background:#ffc20e;color:#0a0a0a;border-radius:14px;padding:0 .3em;margin:.06em 0;text-shadow:none;box-shadow:0 6px 18px rgba(255,194,14,.28)}
+.th-ffm .pw .pd{color:#dfe7fb;font-weight:500}.th-ffm .pw .pd b{color:#ffc20e}
+.th-ffm .pf{background:linear-gradient(180deg,rgba(14,32,76,.92),rgba(8,20,47,.95));border:2px solid #ffc20e;border-top:2px solid #ffc20e;border-radius:26px;padding:22px 18px 20px;box-shadow:0 18px 50px rgba(0,0,0,.5)}
+.th-ffm .pf .fh{display:block;position:relative;margin:-40px auto 22px;width:max-content;max-width:94%;text-align:center;font-size:clamp(17px,4.8vw,22px);font-weight:900;font-style:italic;color:#fff;border:0;padding:10px 26px;background:linear-gradient(180deg,#f0222f,#b30a16);border-radius:14px 22px 14px 22px;box-shadow:0 8px 22px rgba(214,16,28,.45),inset 0 -3px 0 rgba(0,0,0,.18)}
+.th-ffm .pf .fh::after{content:"";position:absolute;left:12%;right:12%;bottom:6px;height:3px;border-radius:2px;background:#ffc20e}
+.th-ffm .pf .fh{padding-bottom:16px}
+.th-ffm .pf .q>label,.th-ffm .pf .q>.ql{font-weight:700;color:#fff}
+.th-ffm .pf .q .req{color:#ffc20e}
+.th-ffm .pf input[type=text],.th-ffm .pf input[type=tel],.th-ffm .pf input[type=email],.th-ffm .pf input[type=number],.th-ffm .pf input[type=date],.th-ffm .pf select,.th-ffm .pf textarea{background:#0b1b40;border:2px solid #29458f;border-radius:14px;color:#fff;font-family:inherit}
+.th-ffm .pf input:focus,.th-ffm .pf select:focus,.th-ffm .pf textarea:focus{outline:0;border-color:#ffc20e;box-shadow:0 0 0 3px rgba(255,194,14,.25)}
+.th-ffm .pf ::placeholder{color:#7d90c4}
+.th-ffm .pf .opt{background:#0b1b40;border:2px solid #29458f;border-radius:14px}
+.th-ffm .pf .opt:has(input:checked){border-color:#ffc20e;background:#14275a}
+.th-ffm .pf .hl{color:#b6c4ea}
+.th-ffm .pf mark{background:#ffc20e;color:#0a0a0a;border-radius:8px}
+.th-ffm .pf .sec h2{border-bottom:3px solid #ffc20e;font-style:italic}
+.th-ffm .pf .go{font-family:inherit;font-weight:900;font-style:italic;text-transform:uppercase;letter-spacing:.03em;font-size:19px;background:linear-gradient(180deg,#ffd23d,#ffb800);color:#0a0a0a;border-radius:16px;padding:16px;box-shadow:0 8px 24px rgba(255,184,0,.35),inset 0 -3px 0 rgba(0,0,0,.15)}
+.th-ffm .pf .go:hover:not([disabled]){filter:brightness(1.06)}
+.th-ffm .pf .err{color:#ff8a80}
+.th-ffm .pf .endbox{border-color:#ffc20e}
+.th-ffm .pend h2{font-style:italic;font-weight:900}.th-ffm .pend{position:relative;z-index:1}
+
 .pw{max-width:640px;margin:0 auto;padding:18px max(16px,env(safe-area-inset-left,0px)) 40px}
 .pw h1{color:#fff;font-size:clamp(32px,9.4vw,50px);line-height:1.08;font-weight:800;letter-spacing:-.5px;margin:10px 0 18px}.pw h1 em{font-style:normal;color:var(--yl)}.pw .pd{color:var(--mut);font-size:18px;line-height:1.5;margin:0 0 20px;white-space:pre-line}.pf .fh{font-size:26px;font-weight:800;color:#fff;margin:2px 0 18px;padding-bottom:8px;border-bottom:3px solid var(--yl)}
 .pf{background:var(--card);border:1px solid var(--bd);border-top:6px solid var(--yl);border-radius:16px;padding:18px}
@@ -1010,6 +1042,7 @@ async function startPublic(){
   try{f=await pubRpc("form_publico",{p_slug:PUBSLUG})}
   catch(e){pubMsg(e.msg==="form_nao_encontrado"?"🔎":"⚠️",e.msg==="form_nao_encontrado"?"Formulário não encontrado":"Não foi possível carregar","Confira o link ou tente de novo em instantes.");return}
   try{document.title=String(f.title||"Inscrição").replace(/\*\*/g,"")}catch(_){}
+  if(/^[a-z0-9]{1,20}$/.test(f.theme||"")){document.body.classList.add("th-"+f.theme);if(f.theme==="ffm"&&!document.getElementById("thFont")){const l=document.createElement("link");l.id="thFont";l.rel="stylesheet";l.href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,500;0,700;0,800;0,900;1,700;1,800;1,900&display=swap";document.head.appendChild(l)}}
   if(f.open===false){pubMsg("⛔","Inscrições encerradas",String(f.title||"").replace(/\*\*/g,"")+"\nObrigado pelo interesse!");return}
   const fs=f.fields||[];
   let h='<h1>'+fmtT(f.title||"Inscrição")+'</h1>'+(f.desc?'<p class="pd">'+fmtB(f.desc)+'</p>':'<p class="pd"></p>')+'<form class="pf" id="pForm" novalidate><h2 class="fh">Faça sua pré-inscrição</h2>';
