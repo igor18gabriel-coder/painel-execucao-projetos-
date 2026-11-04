@@ -340,11 +340,10 @@ dialog::backdrop{background:rgba(6,16,40,.5)}
         <label class="fld"><span>Nome</span><input id="gNome" autocomplete="username" placeholder="Seu nome completo"></label>
         <label class="fld"><span>Senha</span><input id="gSenha" type="password" autocomplete="current-password"></label>
       </div>
-      <label class="fld" id="gByCode" hidden><span>Código de acesso</span><input id="gCode" type="password" placeholder="XXXX-XXXX" autocomplete="off"></label>
       <label class="check"><input type="checkbox" id="gRemember" checked> Lembrar neste dispositivo</label>
       <div class="gerr" id="gErr" role="alert"></div>
       <button class="btn primary" type="submit" id="gBtn">Entrar</button>
-      <button class="gswitch" type="button" id="gToggle">Tenho um código de acesso</button>
+      <span class="empty" style="font-size:13px">Esqueceu a senha? Peça ao responsável pela agenda para definir uma nova.</span>
     </form>
     <form class="gform" id="sForm" autocomplete="on" hidden>
       <label class="fld"><span>Nome completo</span><input id="sNome" maxlength="80" autocomplete="name" placeholder="Como aparecerá na agenda"></label>
@@ -506,13 +505,14 @@ dialog::backdrop{background:rgba(6,16,40,.5)}
         <div class="row">
           <label class="fld"><span>Cargo / setor</span><input id="uCargo" maxlength="80"></label>
           <label class="fld"><span>Data de nascimento</span><input id="uNasc" type="date" min="1920-01-01"></label>
+          <label class="fld" id="uSenhaWrap"><span>Senha inicial</span><input id="uSenha" type="text" autocomplete="off" placeholder="Mínimo 6 caracteres"></label>
           <label class="fld"><span>Perfil</span><select id="uPapel"><option value="usuario">Usuário</option><option value="editor">Editor</option></select></label>
         </div>
         <div class="fld"><span>Cor na agenda</span><div class="swatches" id="uCores"></div></div>
         <div style="display:flex;gap:8px;justify-content:flex-end;align-items:center;flex-wrap:wrap">
           <div class="msg" id="uMsg" style="flex:1"></div>
           <button class="btn" type="button" id="uCancel" hidden>Cancelar edição</button>
-          <button class="btn primary" type="submit" id="uSave">Cadastrar e gerar código</button>
+          <button class="btn primary" type="submit" id="uSave">Cadastrar</button>
         </div>
       </form>
       <div class="mtable" id="uList"></div>
@@ -520,8 +520,8 @@ dialog::backdrop{background:rgba(6,16,40,.5)}
         <strong style="font-family:var(--f-display)">Como liberar o acesso</strong>
         <ol class="steps">
           <li><b>Autocadastro:</b> envie o endereço da página. A pessoa clica em <b>Criar acesso</b>, informa nome e senha, e o pedido aparece aqui para você <b>Aprovar</b>.</li>
-          <li><b>Cadastro por você:</b> preencha o formulário acima. O painel gera um <b>código de acesso</b> para enviar à pessoa (aparece uma única vez). Depois ela pode criar uma senha em <b>Minha senha</b>.</li>
-          <li>Esqueceu a senha ou o código? Clique em <b>Novo código</b>: o antigo para de funcionar na hora, e com o novo a pessoa entra e cria outra senha.</li>
+          <li><b>Cadastro por você:</b> preencha o formulário acima com uma <b>senha inicial</b> e envie o endereço da página, o nome e a senha para a pessoa. Ela pode trocar depois em <b>Minha senha</b>.</li>
+          <li><b>Esqueceu a senha?</b> Clique em <b>Definir senha</b> no usuário e crie uma nova. A pessoa é desconectada dos outros aparelhos e entra com a senha nova.</li>
           <li><b>Usuário</b> marca reuniões e fecha a própria agenda. <b>Editor</b> também cadastra pessoas e altera qualquer agenda.</li>
         </ol>
       </div>
@@ -581,7 +581,7 @@ S.cursor.setHours(0,0,0,0);
 
 /* ---------- servidor ---------- */
 const ERROS = {
-  codigo_invalido: "Código inválido ou desativado.",
+  codigo_invalido: "Sua sessão terminou. Entre de novo com nome e senha.",
   sem_permissao: "Você não tem permissão para essa alteração.",
   titulo_obrigatorio: "Informe o assunto da reunião.",
   horario_invalido: "Confira os horários: o término precisa ser depois do início.",
@@ -631,19 +631,15 @@ function applyData(d){
 }
 
 /* ---------- login ---------- */
-let byCode = false;
+const byCode = false;
 function gateTab(signup){
   $("#tabLogin").setAttribute("aria-selected", !signup); $("#tabSignup").setAttribute("aria-selected", signup);
   $("#gForm").hidden = signup; $("#sForm").hidden = !signup; $("#gErr").textContent = ""; $("#sErr").textContent = "";
-  (signup ? $("#sNome") : (byCode ? $("#gCode") : $("#gNome"))).focus();
+  (signup ? $("#sNome") : $("#gNome")).focus();
 }
 $("#tabLogin").addEventListener("click", () => gateTab(false));
 $("#tabSignup").addEventListener("click", () => gateTab(true));
-$("#gToggle").addEventListener("click", () => {
-  byCode = !byCode; $("#gByCode").hidden = !byCode; $("#gByPass").hidden = byCode;
-  $("#gToggle").textContent = byCode ? "Entrar com nome e senha" : "Tenho um código de acesso"; $("#gErr").textContent = "";
-  (byCode ? $("#gCode") : $("#gNome")).focus();
-});
+
 $("#sForm").addEventListener("submit", async e => {
   e.preventDefault();
   const nome = $("#sNome").value.trim(), senha = $("#sSenha").value;
@@ -666,11 +662,10 @@ $("#gForm").addEventListener("submit", async e => {
   e.preventDefault();
   $("#gErr").textContent = "";
   let code;
-  if (byCode){ code = $("#gCode").value.trim(); if (!code) return $("#gErr").textContent = "Digite o código de acesso."; }
-  else if (!$("#gNome").value.trim() || !$("#gSenha").value) return $("#gErr").textContent = "Informe nome e senha.";
+  if (!$("#gNome").value.trim() || !$("#gSenha").value) return $("#gErr").textContent = "Informe nome e senha.";
   $("#gBtn").disabled = true;
   try {
-    if (!byCode) code = await rpc("agenda_login", { p_nome: $("#gNome").value.trim(), p_senha: $("#gSenha").value });
+    code = await rpc("agenda_login", { p_nome: $("#gNome").value.trim(), p_senha: $("#gSenha").value });
     const d = await rpc("agenda_ler", { p_code: code });
     S.code = code; $("#gSenha").value = "";
     if ($("#gRemember").checked) store.set("code", code); else { store.set("code", null); try { sessionStorage.setItem("agfm_code", code); } catch {} }
@@ -678,7 +673,7 @@ $("#gForm").addEventListener("submit", async e => {
   } catch (err) { $("#gErr").textContent = err.message; }
   finally { $("#gBtn").disabled = false; }
 });
-function enter(d){ $("#gate").hidden = true; $("#app").hidden = false; $("#gCode").value = ""; S.firstPaint = true; applyData(d); }
+function enter(d){ $("#gate").hidden = true; $("#app").hidden = false; S.firstPaint = true; applyData(d); }
 function logout(msg, server){
   if (server && S.code && S.code.startsWith("s_")) rpc("agenda_sair", { p_code: S.code }).catch(() => {});
   S.code = null; store.set("code", null); try { sessionStorage.removeItem("agfm_code"); } catch {}
@@ -1102,7 +1097,7 @@ function drawSwatches(sel){
 function resetMemberForm(){
   editingMember = null;
   $("#uNome").value = ""; $("#uEmail").value = ""; $("#uCargo").value = ""; $("#uNasc").value = ""; $("#uPapel").value = "usuario"; $("#uPapel").disabled = false;
-  $("#uFormTitle").textContent = "Cadastrar usuário"; $("#uSave").textContent = "Cadastrar e gerar código"; $("#uCancel").hidden = true; $("#uMsg").textContent = "";
+  $("#uFormTitle").textContent = "Cadastrar usuário"; $("#uSave").textContent = "Cadastrar"; $("#uSenhaWrap").hidden = false; $("#uSenha").value = ""; $("#uCancel").hidden = true; $("#uMsg").textContent = "";
   drawSwatches();
 }
 function drawMembers(){
@@ -1112,13 +1107,21 @@ function drawMembers(){
       return `<div class="mrow"><span class="av" style="background:var(--muted)">${esc(initials(p.nome))}</span><div><div class="nm">${esc(p.nome)}</div><div class="em">${p.cargo ? esc(p.cargo) + " · " : ""}pediu em ${pad(dt.getDate())}/${pad(dt.getMonth()+1)} às ${pad(dt.getHours())}:${pad(dt.getMinutes())}</div></div><div class="acts"><button class="btn primary" type="button" data-ok-p="${esc(p.id)}">Aprovar</button><button class="btn danger" type="button" data-no-p="${esc(p.id)}">Recusar</button></div></div>`; }).join("");
     pb.hidden = false;
   } else pb.hidden = true;
-  $("#uList").innerHTML = S.members.map(m => `<div class="mrow"><span class="av" style="background:${esc(m.cor)}">${esc(initials(m.nome))}</span><div><div class="nm">${esc(m.nome)} ${m.papel==="editor"?'<span class="tag ed">Editor</span>':""}</div><div class="em">${[m.temSenha?"Entra com senha":"", m.temCodigo?"Tem código":""].filter(Boolean).join(" · ") || "Sem senha nem código"}${m.cargo?" · "+esc(m.cargo):""}${m.nascimento?" · nasc. "+m.nascimento.split("-").reverse().join("/"):" · sem data de nascimento"}</div></div><div class="acts"><button class="btn" type="button" data-code-m="${esc(m.id)}">Novo código</button><button class="btn" type="button" data-edit-m="${esc(m.id)}">Editar</button>${m.id!==S.me.id?`<button class="btn danger" type="button" data-del-m="${esc(m.id)}">Remover</button>`:""}</div></div>`).join("");
+  $("#uList").innerHTML = S.members.map(m => `<div class="mrow"><span class="av" style="background:${esc(m.cor)}">${esc(initials(m.nome))}</span><div><div class="nm">${esc(m.nome)} ${m.papel==="editor"?'<span class="tag ed">Editor</span>':""}</div><div class="em">${m.temSenha?"Entra com senha":"Sem senha"}${m.cargo?" · "+esc(m.cargo):""}${m.nascimento?" · nasc. "+m.nascimento.split("-").reverse().join("/"):" · sem data de nascimento"}</div></div><div class="acts"><button class="btn" type="button" data-pwd-m="${esc(m.id)}">Definir senha</button><button class="btn" type="button" data-edit-m="${esc(m.id)}">Editar</button>${m.id!==S.me.id?`<button class="btn danger" type="button" data-del-m="${esc(m.id)}">Remover</button>`:""}</div></div>`).join("");
 }
-function showCode(nome, cod){
+let pwdFor = null;
+function showPwdForm(id){
+  pwdFor = id;
   const box = $("#uCode");
-  box.innerHTML = `<strong style="flex-basis:100%"></strong><code id="codeTxt"></code><button class="btn" type="button" id="copyCode">Copiar código</button><p>Envie o código e o endereço desta página para a pessoa. Ele não será mostrado de novo.</p>`;
-  box.querySelector("strong").textContent = `Código de acesso de ${nome}`;
-  box.querySelector("#codeTxt").textContent = cod;
+  box.innerHTML = `<strong style="flex-basis:100%"></strong><form class="inline-form" id="pwdSetForm" style="flex-basis:100%"><input id="pwdSet" type="text" autocomplete="off" placeholder="Nova senha (mín. 6)" aria-label="Nova senha"><button class="btn primary" type="submit">Salvar senha</button><button class="btn" type="button" id="pwdCancel">Cancelar</button></form><p id="pwdHint">A pessoa será desconectada dos outros aparelhos e entrará com a senha nova.</p>`;
+  box.querySelector("strong").textContent = `Definir nova senha de ${nameOf(id)}`;
+  box.hidden = false; box.scrollIntoView({ block: "nearest" }); $("#pwdSet").focus();
+}
+function showPwdDone(nome, senha){
+  const box = $("#uCode");
+  box.innerHTML = `<strong style="flex-basis:100%"></strong><code id="codeTxt"></code><button class="btn" type="button" id="copyCode">Copiar senha</button><p>Envie o nome e esta senha para a pessoa. Por segurança, ela não fica guardada de forma visível: anote agora se precisar.</p>`;
+  box.querySelector("strong").textContent = `Senha de ${nome}`;
+  box.querySelector("#codeTxt").textContent = senha;
   box.hidden = false; box.scrollIntoView({ block: "nearest" });
 }
 async function saveMember(ev){
@@ -1129,23 +1132,23 @@ async function saveMember(ev){
   if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return msg("E-mail inválido.", "err");
   const dados = { nome, email, cargo: $("#uCargo").value.trim(), nascimento: $("#uNasc").value || null, papel: $("#uPapel").value, cor: (document.querySelector('input[name="uCor"]:checked')||{}).value || CORES[0] };
   const novo = !editingMember;
+  const senha = $("#uSenha").value;
+  if (novo && senha.length < 6) return msg("Defina uma senha inicial com pelo menos 6 caracteres.", "err");
+  if (novo) dados.senha = senha;
   $("#uSave").disabled = true;
   try {
     const id = await call("agenda_membro_salvar", { p_id: editingMember?.id || null, p_dados: dados });
-    if (novo){ const cod = await call("agenda_membro_codigo", { p_id: id }); showCode(nome, cod); toast(`${first(nome)} cadastrado(a)`); }
+    if (novo){ showPwdDone(nome, senha); toast(`${first(nome)} cadastrado(a)`); }
     else toast("Usuário atualizado");
     resetMemberForm(); await reload(); drawMembers();
   } catch (err) { if (err.code === "codigo_invalido") return logout(err.message); msg(err.message, "err"); }
   finally { $("#uSave").disabled = false; }
 }
-async function newCode(id, btn){
-  if (!btn.classList.contains("armed")){ btn.classList.add("armed"); btn.textContent = "Gerar? O antigo deixa de valer"; return; }
-  btn.disabled = true;
-  try {
-    const cod = await call("agenda_membro_codigo", { p_id: id });
-    if (id === S.me.id && !S.code.startsWith("s_")){ S.code = cod; if (store.get("code", null)) store.set("code", cod); else { try { sessionStorage.setItem("agfm_code", cod); } catch {} } }
-    showCode(nameOf(id), cod); await reload(); drawMembers();
-  } catch (err) { toast(err.message); btn.disabled = false; }
+async function setPwd(){
+  const v = $("#pwdSet").value;
+  if (v.length < 6){ $("#pwdHint").textContent = "A senha precisa ter pelo menos 6 caracteres."; $("#pwdHint").style.color = "var(--danger)"; return; }
+  try { await call("agenda_membro_senha", { p_id: pwdFor, p_senha: v }); showPwdDone(nameOf(pwdFor), v); toast("Senha alterada"); await reload(); drawMembers(); }
+  catch (err) { if (err.code === "codigo_invalido") return logout(err.message); $("#pwdHint").textContent = err.message; $("#pwdHint").style.color = "var(--danger)"; }
 }
 async function approve(id, ok, btn){
   if (!ok && !btn.classList.contains("armed")){ btn.classList.add("armed"); btn.textContent = "Confirmar recusa"; return; }
@@ -1185,8 +1188,9 @@ document.addEventListener("click", e => {
   const ad = t.closest("[data-add]"); if (ad){ openMeeting({ date: ad.dataset.add }); return; }
   const em = t.closest("[data-edit-m]"); if (em){ const m = byId(em.dataset.editM); if (!m) return; editingMember = m;
     $("#uNome").value = m.nome; $("#uEmail").value = m.email||""; $("#uCargo").value = m.cargo||""; $("#uNasc").value = m.nascimento||""; $("#uPapel").value = m.papel||"usuario"; $("#uPapel").disabled = m.id === S.me.id; drawSwatches(m.cor);
-    $("#uFormTitle").textContent = `Editar ${m.nome}`; $("#uSave").textContent = "Salvar"; $("#uCancel").hidden = false; $("#uNome").focus(); return; }
-  const cm = t.closest("[data-code-m]"); if (cm){ newCode(cm.dataset.codeM, cm); return; }
+    $("#uSenhaWrap").hidden = true; $("#uFormTitle").textContent = `Editar ${m.nome}`; $("#uSave").textContent = "Salvar"; $("#uCancel").hidden = false; $("#uNome").focus(); return; }
+  const pm = t.closest("[data-pwd-m]"); if (pm){ showPwdForm(pm.dataset.pwdM); return; }
+  if (t.closest("#pwdCancel")){ $("#uCode").hidden = true; return; }
   const dm = t.closest("[data-del-m]"); if (dm){ removeMember(dm.dataset.delM, dm); return; }
   const okp = t.closest("[data-ok-p]"); if (okp){ approve(okp.dataset.okP, true, okp); return; }
   const nop = t.closest("[data-no-p]"); if (nop){ approve(nop.dataset.noP, false, nop); return; }
@@ -1196,6 +1200,7 @@ document.addEventListener("click", e => {
   if (t.closest("#copyCode")){ copyFrom($("#codeTxt")); return; }
 });
 document.addEventListener("submit", async e => {
+  if (e.target.id === "pwdSetForm"){ e.preventDefault(); setPwd(); return; }
   if (e.target.id !== "myBdForm") return;
   e.preventDefault();
   const v = $("#myBd").value; if (!v) return toast("Escolha a data.");
@@ -1259,7 +1264,8 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("agenda-sw.js", { scope: "./agenda.html" }).catch(() => {});
 })();
 
-/* entrada automática com código lembrado */
+/* entrada automática (só sessões de login; códigos antigos são descartados) */
+if (S.code && !S.code.startsWith("s_")){ S.code = null; store.set("code", null); try { sessionStorage.removeItem("agfm_code"); } catch {} }
 if (S.code){
   $("#gBtn").disabled = true; $("#gErr").textContent = "";
   rpc("agenda_ler", { p_code: S.code }).then(enter).catch(err => { if (err.code === "codigo_invalido") logout("Seu código não é mais válido."); else { $("#gErr").textContent = err.message; } }).finally(() => $("#gBtn").disabled = false);
