@@ -337,7 +337,7 @@ dialog::backdrop{background:rgba(6,16,40,.5)}
     <div class="gtabs" role="tablist"><button type="button" role="tab" id="tabLogin" aria-selected="true">Entrar</button><button type="button" role="tab" id="tabSignup" aria-selected="false">Criar acesso</button></div>
     <form class="gform" id="gForm" autocomplete="on">
       <div id="gByPass" class="gform" style="padding:0">
-        <label class="fld"><span>Nome</span><input id="gNome" autocomplete="username" placeholder="Seu nome completo"></label>
+        <label class="fld"><span>Nome</span><input id="gNome" autocomplete="username" placeholder="O nome que você cadastrou"></label>
         <label class="fld"><span>Senha</span><input id="gSenha" type="password" autocomplete="current-password"></label>
       </div>
       <label class="check"><input type="checkbox" id="gRemember" checked> Lembrar neste dispositivo</label>
@@ -346,7 +346,7 @@ dialog::backdrop{background:rgba(6,16,40,.5)}
       <span class="empty" style="font-size:13px">Esqueceu a senha? Peça ao responsável pela agenda para definir uma nova.</span>
     </form>
     <form class="gform" id="sForm" autocomplete="on" hidden>
-      <label class="fld"><span>Nome completo</span><input id="sNome" maxlength="80" autocomplete="name" placeholder="Como aparecerá na agenda"></label>
+      <label class="fld"><span>Nome</span><input id="sNome" maxlength="80" autocomplete="name" placeholder="Ex.: Ana ou Ana Souza"><small>Primeiro nome, ou primeiro e segundo. É com ele que você vai entrar.</small></label>
       <label class="fld"><span>Cargo / setor (opcional)</span><input id="sCargo" maxlength="80"></label>
       <label class="fld"><span>Data de nascimento</span><input id="sNasc" type="date" min="1920-01-01" autocomplete="bday"><small>Usada para avisar a equipe no seu aniversário. Os colegas veem só o dia e o mês.</small></label>
       <label class="fld"><span>Senha</span><input id="sSenha" type="password" autocomplete="new-password" placeholder="Mínimo 6 caracteres"></label>
@@ -594,8 +594,9 @@ const ERROS = {
   nao_encontrado: "Esse registro não existe mais. A agenda foi atualizada.",
   login_invalido: "Nome ou senha incorretos.",
   aguardando_aprovacao: "Seu cadastro ainda está aguardando aprovação do responsável pela agenda.",
-  nome_em_uso: "Já existe alguém com esse nome. Inclua o sobrenome para diferenciar.",
-  nome_curto: "Informe o nome completo.",
+  nome_em_uso: "Já existe alguém com esse nome. Inclua o segundo nome para diferenciar.",
+  primeiro_nome_em_uso: "Já existe alguém com esse primeiro nome na agenda. Inclua também o segundo nome.",
+  nome_curto: "Informe o nome.",
   senha_curta: "A senha precisa ter pelo menos 6 caracteres.",
   muitos_pendentes: "Há muitos cadastros aguardando aprovação. Tente mais tarde.",
   nascimento_invalido: "Informe uma data de nascimento válida.",
@@ -644,7 +645,7 @@ $("#sForm").addEventListener("submit", async e => {
   e.preventDefault();
   const nome = $("#sNome").value.trim(), senha = $("#sSenha").value;
   $("#sErr").textContent = ""; $("#sOk").hidden = true;
-  if (nome.length < 3 || !nome.includes(" ")) return $("#sErr").textContent = "Informe nome e sobrenome.";
+  if (nome.length < 2) return $("#sErr").textContent = "Informe seu nome.";
   if (senha.length < 6) return $("#sErr").textContent = ERROS.senha_curta;
   if (senha !== $("#sSenha2").value) return $("#sErr").textContent = "As senhas não conferem.";
   const nasc = $("#sNasc").value;
