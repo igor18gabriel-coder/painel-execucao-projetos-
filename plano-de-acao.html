@@ -84,7 +84,7 @@ input.tab.on{cursor:text;text-align:center}
 <div class="wrap">
 <header>
   <div class="brand"><img src="logo-unifm.png" alt="Fastfood Milionário"><div><h1 id="h1">PLANO DE AÇÃO</h1><input id="h1i" class="h1i" aria-label="Nome da página" maxlength="120" hidden><div class="sub"><span id="sub">Tarefas, prazos e checagem</span><span class="sz" id="sz" hidden><button class="btn" type="button" id="szm" aria-label="Diminuir o nome" title="Diminuir">A−</button><button class="btn" type="button" id="szp" aria-label="Aumentar o nome" title="Aumentar">A+</button></span></div></div></div>
-  <div class="row"><button class="btn" id="pdf" type="button">🖨️ Imprimir / PDF</button><button class="btn" id="logout" type="button" hidden>Sair</button></div>
+  <div class="row"><button class="btn pri" id="inst" type="button" hidden>📲 Instalar app</button><button class="btn" id="pdf" type="button">🖨️ Imprimir / PDF</button><button class="btn" id="logout" type="button" hidden>Sair</button></div>
 </header>
 
 <section id="gate" hidden>
@@ -334,6 +334,18 @@ $("gForm").addEventListener("submit",e=>{e.preventDefault();login($("gCode").val
 $("logout").addEventListener("click",()=>logout(""));
 $("gName").value=lsGet("pe_name");setLock(true);
 if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("plano-sw.js",{scope:"./plano-de-acao.html"}).catch(()=>{});
+let instEv=null;
+const standalone=()=>matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;
+if(!standalone())$("inst").hidden=false;
+window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();instEv=e});
+window.addEventListener("appinstalled",()=>{$("inst").hidden=true;instEv=null});
+$("inst").addEventListener("click",async()=>{
+  if(instEv){instEv.prompt();try{await instEv.userChoice}catch(e){}instEv=null;return}
+  const ua=navigator.userAgent,ios=/iPhone|iPad|iPod/.test(ua),inapp=/FBAN|FBAV|Instagram|WhatsApp|Line\/|; wv\)/.test(ua);
+  alert(inapp?"Você abriu o link dentro de outro aplicativo (WhatsApp, Instagram…). Abra este endereço no Chrome (Android) ou no Safari (iPhone) e toque em Instalar app de novo."
+   :ios?"No iPhone: toque no botão Compartilhar (quadrado com seta) do Safari e escolha \"Adicionar à Tela de Início\"."
+   :"Abra o menu do navegador (⋮ no Chrome) e escolha \"Instalar aplicativo\" ou \"Adicionar à tela inicial\". No computador, use o ícone de instalar na barra de endereço.");
+});
 const c0=lsGet("pe_code");if(c0)login(c0,lsGet("pe_name"),true);
 </script>
 </body></html>
