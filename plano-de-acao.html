@@ -71,6 +71,7 @@ input.tab.on{cursor:text;text-align:center}
 .etb{display:flex;gap:8px;align-items:center;width:calc(100% - 32px);margin:8px 0 0 32px;text-align:left;font:inherit;font-size:14px;color:var(--tx);background:var(--inp);border:1px dashed var(--bd);border-radius:8px;padding:7px 10px;cursor:pointer}
 .etb:hover{border-color:var(--ac)}.etb .et{flex:1;min-width:0;overflow-wrap:anywhere}.etb i{color:var(--mut)}
 .stp{display:flex;gap:10px;align-items:flex-start;padding:8px;margin-bottom:6px;background:var(--inp);border:1px solid var(--bd);border-left:4px solid var(--bd);border-radius:8px;font-size:14px}
+textarea.etdesc{min-height:150px;line-height:1.5;font-size:15px;padding:10px 12px;resize:vertical}
 .stp.late{border-left-color:var(--red)}.stp.ok{border-left-color:var(--grn)}.stp.ok input[data-a=etn]{text-decoration:line-through;opacity:.75}
 .stp>input[type=checkbox]{width:22px;height:22px;margin-top:6px;accent-color:#12b76a;cursor:pointer}
 .etc{flex:1;min-width:0;display:grid;gap:6px}.stp small{color:var(--grn);font-size:12px}
@@ -177,6 +178,7 @@ async function saveEts(id,E){
   catch(e){alert("Não consegui salvar a etapa. Verifique a internet e tente de novo.")}
   finally{writing--;poll()}}
 const lastUp=x=>ets(x).length?(x.eupd||x.upd||0):0;
+function fitDesc(root){(root||document).querySelectorAll("textarea.etdesc").forEach(t=>{t.style.height="auto";t.style.height=Math.max(150,t.scrollHeight+4)+"px"})}
 function renderTabs(){
   const a=document.activeElement;if(a&&a.classList&&a.classList.contains("tab")&&a.tagName==="INPUT")return;
   const cnt={};Object.keys(docs).forEach(id=>{const k=docs[id].pl||"p1";cnt[k]=(cnt[k]||0)+1});
@@ -247,11 +249,11 @@ function render(){
       '<button type="button" class="etb" data-a="obs" aria-expanded="'+op+'"><span class="ar">'+(op?'▾':'▸')+'</span><span class="et">'+barTx+'</span>'+(E.length?'<span class="sub">'+nd+'/'+E.length+' etapas</span>':'')+'</button>'+
       (op?'<div class="obs"><div style="max-width:240px"><label class="lbl">Situação</label><select data-a="st" style="width:100%"'+dis+'><option value="">Não informada</option><option value="and"'+(x.st==="and"?" selected":"")+'>Em andamento</option><option value="agu"'+(x.st==="agu"?" selected":"")+'>Aguardando</option><option value="par"'+(x.st==="par"?" selected":"")+'>Parada</option></select></div>'+
         '<div><label class="lbl">Etapas (ordenadas pela data de atuação; marque quando a etapa for concluída)</label>'+
-        (E.length?EO.map(o=>{const q=o.q,i=o.i;return '<div class="stp'+(q.done?' ok':'')+(!q.done&&q.d&&q.d<hoje()?' late':'')+'"><input type="checkbox" data-a="etchk" data-i="'+i+'"'+(q.done?' checked':'')+disE+' aria-label="Etapa concluída"><div class="etc"><div class="row" style="flex-wrap:nowrap"><span class="sub">'+(i+1)+'.</span><input data-a="etn" data-i="'+i+'" value="'+esc(q.n||"")+'" placeholder="Nome da etapa" style="flex:1;font-weight:600"'+disE+'><input type="date" data-a="etd" data-i="'+i+'" value="'+esc(q.d||"")+'" title="Data de atuação" aria-label="Data de atuação" style="width:145px"'+disE+'>'+(canWrite?'<button type="button" data-a="etdel" data-i="'+i+'" aria-label="Excluir etapa">✕</button>':'')+'</div><textarea rows="2" data-a="etdesc" data-i="'+i+'" placeholder="Descreva o que foi feito nesta etapa"'+disE+'>'+esc(q.desc||"")+'</textarea>'+(q.done?'<small>✓ Concluída'+(q.doneAt?' em '+esc(fdt(q.doneAt)):'')+(q.by?' por '+esc(q.by):'')+'</small>':'')+'</div></div>'}).join(""):'<div class="sub">Nenhuma etapa registrada.</div>')+
+        (E.length?EO.map(o=>{const q=o.q,i=o.i;return '<div class="stp'+(q.done?' ok':'')+(!q.done&&q.d&&q.d<hoje()?' late':'')+'"><input type="checkbox" data-a="etchk" data-i="'+i+'"'+(q.done?' checked':'')+disE+' aria-label="Etapa concluída"><div class="etc"><div class="row" style="flex-wrap:nowrap"><span class="sub">'+(i+1)+'.</span><input data-a="etn" data-i="'+i+'" value="'+esc(q.n||"")+'" placeholder="Nome da etapa" style="flex:1;font-weight:600"'+disE+'><input type="date" data-a="etd" data-i="'+i+'" value="'+esc(q.d||"")+'" title="Data de atuação" aria-label="Data de atuação" style="width:145px"'+disE+'>'+(canWrite?'<button type="button" data-a="etdel" data-i="'+i+'" aria-label="Excluir etapa">✕</button>':'')+'</div><textarea rows="6" class="etdesc" data-a="etdesc" data-i="'+i+'" placeholder="Descreva o que foi feito nesta etapa"'+disE+'>'+esc(q.desc||"")+'</textarea>'+(q.done?'<small>✓ Concluída'+(q.doneAt?' em '+esc(fdt(q.doneAt)):'')+(q.by?' por '+esc(q.by):'')+'</small>':'')+'</div></div>'}).join(""):'<div class="sub">Nenhuma etapa registrada.</div>')+
         '<div class="row" style="flex-wrap:wrap;margin-top:6px"><input data-a="etnew" style="flex:1;min-width:0" placeholder="Nova etapa (ex.: Pedir orçamento)" autocomplete="off"><input type="date" data-a="etnewd" value="'+hoje()+'" title="Data de atuação" aria-label="Data de atuação" style="width:150px"><button class="btn pri" type="button" data-a="etadd">Adicionar etapa</button></div></div>'+
         '<div><label class="lbl">Observação</label><textarea rows="3" data-a="obstxt" placeholder="Observação"'+dis+' aria-label="Observação">'+esc(x.obs||"")+'</textarea></div></div>':'')+
       '</div>'}).join(""):'<div class="empty">'+(tot?"Nenhuma tarefa com esses filtros.":(canWrite?"Nenhuma tarefa ainda. Adicione a primeira acima.":"Nenhuma tarefa cadastrada."))+'</div>';
-  if(H!==lastH){$("list").innerHTML=H;lastH=H}
+  if(H!==lastH){$("list").innerHTML=H;lastH=H;fitDesc()}
   $("foot").textContent=canWrite?"":"Modo checagem: você pode criar etapas, descrever e marcar. Tarefas, prazos e situação só o editor altera.";
   const nm=cfgName||"PLANO DE AÇÃO";$("h1").textContent=nm;document.title=nm;
   if(document.activeElement!==$("h1i"))$("h1i").value=nm;
@@ -300,6 +302,7 @@ $("list").addEventListener("click",e=>{
     delArm={id,t:setTimeout(()=>{delArm=null;b.textContent="🗑";b.classList.remove("danger")},3000)};
   }
 });
+$("list").addEventListener("input",e=>{if(e.target.classList&&e.target.classList.contains("etdesc"))fitDesc(e.target.parentNode)});
 document.addEventListener("focusout",()=>{if(pend)setTimeout(render,0)});
 ["q","fS","fR"].forEach(i=>$(i).addEventListener("input",render));
 $("h1i").addEventListener("change",async()=>{
