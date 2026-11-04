@@ -133,6 +133,22 @@ dialog::backdrop{background:rgba(3,10,35,.72)}
 .nrow{display:grid;grid-template-columns:auto 1fr 150px 145px auto;gap:6px;align-items:center;margin-bottom:6px}
 @media (max-width:720px){.tpick,.g3{grid-template-columns:1fr}.nrow{grid-template-columns:auto 1fr auto}.nrow .ne-r,.nrow .ne-d{grid-column:2/-1}}
 @media print{body::before{display:none}body{background:#fff;color:#000}.add,.filters,.acts,#logout,#pdf{display:none}.task{border-color:#999;background:#fff;color:#000}.k{background:#fff;border-color:#999}}
+#tv{display:grid;gap:14px}
+.tvbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.tvback{font:inherit;font-size:16px;font-weight:700;padding:10px 16px;border:2px solid var(--yl);border-radius:12px;background:transparent;color:var(--yl);cursor:pointer}
+.tvback:hover{background:var(--yl);color:#0a2a6b}
+.tvbar h2{margin:0;font-size:24px;flex:1;min-width:200px;overflow-wrap:anywhere}
+.tvg{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:8px}
+.tvc{border:1px solid var(--bd);border-radius:10px;padding:10px 12px;background:var(--card)}
+.tvc small{display:block;color:var(--mut);font-size:12px;margin-bottom:2px}.tvc b{font-size:15px;overflow-wrap:anywhere}
+.tvs{border:1px solid var(--bd);border-radius:12px;padding:14px;background:var(--card)}.tvs h3{margin:0 0 10px;font-size:16px}
+.tvt.task{border:0;padding:0;margin:0;background:none}
+.rch{display:inline-flex;gap:6px;align-items:center;background:var(--bluebg);color:var(--ac);border-radius:999px;padding:4px 6px 4px 12px;font-weight:600;font-size:14px;margin:0 6px 6px 0}
+.rch button{border:0;background:rgba(255,255,255,.15);color:inherit;border-radius:50%;width:22px;height:22px;cursor:pointer;padding:0}
+.tvact{display:flex;flex-wrap:wrap;gap:8px}
+.tvact .dg{border-color:#c0392b;color:var(--red)}
+.tvobs{white-space:pre-wrap;overflow-wrap:anywhere}
+@media print{#tv .tvact,#tv .tvback{display:none}}
 </style></head><body>
 <div class="wrap">
 <header>
@@ -154,6 +170,7 @@ dialog::backdrop{background:rgba(3,10,35,.72)}
 </section>
 
 <main id="app" hidden>
+  <div id="mainw">
   <div class="tabs" id="tabs" role="tablist"></div>
   <div class="tpbar" id="tpbar" role="group" aria-label="Tipo de tarefa"></div>
   <div class="viewbar">
@@ -177,6 +194,8 @@ dialog::backdrop{background:rgba(3,10,35,.72)}
     </div>
     <aside id="colR" aria-label="Calendário"><div id="cal"></div></aside>
   </div>
+  </div>
+  <section id="tv" aria-label="Tarefa" hidden></section>
 </main>
 </div>
 
@@ -203,7 +222,7 @@ dialog::backdrop{background:rgba(3,10,35,.72)}
       </div>
       <div class="g3">
         <div><label class="lbl" for="dD">Prazo final da tarefa</label><input id="dD" type="date" style="width:100%"></div>
-        <div><label class="lbl" for="dR">Responsável pela tarefa</label><input id="dR" list="team" style="width:100%" autocomplete="off"></div>
+        <div><label class="lbl" for="dR">Responsáveis (separe por vírgula)</label><input id="dR" list="team" style="width:100%" autocomplete="off"></div>
       </div>
     </div>
     <div id="dLink" style="margin-top:14px" hidden><label class="lbl" for="dMac">Em qual tarefa? *</label><select id="dMac" style="width:100%"></select></div>
@@ -324,7 +343,7 @@ function renderCal(){
     grid='<div class="cg d1">'+cell(calD,items,{full:true,label:"Neste dia"})+'</div>';
   }
   const und=canWrite&&calT?list().filter(x=>!x.due&&!x.done&&!ets(x).some(q=>q.d)):[];
-  const tray=und.length?'<div class="tray"><div class="sub" style="margin-bottom:4px">Sem prazo final — arraste para um dia (ou clique para escolher a data):</div>'+und.map(x=>chip({k:"t",id:x.id,i:-1,t:x.t||"(sem nome)",sub:x.resp||"",cls:"",done:false,mc:macName(x.mc),r:x.resp||""})).join("")+'</div>':"";
+  const tray=und.length?'<div class="tray"><div class="sub" style="margin-bottom:4px">Sem prazo final — arraste para um dia (ou clique para abrir a tarefa):</div>'+und.map(x=>chip({k:"t",id:x.id,i:-1,t:x.t||"(sem nome)",sub:x.resp||"",cls:"",done:false,mc:macName(x.mc),r:x.resp||""})).join("")+'</div>':"";
   let det="";
   if(calSel){
     const x=docs[calSel.id];
@@ -364,7 +383,7 @@ calEl.addEventListener("click",e=>{
     renderCal();return}
   const v=t.closest("[data-view]");if(v){calV=v.dataset.view;try{localStorage.setItem("pa_calv",calV)}catch(x){}renderCal();return}
   const g=t.closest("[data-go]");if(g){calD=g.dataset.go;calV="day";renderCal();return}
-  const c=t.closest(".cc");if(c){calSel={k:c.dataset.k,id:c.dataset.id,i:+c.dataset.i};renderCal()}
+  const c=t.closest(".cc");if(c){openTask(c.dataset.id,+c.dataset.i)}
 });
 calEl.addEventListener("change",e=>{
   const t=e.target;
@@ -432,7 +451,7 @@ function listPlan(){
 function render(){
   if(!code)return;
   const a=document.activeElement;
-  if(a&&$("list").contains(a)&&/INPUT|TEXTAREA/.test(a.tagName)&&a.type!=="checkbox"){pend=true;return}
+  if(a&&($("list").contains(a)||$("tv").contains(a))&&/INPUT|TEXTAREA|SELECT/.test(a.tagName)&&a.type!=="checkbox"){pend=true;return}
   pend=false;
   renderTabs();renderTp();renderCal();
   $("split").dataset.v=mainV;$("kpiw").hidden=mainV!=="list";[...$("vsw").children].forEach(b=>b.classList.toggle("on",b.dataset.mv===mainV));
@@ -445,14 +464,14 @@ function render(){
    '<div class="k" style="--kc:#12b76a"><small>Progresso</small><b>'+pc+'%</b></div>';
   $("bar").style.width=pc+"%";
   $("newBtn").hidden=!canWrite;
-  const names=[...new Set(all.map(x=>(x.resp||"").trim()).filter(Boolean))].sort((x,y)=>x.localeCompare(y,"pt-BR"));
+  const names=[...new Set(all.flatMap(respsOf))].sort((x,y)=>x.localeCompare(y,"pt-BR"));
   $("team").innerHTML=names.map(n=>'<option value="'+esc(n)+'">').join("");
   const fr=$("fR"),cv=fr.value;
   fr.innerHTML='<option value="">Todos os responsáveis</option>'+names.map(n=>'<option'+(n===cv?" selected":"")+' value="'+esc(n)+'">'+esc(n)+'</option>').join("");
   const q=$("q").value.trim().toLowerCase(),fs=$("fS").value,rs=fr.value;
   let L=all.filter(x=>{
     if(fs==="p"&&x.done)return false;if(fs==="c"&&!x.done)return false;if(fs==="l"&&!x.late)return false;
-    if(rs&&(x.resp||"").trim()!==rs)return false;
+    if(rs&&!respsOf(x).includes(rs))return false;
     if(q&&!((x.t||"")+" "+(x.resp||"")).toLowerCase().includes(q))return false;return true});
   const fo=$("fO").value||"prio",gM=$("gM").checked,dk=x=>x.due||"9999-99-99";
   L.sort((x,y)=>{
@@ -482,7 +501,7 @@ function render(){
       '<input class="ti" data-a="t" value="'+esc(x.t)+'" aria-label="Tarefa"'+dis+'>'+
       '<input class="d" type="date" data-a="due" value="'+esc(x.due||"")+'" aria-label="Prazo final" title="Prazo final do checklist"'+dis+'>'+
       '<input class="r" data-a="resp" list="team" value="'+esc(x.resp||"")+'" placeholder="Responsável" aria-label="Responsável" autocomplete="off"'+dis+'>'+
-      '<div class="acts"><button class="ib'+(hasO||op?" on":"")+'" type="button" data-a="obs" title="Andamento e observação" aria-label="Andamento e observação">📝</button>'+(canWrite?'<button class="ib" type="button" data-a="del" title="Excluir" aria-label="Excluir tarefa">🗑</button>':'')+'</div></div>'+
+      '<div class="acts"><button class="ib" type="button" data-a="open" title="Abrir a tarefa" aria-label="Abrir a tarefa">🔍</button><button class="ib'+(hasO||op?" on":"")+'" type="button" data-a="obs" title="Andamento e observação" aria-label="Andamento e observação">📝</button>'+(canWrite?'<button class="ib" type="button" data-a="del" title="Excluir" aria-label="Excluir tarefa">🗑</button>':'')+'</div></div>'+
       '<div class="meta">'+chip+(x.mc?'<span class="chip mc">📁 '+esc(macName(x.mc)||"(macro)")+'</span>':'')+'<button type="button" class="chip tpchip '+((x.tp==="e")?'est':'op')+(canWrite?' can':'')+'" data-a="tp" title="'+(canWrite?'Clique para trocar entre estratégica e operacional':'Tipo da tarefa')+'">'+((x.tp==="e")?'🎯 Estratégica':'⚙️ Operacional')+'</button>'+sit+'<span class="sub">📅 <b>Prazo final:</b> '+esc(fd(x.due))+'</span><span class="sub">🔄 <b>Última atualização:</b> '+(lastUp(x)?esc(fdt(lastUp(x),1)):'sem etapa')+'</span></div>'+
       '<button type="button" class="etb" data-a="obs" aria-expanded="'+op+'"><span class="ar">'+(op?'▾':'▸')+'</span><span class="et">'+barTx+'</span>'+(E.length?'<span class="sub">'+nd+'/'+E.length+' etapas</span>':'')+'</button>'+
       (op?'<div class="obs"><div style="max-width:240px"><label class="lbl">Situação</label><select data-a="st" style="width:100%"'+dis+'><option value="">Não informada</option><option value="and"'+(x.st==="and"?" selected":"")+'>Em andamento</option><option value="agu"'+(x.st==="agu"?" selected":"")+'>Aguardando</option><option value="par"'+(x.st==="par"?" selected":"")+'>Parada</option></select></div>'+
@@ -500,7 +519,107 @@ function render(){
   document.documentElement.style.setProperty("--hs",cfgSize+"px");$("sz").hidden=!canWrite;
   $("h1").hidden=canWrite;$("h1i").hidden=!canWrite;
   $("sub").textContent=hj?hj+" tarefa(s) vencem hoje":"Tarefas, prazos e checagem";
+  if(tvId&&!docs[tvId]){tvId=null;tvEdit=false;tvDraft=null}
+  $("mainw").hidden=!!tvId;$("tv").hidden=!tvId;
+  if(tvId&&!tvEdit)renderTask();
 }
+
+/* ===== TELA DA TAREFA ===== */
+let tvId=null,tvEdit=false,tvDraft=null,tvH="",tvHi=-1;
+const respsOf=x=>Array.isArray(x.resps)?x.resps.filter(Boolean):String(x.resp||"").split(/\s*,\s*/).map(z=>z.trim()).filter(Boolean);
+function saveResps(id,arr){arr=[...new Set(arr.map(z=>String(z).trim()).filter(Boolean))];write(id,{resps:arr,resp:arr.join(", "),upd:Date.now()})}
+function openTask(id,i){
+  if(!docs[id])return;tvId=id;tvEdit=false;tvDraft=null;tvH="";tvHi=(i>=0?i:-1);
+  try{history.pushState({tv:id},"")}catch(e){}
+  render();window.scrollTo(0,0);
+}
+function closeTask(){
+  if(!tvId)return;tvId=null;tvEdit=false;tvDraft=null;tvH="";
+  render();if(history.state&&history.state.tv){try{history.back()}catch(e){}}
+}
+window.addEventListener("popstate",()=>{if(tvId){tvId=null;tvEdit=false;tvDraft=null;tvH="";render()}});
+function respHtml(arr,can){
+  return '<div>'+(arr.length?arr.map((r,i)=>'<span class="rch">👤 '+esc(r)+(can?'<button type="button" data-tv="rdel" data-i="'+i+'" aria-label="Remover '+esc(r)+'" title="Remover">✕</button>':'')+'</span>').join(""):'<span class="sub">Nenhum responsável definido.</span>')+'</div>'+
+   (can?'<div class="row" style="margin-top:6px"><input id="tvRn" list="team" placeholder="Adicionar responsável (nome)" aria-label="Adicionar responsável" autocomplete="off" style="flex:1;min-width:180px"><button type="button" class="btn pri" data-tv="radd">＋ Adicionar responsável</button></div>':'');
+}
+function renderTask(){
+  const root=$("tv"),d=docs[tvId];if(!d||!root)return;
+  const x=Object.assign({id:tvId},d),t=hoje(),late=!x.done&&!!x.due&&x.due<t,today=!x.done&&x.due===t;
+  const SXL={and:["Em andamento","chip"],agu:["Aguardando","chip warn"],par:["Parada","chip bad"]};
+  const tpl=x.tp==="e"?"🎯 Estratégica":"⚙️ Operacional";
+  let h;
+  if(tvEdit&&tvDraft){
+    const D=tvDraft;
+    h='<div class="tvbar"><button type="button" class="tvback" data-tv="cancel">← Cancelar edição</button><h2>Editar tarefa</h2></div>'+
+     '<div class="tvs"><div class="lbl">Tipo</div><div class="tpick" id="tvTp"><label class="tpc"><input type="radio" name="tvtp" data-f="tp" value="e"'+(D.tp==="e"?" checked":"")+'><span><b>🎯 Estratégica</b><small>Direção, decisões e entregas que movem os objetivos</small></span></label><label class="tpc"><input type="radio" name="tvtp" data-f="tp" value="o"'+(D.tp!=="e"?" checked":"")+'><span><b>⚙️ Operacional</b><small>Execução do dia a dia e tarefas práticas</small></span></label></div>'+
+     '<div style="margin-top:12px"><label class="lbl" for="tvT">Nome da tarefa *</label><input id="tvT" data-f="t" value="'+esc(D.t)+'" style="width:100%" autocomplete="off"></div>'+
+     '<div class="g3"><div><label class="lbl" for="tvMc">Macro (agrupador)</label><select id="tvMc" data-f="mc" style="width:100%"><option value="">Sem macro</option>'+plMacros().map(m=>'<option value="'+esc(m.id)+'"'+(D.mc===m.id?" selected":"")+'>📁 '+esc(m.name)+'</option>').join("")+'</select></div>'+
+     '<div><label class="lbl" for="tvD">Prazo final</label><input id="tvD" type="date" data-f="due" value="'+esc(D.due)+'" style="width:100%"></div></div>'+
+     '<div class="g3"><div><label class="lbl" for="tvSt">Situação</label><select id="tvSt" data-f="st" style="width:100%"><option value="">Não informada</option><option value="and"'+(D.st==="and"?" selected":"")+'>Em andamento</option><option value="agu"'+(D.st==="agu"?" selected":"")+'>Aguardando</option><option value="par"'+(D.st==="par"?" selected":"")+'>Parada</option></select></div></div>'+
+     '<div style="margin-top:12px"><div class="lbl">Responsáveis</div>'+respHtml(D.resps,true)+'</div>'+
+     '<div style="margin-top:12px"><label class="lbl" for="tvO">Observação</label><textarea id="tvO" data-f="obs" rows="5">'+esc(D.obs)+'</textarea></div>'+
+     '<div class="sub" style="margin-top:8px">As etapas são editadas na tela da tarefa, depois de salvar.</div></div>'+
+     '<div class="tvact"><button type="button" class="btn pri" data-tv="save">💾 Salvar alterações</button><button type="button" class="btn" data-tv="cancel">Cancelar</button></div>';
+    root.innerHTML=h;return;
+  }
+  const E=ets(x),R=etRank(x),EO=E.map((q,i)=>({q,i})).sort((m,n)=>(m.q.d||"9999").localeCompare(n.q.d||"9999")||m.i-n.i),cu=EO.findIndex(o=>!o.q.done),cq=cu<0?null:EO[cu].q;
+  const pc=E.length?Math.round(100*R.done/E.length):(x.done?100:0);
+  const dis=canWrite?"":" disabled",disE=code?"":" disabled";
+  let pz;
+  if(x.done)pz='<span class="chip ok">✓ Concluída</span>';else if(late)pz='<span class="chip bad">Atrasada '+dias(x.due,t)+' dia(s)</span>';else if(today)pz='<span class="chip warn">Vence hoje</span>';else if(x.due)pz='<span class="chip">Faltam '+dias(t,x.due)+' dia(s)</span>';else pz='<span class="chip">Sem prazo</span>';
+  const sit=x.done?'<span class="chip ok">Concluída</span>':(x.st&&SXL[x.st]?'<span class="'+SXL[x.st][1]+'">'+SXL[x.st][0]+'</span>':'<span class="sub">Não informada</span>');
+  const cell=(k,v)=>'<div class="tvc"><small>'+k+'</small><b>'+v+'</b></div>';
+  h='<div class="tvbar"><button type="button" class="tvback" data-tv="back" aria-label="Voltar">← Voltar</button><h2>'+esc(x.t||"(sem nome)")+'</h2></div>'+
+   '<div class="meta">'+pz+(x.mc?'<span class="chip mc">📁 '+esc(macName(x.mc)||"(macro)")+'</span>':'')+'<span class="chip '+(x.tp==="e"?"est":"op")+'">'+tpl+'</span>'+(x.done?'':sit)+'</div>'+
+   '<div class="tvg">'+
+    cell("📅 Prazo final",esc(fd(x.due)))+
+    cell("Tipo",tpl)+
+    cell("📁 Macro",x.mc?esc(macName(x.mc)||"(macro)"):'<span class="sub">Sem macro</span>')+
+    cell("Situação",sit)+
+    cell("Etapas",E.length?R.done+' de '+E.length+' concluída(s)':'<span class="sub">Sem etapas</span>')+
+    cell("📍 Etapa atual",!E.length?'<span class="sub">—</span>':cu<0?'✅ Todas concluídas':esc(cq.n||"(sem nome)")+(cq.d?'<br><span class="sub">'+esc(fd(cq.d))+'</span>':'')+(cq.r?'<br><span class="sub">👤 '+esc(cq.r)+'</span>':''))+
+    cell("🔄 Última atualização das etapas",lastUp(x)?esc(fdt(lastUp(x),1)):'<span class="sub">sem etapa</span>')+
+    cell("✏️ Última alteração",x.upd?esc(fdt(x.upd,1)):'<span class="sub">—</span>')+
+    cell("🗓️ Criada em",x.ord?esc(fdt(x.ord,1)):'<span class="sub">—</span>')+
+    (x.done?cell("✓ Concluída em",(x.doneAt?esc(fdt(x.doneAt,1)):'—')+(x.by?'<br><span class="sub">por '+esc(x.by)+'</span>':'')):'')+
+   '</div>'+
+   '<div class="tvs"><h3>👤 Responsáveis pela tarefa</h3>'+respHtml(respsOf(x),canWrite)+'</div>'+
+   '<div class="tvs"><div class="task tvt" data-id="'+esc(x.id)+'"><h3>Etapas '+(E.length?'<span class="sub">· '+R.done+'/'+E.length+' ('+pc+'%)</span>':'')+'</h3>'+(E.length?'<div class="pb"><i style="width:'+pc+'%"></i></div>':'')+
+    (E.length?EO.map((o,pos)=>{const q=o.q,i=o.i;return '<div class="stp'+(q.done?' ok':'')+(!q.done&&q.d&&q.d<t?' late':'')+'"><input type="checkbox" data-a="etchk" data-i="'+i+'"'+(q.done?' checked':'')+disE+' aria-label="Etapa concluída"><div class="etc"><div class="row" style="flex-wrap:wrap"><span class="sub">'+(pos+1)+'/'+E.length+'</span><input data-a="etn" data-i="'+i+'" value="'+esc(q.n||"")+'" placeholder="Nome da etapa" style="flex:1;min-width:150px;font-weight:600"'+disE+'><input data-a="etr" data-i="'+i+'" list="team" value="'+esc(q.r||"")+'" placeholder="Responsável" aria-label="Responsável pela etapa" style="width:140px" autocomplete="off"'+disE+'><input type="date" data-a="etd" data-i="'+i+'" value="'+esc(q.d||"")+'" title="Data de atuação" aria-label="Data de atuação" style="width:145px"'+disE+'>'+(canWrite?'<button type="button" data-a="etdel" data-i="'+i+'" aria-label="Excluir etapa">✕</button>':'')+'</div><textarea rows="6" class="etdesc" data-a="etdesc" data-i="'+i+'" placeholder="Descreva o que foi feito nesta etapa"'+disE+'>'+esc(q.desc||"")+'</textarea>'+(q.done?'<small>✓ Concluída'+(q.doneAt?' em '+esc(fdt(q.doneAt)):'')+(q.by?' por '+esc(q.by):'')+'</small>':'')+'</div></div>'}).join(""):'<div class="sub">Nenhuma etapa registrada.</div>')+
+    '<div class="row" style="flex-wrap:wrap;margin-top:6px"><input data-a="etnew" style="flex:1;min-width:0" placeholder="Nova etapa (ex.: Pedir orçamento)" autocomplete="off"><input data-a="etnewr" list="team" placeholder="Responsável" aria-label="Responsável pela etapa" style="width:140px" autocomplete="off"><input type="date" data-a="etnewd" value="'+hoje()+'" title="Data de atuação" aria-label="Data de atuação" style="width:150px"><button class="btn pri" type="button" data-a="etadd">Adicionar etapa</button></div>'+
+    '<div style="margin-top:12px"><label class="lbl">Observação</label>'+(canWrite?'<textarea rows="3" data-a="obstxt" placeholder="Observação" aria-label="Observação">'+esc(x.obs||"")+'</textarea>':((x.obs||"").trim()?'<div class="tvobs">'+esc(x.obs)+'</div>':'<div class="sub">Sem observação.</div>'))+'</div>'+
+   '</div></div>'+
+   '<div class="tvact">'+(canWrite?'<button type="button" class="btn pri" data-tv="edit">✏️ Editar tarefa</button><button type="button" class="btn" data-tv="done">'+(x.done?'↩ Reabrir tarefa':'✔ Marcar como concluída')+'</button><button type="button" class="btn dg" data-tv="del">🗑 Excluir tarefa</button>':'<span class="sub">Modo checagem: você pode criar etapas, descrever e marcar. Dados da tarefa só o editor altera.</span>')+'<button type="button" class="btn" data-tv="back">← Voltar</button></div>';
+  if(h!==tvH){root.innerHTML=h;tvH=h;fitDesc(root)}
+  if(tvHi>=0){const el=root.querySelector('[data-a="etn"][data-i="'+tvHi+'"]'),st=el&&el.closest(".stp");tvHi=-1;if(st){st.scrollIntoView({block:"center"});st.classList.add("flash");setTimeout(()=>st.classList.remove("flash"),1700)}}
+}
+function addResp(){
+  const inp=$("tvRn");if(!inp)return;const nv=inp.value.split(/\s*,\s*/).map(z=>z.trim()).filter(Boolean);if(!nv.length)return;
+  if(tvEdit&&tvDraft){tvDraft.resps=[...new Set(tvDraft.resps.concat(nv))];renderTask();const n=$("tvRn");if(n)n.focus()}
+  else{const x=docs[tvId];if(!x||!canWrite)return;inp.value="";saveResps(tvId,respsOf(x).concat(nv))}
+}
+$("tv").addEventListener("input",e=>{const f=e.target.dataset&&e.target.dataset.f;if(f&&tvDraft&&tvEdit&&e.target.type!=="radio")tvDraft[f]=e.target.value});
+$("tv").addEventListener("change",e=>{const f=e.target.dataset&&e.target.dataset.f;if(f&&tvDraft&&tvEdit)tvDraft[f]=e.target.value});
+$("tv").addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.id==="tvRn"){e.preventDefault();addResp()}});
+$("tv").addEventListener("click",e=>{
+  const b=e.target.closest("[data-tv]");if(!b)return;const a=b.dataset.tv,id=tvId,x=docs[id];if(!x)return;
+  if(a==="back")closeTask();
+  else if(a==="edit"){if(!canWrite)return;tvDraft={t:x.t||"",tp:x.tp==="e"?"e":"o",mc:x.mc||"",due:x.due||"",st:x.st||"",obs:x.obs||"",resps:respsOf(x).slice()};tvEdit=true;tvH="";renderTask();window.scrollTo(0,0)}
+  else if(a==="cancel"){tvEdit=false;tvDraft=null;tvH="";render()}
+  else if(a==="save"){
+    if(!canWrite||!tvDraft)return;const D=tvDraft,pn=$("tvRn")?$("tvRn").value.split(/\s*,\s*/).map(z=>z.trim()).filter(Boolean):[];
+    const nm=(D.t||"").trim();if(!nm){const f=$("tvT");if(f)f.focus();return}
+    const rl=[...new Set(D.resps.concat(pn))];
+    tvEdit=false;tvDraft=null;tvH="";
+    write(id,{t:nm,tp:D.tp==="e"?"e":"o",mc:D.mc||"",due:D.due||"",st:D.st||"",obs:(D.obs||"").trim(),resps:rl,resp:rl.join(", "),upd:Date.now()});
+  }
+  else if(a==="done"){if(!canWrite)return;write(id,x.done?{done:false,doneAt:0,by:"",upd:Date.now()}:{done:true,doneAt:Date.now(),by:me||"",upd:Date.now()})}
+  else if(a==="del"){if(!canWrite)return;if(!confirm('Excluir a tarefa "'+(x.t||"")+'"? As etapas também serão apagadas e isso não pode ser desfeito.'))return;closeTask();del(id)}
+  else if(a==="radd")addResp();
+  else if(a==="rdel"){const i=+b.dataset.i;
+    if(tvEdit&&tvDraft){tvDraft.resps=tvDraft.resps.filter((_,k)=>k!==i);renderTask()}
+    else if(canWrite)saveResps(id,respsOf(x).filter((_,k)=>k!==i))}
+});
 const dlg=$("dlg");
 function renumN(){[...$("dEts").children].forEach((r,i)=>r.querySelector(".nn").textContent=(i+1)+".")}
 function addNRow(focus){
@@ -558,18 +677,19 @@ $("dlgF").addEventListener("submit",e=>{
   let mc=$("dMc").value;
   if(mc==="__new"){const nm=$("dMcN").value.trim();if(!nm){$("dMcN").focus();return}mc=newMid();saveMacros(cfgMacros.concat([{id:mc,name:nm,pl:curPl}]))}
   let due=$("dD").value||"";if(!due){const ds=E.map(q=>q.d).filter(Boolean).sort();if(ds.length)due=ds[ds.length-1]}
-  const n=Date.now(),doc={pl:curPl,tp,t,mc:mc||"",due,resp:$("dR").value.trim(),done:false,obs:"",ord:n,upd:n};
+  const rl=$("dR").value.split(/\s*,\s*/).map(z=>z.trim()).filter(Boolean),n=Date.now(),doc={pl:curPl,tp,t,mc:mc||"",due,resp:rl.join(", "),resps:rl,done:false,obs:"",ord:n,upd:n};
   if(E.length){doc.etapas=E;doc.eupd=n}
   if(tpF&&tpF!==tp){tpF="";try{localStorage.setItem("pa_tp","")}catch(x){}}
   write(rid(),doc,"set");dlg.close();
 });
-$("list").addEventListener("change",e=>{
+const onAll=(t,f)=>{$("list").addEventListener(t,f);$("tv").addEventListener(t,f)};
+onAll("change",e=>{
   const el=e.target,card=el.closest(".task");if(!card||!code)return;const id=card.dataset.id,a=el.dataset.a,cur=docs[id]||{};
   if(!canWrite&&!/^et(chk|n|d|r|desc)$/.test(a))return;
   if(a==="chk")write(id,el.checked?{done:true,doneAt:Date.now(),by:me||"",upd:Date.now()}:{done:false,doneAt:0,by:"",upd:Date.now()});
   else if(a==="t"){const v=el.value.trim();if(!v){render();return}if(v!==cur.t)write(id,{t:v,upd:Date.now()})}
   else if(a==="due"){if((el.value||"")!==(cur.due||""))write(id,{due:el.value||"",upd:Date.now()})}
-  else if(a==="resp"){const v=el.value.trim();if(v!==(cur.resp||""))write(id,{resp:v,upd:Date.now()})}
+  else if(a==="resp"){const rl=el.value.split(/\s*,\s*/).map(z=>z.trim()).filter(Boolean),v=rl.join(", ");if(v!==(cur.resp||""))write(id,{resp:v,resps:rl,upd:Date.now()})}
   else if(a==="mc"){if((el.value||"")!==(cur.mc||""))write(id,{mc:el.value||"",upd:Date.now()})}
   else if(a==="st"){if((el.value||"")!==(cur.st||""))write(id,{st:el.value||"",upd:Date.now()})}
   else if(a==="etchk"||a==="etn"||a==="etd"||a==="etr"||a==="etdesc"){
@@ -587,11 +707,12 @@ function addEt(card){
   const id=card.dataset.id,d=(card.querySelector('[data-a="etnewd"]')||{}).value||hoje(),rr=((card.querySelector('[data-a="etnewr"]')||{}).value||"").trim();
   inp.value="";saveEts(id,ets(docs[id]||{}).concat([{n:v,desc:"",r:rr,d,done:false}]));
 }
-$("list").addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.dataset&&(e.target.dataset.a==="etnew"||e.target.dataset.a==="etnewd"||e.target.dataset.a==="etnewr")){e.preventDefault();addEt(e.target.closest(".task"));e.target.blur()}});
+onAll("keydown",e=>{if(e.key==="Enter"&&e.target.dataset&&(e.target.dataset.a==="etnew"||e.target.dataset.a==="etnewd"||e.target.dataset.a==="etnewr")){e.preventDefault();addEt(e.target.closest(".task"));e.target.blur()}});
 let delArm=null;
-$("list").addEventListener("click",e=>{
+onAll("click",e=>{
   const b=e.target.closest("button[data-a]");if(!b)return;const id=b.closest(".task").dataset.id;
-  if(b.dataset.a==="obs"){openObs[id]=!openObs[id];render();if(openObs[id]){const t=document.querySelector('.task[data-id="'+id+'"] textarea');if(t)t.focus()}}
+  if(b.dataset.a==="open"){openTask(id)}
+  else if(b.dataset.a==="obs"){openObs[id]=!openObs[id];render();if(openObs[id]){const t=document.querySelector('.task[data-id="'+id+'"] textarea');if(t)t.focus()}}
   else if(b.dataset.a==="tp"){if(!canWrite)return;const c=docs[id]||{};write(id,{tp:(c.tp==="e")?"o":"e",upd:Date.now()})}
   else if(b.dataset.a==="etadd"){addEt(b.closest(".task"))}
   else if(b.dataset.a==="etdel"){if(!canWrite)return;if(!confirm("Excluir esta etapa do histórico?"))return;saveEts(id,ets(docs[id]||{}).filter((_,i)=>i!==+b.dataset.i))}
@@ -602,7 +723,7 @@ $("list").addEventListener("click",e=>{
     delArm={id,t:setTimeout(()=>{delArm=null;b.textContent="🗑";b.classList.remove("danger")},3000)};
   }
 });
-$("list").addEventListener("input",e=>{if(e.target.classList&&e.target.classList.contains("etdesc"))fitDesc(e.target.parentNode)});
+onAll("input",e=>{if(e.target.classList&&e.target.classList.contains("etdesc"))fitDesc(e.target.parentNode)});
 document.addEventListener("focusout",()=>{if(pend)setTimeout(render,0)});
 try{$("fO").value=lsGet("pa_fo")||"prio";$("gM").checked=lsGet("pa_gm")==="1"}catch(e){}
 ["q","fS","fR","fO","gM"].forEach(i=>$(i).addEventListener("input",()=>{try{localStorage.setItem("pa_fo",$("fO").value);localStorage.setItem("pa_gm",$("gM").checked?"1":"0")}catch(e){}render()}));
