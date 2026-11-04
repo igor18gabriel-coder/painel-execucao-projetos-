@@ -2,6 +2,12 @@
 <html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache">
 <title>Plano de Ação</title>
+<link rel="manifest" href="plano-app/manifest.webmanifest">
+<meta name="theme-color" content="#10296a">
+<meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Plano de Ação"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="icon" type="image/png" href="plano-app/icon-192.png">
+<link rel="apple-touch-icon" href="plano-app/apple-touch-icon.png">
 <style>
 :root{--bg:#10296a;--card:#183a85;--tx:#eef2fb;--mut:#b8c5e4;--bd:#2f55a8;--ac:#8db4ff;--yl:#ffac03;--red:#ff8a80;--amb:#ffc46b;--grn:#6ee7a0;--redbg:#4a1f1b;--ambbg:#4a3512;--grnbg:#123d28;--bluebg:#214a9c;--inp:#10296a}
 *{box-sizing:border-box}
@@ -327,6 +333,7 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden)poll()});
 $("gForm").addEventListener("submit",e=>{e.preventDefault();login($("gCode").value,$("gName").value.trim())});
 $("logout").addEventListener("click",()=>logout(""));
 $("gName").value=lsGet("pe_name");setLock(true);
+if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("plano-sw.js",{scope:"./plano-de-acao.html"}).catch(()=>{});
 const c0=lsGet("pe_code");if(c0)login(c0,lsGet("pe_name"),true);
 </script>
 </body></html>
