@@ -183,6 +183,9 @@ body.tvopen{overflow:hidden}
 .cg.d1 .td .dn,.cg.d1 .dn{background:none;color:var(--mut);padding:0;min-width:0;text-align:left;font-size:13px;cursor:default}
 .mr{display:block;padding:2px 4px}
 @media (max-width:720px){.cd{min-height:70px;padding:4px;border-radius:8px}.cg{gap:3px}.cc .c2,.cc .cr{display:none}.cc{padding:3px 5px;margin-bottom:3px}.dc{display:none}.chd h1{font-size:24px}}
+.tvtk{display:grid;gap:4px;text-align:left;font:inherit;color:var(--tx);background:var(--card);border:2px solid var(--yl);border-radius:12px;padding:12px 14px;cursor:pointer}
+.tvtk small{color:var(--yl);font-weight:700}.tvtk b{font-size:18px;overflow-wrap:anywhere}.tvtk:hover{background:var(--bluebg)}
+.tvtk .chip{justify-self:start}
 </style></head><body>
 <div class="wrap">
 <header>
@@ -337,14 +340,14 @@ function calItems(){
   list().forEach(x=>{
     const E=ets(x),R=etRank(x),mn=macName(x.mc),dated=E.some(q=>q.d);
     if(calE)E.forEach((q,i)=>{if(q.d)out.push({k:"e",id:x.id,i,d:q.d,t:q.n||"(etapa)",tk:x.t||"(sem nome)",pos:R.rank[i],n:R.n,mc:mn,sub:x.t||"",cls:q.done?"ok":(q.d<hoje()?"bad":""),done:!!q.done,r:q.r||x.resp||""})});
-    if(calT&&x.due&&(!dated||!E.some(q=>q.d===x.due)))out.push({k:"t",id:x.id,i:-1,d:x.due,t:x.t||"(sem nome)",mc:mn,sub:x.resp||"",r:x.resp||"",cls:x.done?"ok":x.late?"bad":x.today?"warn":"",done:!!x.done});
+    if(calT&&x.due&&!dated)out.push({k:"t",id:x.id,i:-1,d:x.due,t:x.t||"(sem nome)",mc:mn,sub:x.resp||"",r:x.resp||"",cls:x.done?"ok":x.late?"bad":x.today?"warn":"",done:!!x.done});
   });
   return out;
 }
 const canDrag=k=>k==="t"?canWrite:!!code;
 function chip(o,full){
   const sel=calSel&&calSel.k===o.k&&calSel.id===o.id&&calSel.i===o.i;
-  const ttl=o.k==="e"?o.tk:o.t,sub=o.k==="e"?o.t:"Prazo final";
+  const ttl=o.t,sub=o.k==="e"?"📌 Tarefa: "+o.tk:"Prazo final da tarefa";
   const right=o.k==="e"?o.pos+'/'+o.n:'🏁';
   const meta=[o.mc?'📁 '+esc(o.mc):'',o.r?'👤 '+esc(o.r):''].filter(Boolean).join(' · ');
   const tip=(o.k==="e"?o.tk+" — etapa "+o.pos+" de "+o.n+": "+o.t:"Prazo final: "+o.t)+(o.mc?" · Macro: "+o.mc:"")+(o.r?" · Resp.: "+o.r:"");
@@ -563,19 +566,19 @@ function render(){
 }
 
 /* ===== TELA DA TAREFA ===== */
-let tvId=null,tvEdit=false,tvDraft=null,tvH="",tvHi=-1;
+let tvId=null,tvEdit=false,tvDraft=null,tvH="",tvHi=-1,tvEt=-1;
 const respsOf=x=>Array.isArray(x.resps)?x.resps.filter(Boolean):String(x.resp||"").split(/\s*,\s*/).map(z=>z.trim()).filter(Boolean);
 function saveResps(id,arr){arr=[...new Set(arr.map(z=>String(z).trim()).filter(Boolean))];write(id,{resps:arr,resp:arr.join(", "),upd:Date.now()})}
 function openTask(id,i){
-  if(!docs[id])return;tvId=id;tvEdit=false;tvDraft=null;tvH="";tvHi=(i>=0?i:-1);
+  if(!docs[id])return;tvId=id;tvEdit=false;tvDraft=null;tvH="";tvHi=-1;tvEt=(i>=0&&ets(docs[id])[i]?i:-1);
   try{history.pushState({tv:id},"")}catch(e){}
   render();const bx=$("tvb");if(bx)bx.scrollTop=0;
 }
 function closeTask(){
-  if(!tvId)return;tvId=null;tvEdit=false;tvDraft=null;tvH="";
+  if(!tvId)return;tvId=null;tvEdit=false;tvDraft=null;tvH="";tvEt=-1;
   render();if(history.state&&history.state.tv){try{history.back()}catch(e){}}
 }
-window.addEventListener("popstate",()=>{if(tvId){tvId=null;tvEdit=false;tvDraft=null;tvH="";render()}});
+window.addEventListener("popstate",()=>{if(tvId){tvEt=-1;tvId=null;tvEdit=false;tvDraft=null;tvH="";render()}});
 function respHtml(arr,can){
   return '<div>'+(arr.length?arr.map((r,i)=>'<span class="rch">👤 '+esc(r)+(can?'<button type="button" data-tv="rdel" data-i="'+i+'" aria-label="Remover '+esc(r)+'" title="Remover">✕</button>':'')+'</span>').join(""):'<span class="sub">Nenhum responsável definido.</span>')+'</div>'+
    (can?'<div class="row" style="margin-top:6px"><input id="tvRn" list="team" placeholder="Adicionar responsável (nome)" aria-label="Adicionar responsável" autocomplete="off" style="flex:1;min-width:180px"><button type="button" class="btn pri" data-tv="radd">＋ Adicionar responsável</button></div>':'');
@@ -603,6 +606,19 @@ function renderTask(){
   const E=ets(x),R=etRank(x),EO=E.map((q,i)=>({q,i})).sort((m,n)=>(m.q.d||"9999").localeCompare(n.q.d||"9999")||m.i-n.i),cu=EO.findIndex(o=>!o.q.done),cq=cu<0?null:EO[cu].q;
   const pc=E.length?Math.round(100*R.done/E.length):(x.done?100:0);
   const dis=canWrite?"":" disabled",disE=code?"":" disabled";
+  const stp=(o,pos)=>{const q=o.q,i=o.i;return '<div class="stp'+(q.done?' ok':'')+(!q.done&&q.d&&q.d<hoje()?' late':'')+'"><input type="checkbox" data-a="etchk" data-i="'+i+'"'+(q.done?' checked':'')+disE+' aria-label="Etapa concluída"><div class="etc"><div class="row" style="flex-wrap:wrap"><span class="sub">'+(pos+1)+'/'+E.length+'</span><input data-a="etn" data-i="'+i+'" value="'+esc(q.n||"")+'" placeholder="Nome da etapa" style="flex:1;min-width:150px;font-weight:600"'+disE+'><input data-a="etr" data-i="'+i+'" list="team" value="'+esc(q.r||"")+'" placeholder="Responsável" aria-label="Responsável pela etapa" style="width:140px" autocomplete="off"'+disE+'><input type="date" data-a="etd" data-i="'+i+'" value="'+esc(q.d||"")+'" title="Data de atuação" aria-label="Data de atuação" style="width:145px"'+disE+'>'+(canWrite?'<button type="button" data-a="etdel" data-i="'+i+'" aria-label="Excluir etapa">✕</button>':'')+'</div><textarea rows="6" class="etdesc" data-a="etdesc" data-i="'+i+'" placeholder="Descreva o que foi feito nesta etapa"'+disE+'>'+esc(q.desc||"")+'</textarea>'+(q.done?'<small>✓ Concluída'+(q.doneAt?' em '+esc(fdt(q.doneAt)):'')+(q.by?' por '+esc(q.by):'')+'</small>':'')+'</div></div>'};
+  if(tvEt>=0&&E[tvEt]){
+    const q=E[tvEt],i=tvEt,pos=R.rank[i]-1,md=q.done?'<span class="chip ok">✓ Concluída</span>':(q.d&&q.d<t?'<span class="chip bad">Atrasada '+dias(q.d,t)+' dia(s)</span>':(q.d===t?'<span class="chip warn">Hoje</span>':(q.d?'<span class="chip">Faltam '+dias(t,q.d)+' dia(s)</span>':'<span class="chip">Sem data</span>')));
+    const cl=(k,v)=>'<div class="tvc"><small>'+k+'</small><b>'+v+'</b></div>';
+    const h2='<div class="tvbar"><button type="button" class="tvback" data-tv="back" aria-label="Voltar">← Voltar</button><h2>'+esc(q.n||"(etapa sem nome)")+'</h2></div>'+
+     '<div class="meta">'+md+'<span class="chip">Etapa '+R.rank[i]+' de '+E.length+'</span></div>'+
+     '<button type="button" class="tvtk" data-tv="totask"><small>📌 Esta etapa pertence à tarefa (macro)</small><b>'+esc(x.t||"(sem nome)")+'</b>'+(x.mc?'<span class="chip mc">📁 '+esc(macName(x.mc)||"(macro)")+'</span>':'')+'<span class="sub">Toque para abrir a tarefa completa →</span></button>'+
+     '<div class="tvg">'+cl("📅 Data de atuação",esc(fd(q.d)))+cl("👤 Responsável pela etapa",q.r?esc(q.r):'<span class="sub">Não definido</span>')+cl("Situação",q.done?'✓ Concluída'+(q.doneAt?'<br><span class="sub">'+esc(fdt(q.doneAt,1))+(q.by?' · '+esc(q.by):'')+'</span>':''):'Pendente')+cl("📅 Prazo final da tarefa",esc(fd(x.due)))+cl("Etapas da tarefa",R.done+' de '+E.length+' concluída(s)')+'</div>'+
+     '<div class="tvs"><div class="task tvt" data-id="'+esc(x.id)+'"><h3>Detalhes da etapa</h3>'+stp({q,i},pos)+'</div></div>'+
+     '<div class="tvact"><button type="button" class="btn pri" data-tv="totask">📌 Abrir a tarefa completa</button><button type="button" class="btn" data-tv="back">← Voltar</button></div>';
+    if(h2!==tvH){root.innerHTML=h2;tvH=h2;fitDesc(root)}
+    return;
+  }
   let pz;
   if(x.done)pz='<span class="chip ok">✓ Concluída</span>';else if(late)pz='<span class="chip bad">Atrasada '+dias(x.due,t)+' dia(s)</span>';else if(today)pz='<span class="chip warn">Vence hoje</span>';else if(x.due)pz='<span class="chip">Faltam '+dias(t,x.due)+' dia(s)</span>';else pz='<span class="chip">Sem prazo</span>';
   const sit=x.done?'<span class="chip ok">Concluída</span>':(x.st&&SXL[x.st]?'<span class="'+SXL[x.st][1]+'">'+SXL[x.st][0]+'</span>':'<span class="sub">Não informada</span>');
@@ -644,6 +660,7 @@ $("tv").addEventListener("click",e=>{
   if(e.target===$("tv")&&!tvEdit){closeTask();return}
   const b=e.target.closest("[data-tv]");if(!b)return;const a=b.dataset.tv,id=tvId,x=docs[id];if(!x)return;
   if(a==="back")closeTask();
+  else if(a==="totask"){tvEt=-1;tvH="";renderTask();$("tv").scrollTop=0}
   else if(a==="edit"){if(!canWrite)return;tvDraft={t:x.t||"",tp:x.tp==="e"?"e":"o",mc:x.mc||"",due:x.due||"",st:x.st||"",obs:x.obs||"",resps:respsOf(x).slice()};tvEdit=true;tvH="";renderTask();$("tv").scrollTop=0}
   else if(a==="cancel"){tvEdit=false;tvDraft=null;tvH="";render()}
   else if(a==="save"){
