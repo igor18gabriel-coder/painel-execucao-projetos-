@@ -130,8 +130,8 @@ dialog::backdrop{background:rgba(3,10,35,.72)}
 .tpc{display:flex;gap:10px;align-items:flex-start;border:2px solid var(--bd);border-radius:12px;padding:10px;cursor:pointer;background:var(--inp)}
 .tpc:has(input:checked){border-color:var(--yl);background:#1d3f8f}.tpc input{margin-top:4px;accent-color:#ffac03}.tpc small{display:block;color:var(--mut);font-size:12px;font-weight:400}
 .g3{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
-.nrow{display:grid;grid-template-columns:auto 1fr 150px 145px auto;gap:6px;align-items:center;margin-bottom:6px}
-@media (max-width:720px){.tpick,.g3{grid-template-columns:1fr}.nrow{grid-template-columns:auto 1fr auto}.nrow .ne-r,.nrow .ne-d{grid-column:2/-1}}
+.nrow{display:grid;grid-template-columns:auto 1fr 150px 145px 105px auto;gap:6px;align-items:center;margin-bottom:6px}
+@media (max-width:720px){.tpick,.g3{grid-template-columns:1fr}.nrow{grid-template-columns:auto 1fr auto}.nrow .ne-r,.nrow .ne-d,.nrow .ne-h{grid-column:2/-1}}
 @media print{body::before{display:none}body{background:#fff;color:#000}.add,.filters,.acts,#logout,#pdf{display:none}.task{border-color:#999;background:#fff;color:#000}.k{background:#fff;border-color:#999}}
 #tv{display:grid;gap:14px}
 .tvbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
@@ -347,11 +347,11 @@ function calNames(){const m=new Map();listPlan().forEach(x=>{respsOf(x).concat(.
 function matchPerson(n){const m=nm(n);if(!m||m==="alguem")return"";const L=calNames();let f=L.find(x=>nm(x)===m);if(f)return f;f=L.find(x=>nm(x).split(/\s+/)[0]===m.split(/\s+/)[0]);return f||""}
 function dayOrder(d,pool){
   const ol=ords[d]||[];
-  return pool.map((o,n)=>({o,n})).sort((a,b)=>{const ia=ol.indexOf(a.o.key),ib=ol.indexOf(b.o.key);return (ia<0?1e6:ia)-(ib<0?1e6:ib)||(a.o.k===b.o.k?0:a.o.k==="t"?-1:1)||a.n-b.n}).map(v=>v.o);
+  return pool.map((o,n)=>({o,n})).sort((a,b)=>{const ia=ol.indexOf(a.o.key),ib=ol.indexOf(b.o.key);return (a.o.h?0:1)-(b.o.h?0:1)||(a.o.h&&b.o.h?a.o.h.localeCompare(b.o.h):0)||(ia<0?1e6:ia)-(ib<0?1e6:ib)||(a.o.k===b.o.k?0:a.o.k==="t"?-1:1)||a.n-b.n}).map(v=>v.o);
 }
 function moveItem(d,key,dir){
   if(!code)return;
-  const vis=dayOrder(d,calCur.filter(o=>o.d===d)).map(o=>o.key),full=dayOrder(d,calAll.filter(o=>o.d===d)).map(o=>o.key);
+  const vis=dayOrder(d,calCur.filter(o=>o.d===d&&!o.h)).map(o=>o.key),full=dayOrder(d,calAll.filter(o=>o.d===d&&!o.h)).map(o=>o.key);
   const i=vis.indexOf(key),j=i+dir;if(i<0||j<0||j>=vis.length)return;
   const a=full.indexOf(vis[i]),b=full.indexOf(vis[j]);[full[a],full[b]]=[full[b],full[a]];
   ords[d]=full;calH="";renderCal();writing++;
@@ -361,7 +361,7 @@ function calItems(){
   const out=[];
   list().forEach(x=>{
     const E=ets(x),R=etRank(x),mn=macName(x.mc),dated=E.some(q=>q.d);
-    if(calE)E.forEach((q,i)=>{if(q.d)out.push({k:"e",key:x.id+"|"+(q.n||""),rs:q.r?splitN(q.r):respsOf(x),id:x.id,i,d:q.d,t:q.n||"(etapa)",tk:x.t||"(sem nome)",pos:R.rank[i],n:R.n,mc:mn,sub:x.t||"",cls:q.done?"ok":(q.d<hoje()?"bad":""),done:!!q.done,r:q.r||x.resp||""})});
+    if(calE)E.forEach((q,i)=>{if(q.d)out.push({k:"e",h:q.h||"",key:x.id+"|"+(q.n||""),rs:q.r?splitN(q.r):respsOf(x),id:x.id,i,d:q.d,t:q.n||"(etapa)",tk:x.t||"(sem nome)",pos:R.rank[i],n:R.n,mc:mn,sub:x.t||"",cls:q.done?"ok":(q.d<hoje()?"bad":""),done:!!q.done,r:q.r||x.resp||""})});
     if(calT&&x.due&&!dated)out.push({k:"t",key:x.id+"|",rs:respsOf(x),id:x.id,i:-1,d:x.due,t:x.t||"(sem nome)",mc:mn,sub:x.resp||"",r:x.resp||"",cls:x.done?"ok":x.late?"bad":x.today?"warn":"",done:!!x.done});
   });
   return out;
@@ -370,7 +370,7 @@ const canDrag=k=>k==="t"?canWrite:!!code;
 function chip(o,full,mv){
   const sel=calSel&&calSel.k===o.k&&calSel.id===o.id&&calSel.i===o.i;
   const ttl=o.t,sub=o.k==="e"?"📌 Tarefa: "+o.tk:"Prazo final da tarefa";
-  const right=o.k==="e"?o.pos+'/'+o.n:'🏁';
+  const right=(o.h?'🕒 '+o.h+' · ':'')+(o.k==="e"?o.pos+'/'+o.n:'🏁');
   const meta=[o.mc?'📁 '+esc(o.mc):'',o.r?'👤 '+esc(o.r):''].filter(Boolean).join(' · ');
   const tip=(o.k==="e"?o.tk+" — etapa "+o.pos+" de "+o.n+": "+o.t:"Prazo final: "+o.t)+(o.mc?" · Macro: "+o.mc:"")+(o.r?" · Resp.: "+o.r:"");
   return '<div class="cc k-'+o.k+' '+o.cls+(o.done&&o.k==="e"?' dim':'')+(sel?' sel':'')+'" draggable="'+canDrag(o.k)+'" data-k="'+o.k+'" data-id="'+esc(o.id)+'" data-i="'+o.i+'" title="'+esc(tip)+'" data-key="'+esc(o.key||"")+'"><div class="cb"><div class="c1"><b>'+esc(ttl||"(sem nome)")+'</b><span class="cr">'+right+'</span></div><div class="c2">'+esc(sub||"")+'</div>'+(full&&meta?'<div class="c3">'+meta+'</div>':'')+'</div>'+(mv&&mv.n>1&&code?'<div class="cmv"><button type="button" data-ord="up" aria-label="Subir na ordem do dia" title="Subir (fazer antes)"'+(mv.i===0?' disabled':'')+'>▲</button><button type="button" data-ord="down" aria-label="Descer na ordem do dia" title="Descer (fazer depois)"'+(mv.i===mv.n-1?' disabled':'')+'>▼</button></div>':'')+'</div>';
@@ -378,7 +378,7 @@ function chip(o,full,mv){
 function cell(d,items,opt){
   const its=dayOrder(d,items.filter(o=>o.d===d));
   const max=opt.max||99,vis=its.slice(0,max);
-  return '<div class="cd'+(opt.other?' o':'')+(d===hoje()?' td':'')+'" data-date="'+d+'"><div class="dh"><span class="dn" data-go="'+d+'" title="Abrir este dia">'+(opt.label||parseD(d).getDate())+'</span>'+(its.length&&!opt.label?'<span class="dc" title="'+its.length+' item(ns)">'+its.length+'</span>':'')+'</div>'+vis.map((o,ix)=>chip(o,opt.full,{i:ix,n:its.length})).join("")+(its.length>vis.length?'<div class="mr" data-go="'+d+'">+'+(its.length-vis.length)+' mais</div>':'')+'</div>';
+  return '<div class="cd'+(opt.other?' o':'')+(d===hoje()?' td':'')+'" data-date="'+d+'"><div class="dh"><span class="dn" data-go="'+d+'" title="Abrir este dia">'+(opt.label||parseD(d).getDate())+'</span>'+(its.length&&!opt.label?'<span class="dc" title="'+its.length+' item(ns)">'+its.length+'</span>':'')+'</div>'+vis.map((o,ix)=>chip(o,opt.full,o.h?null:{i:ix-its.filter(z=>z.h).length,n:its.filter(z=>!z.h).length})).join("")+(its.length>vis.length?'<div class="mr" data-go="'+d+'">+'+(its.length-vis.length)+' mais</div>':'')+'</div>';
 }
 function renderCal(){
   const root=$("cal");if(!root||!code||dragging)return;
@@ -476,7 +476,7 @@ async function saveMacros(arr){
   catch(e){alert("Não consegui salvar a macro. Verifique a internet e tente de novo.")}
   finally{writing--;poll()}render()}
 function etRank(x){
-  const E=ets(x),o=E.map((q,i)=>({q,i})).sort((m,n)=>(m.q.d||"9999").localeCompare(n.q.d||"9999")||m.i-n.i),rank={};
+  const E=ets(x),o=E.map((q,i)=>({q,i})).sort((m,n)=>((m.q.d||"9999")+(m.q.h||"99:99")).localeCompare((n.q.d||"9999")+(n.q.h||"99:99"))||m.i-n.i),rank={};
   o.forEach((v,p)=>{rank[v.i]=p+1});return{rank,n:E.length,done:E.filter(q=>q.done).length};
 }
 function groupHtml(L,parts){
@@ -515,7 +515,7 @@ function listPlan(){
 function render(){
   if(!code)return;
   const a=document.activeElement;
-  if(a&&($("list").contains(a)||$("tv").contains(a))&&/INPUT|TEXTAREA|SELECT/.test(a.tagName)&&a.type!=="checkbox"){pend=true;return}
+  if(a&&($("list").contains(a)||(tvId&&$("tv").contains(a)))&&/INPUT|TEXTAREA|SELECT/.test(a.tagName)&&a.type!=="checkbox"){pend=true;return}
   pend=false;
   renderTabs();renderTp();renderCal();
   $("split").dataset.v=mainV;$("kpiw").hidden=mainV!=="list";[...$("vsw").children].forEach(b=>b.classList.toggle("on",b.dataset.mv===mainV));
@@ -556,7 +556,7 @@ function render(){
     else if(x.due)chip='<span class="chip">Faltam '+dias(hoje(),x.due)+' dia(s)</span>';
     else chip='<span class="chip">Sem data</span>';
     const SX={and:["Em andamento","chip"],agu:["Aguardando","chip warn"],par:["Parada","chip bad"]};
-    const E=ets(x),nd=E.filter(q=>q.done).length,EO=E.map((q,i)=>({q,i})).sort((m,n)=>(m.q.d||"9999").localeCompare(n.q.d||"9999")||m.i-n.i),cu=EO.findIndex(o=>!o.q.done),cq=cu<0?null:EO[cu].q;
+    const E=ets(x),nd=E.filter(q=>q.done).length,EO=E.map((q,i)=>({q,i})).sort((m,n)=>((m.q.d||"9999")+(m.q.h||"99:99")).localeCompare((n.q.d||"9999")+(n.q.h||"99:99"))||m.i-n.i),cu=EO.findIndex(o=>!o.q.done),cq=cu<0?null:EO[cu].q;
     const hasO=!!((x.obs||"").trim()||E.length||x.st),op=openObs[x.id]||false;
     const sit=!x.done&&x.st&&SX[x.st]?'<span class="'+SX[x.st][1]+'">'+SX[x.st][0]+'</span>':"";
     const barTx=!E.length?'<i>'+(code?"Registrar etapas e andamento":"Sem etapas registradas")+'</i>':(cu<0?"✅ <b>Todas as etapas concluídas</b>":"📍 <b>Etapa atual:</b> "+esc(cq.n||"(sem nome)")+(cq.d?' <span class="sub">· '+esc(fd(cq.d))+(cq.d<hoje()?' · <b style="color:var(--red)">atrasada</b>':cq.d===hoje()?' · <b style="color:var(--amb)">hoje</b>':"")+"</span>":"")+(cq.r?' <span class="sub">· 👤 '+esc(cq.r)+'</span>':""));
@@ -571,8 +571,8 @@ function render(){
       (op?'<div class="obs"><div style="max-width:240px"><label class="lbl">Situação</label><select data-a="st" style="width:100%"'+dis+'><option value="">Não informada</option><option value="and"'+(x.st==="and"?" selected":"")+'>Em andamento</option><option value="agu"'+(x.st==="agu"?" selected":"")+'>Aguardando</option><option value="par"'+(x.st==="par"?" selected":"")+'>Parada</option></select></div>'+
         '<div style="max-width:320px"><label class="lbl">Macro (agrupador)</label><select data-a="mc" style="width:100%"'+dis+'><option value="">Sem macro</option>'+plMacros().map(m=>'<option value="'+esc(m.id)+'"'+(x.mc===m.id?" selected":"")+'>'+esc(m.name)+'</option>').join("")+'</select></div>'+
         '<div><label class="lbl">Etapas (ordenadas pela data de atuação; marque quando a etapa for concluída)</label>'+
-        (E.length?EO.map((o,pos)=>{const q=o.q,i=o.i;return '<div class="stp'+(q.done?' ok':'')+(!q.done&&q.d&&q.d<hoje()?' late':'')+'"><input type="checkbox" data-a="etchk" data-i="'+i+'"'+(q.done?' checked':'')+disE+' aria-label="Etapa concluída"><div class="etc"><div class="row" style="flex-wrap:wrap"><span class="sub">'+(pos+1)+'/'+E.length+'</span><input data-a="etn" data-i="'+i+'" value="'+esc(q.n||"")+'" placeholder="Nome da etapa" style="flex:1;min-width:150px;font-weight:600"'+disE+'><input data-a="etr" data-i="'+i+'" list="team" value="'+esc(q.r||"")+'" placeholder="Responsável" aria-label="Responsável pela etapa" style="width:140px" autocomplete="off"'+disE+'><input type="date" data-a="etd" data-i="'+i+'" value="'+esc(q.d||"")+'" title="Data de atuação" aria-label="Data de atuação" style="width:145px"'+disE+'>'+(canWrite?'<button type="button" data-a="etdel" data-i="'+i+'" aria-label="Excluir etapa">✕</button>':'')+'</div><textarea rows="6" class="etdesc" data-a="etdesc" data-i="'+i+'" placeholder="Descreva o que foi feito nesta etapa"'+disE+'>'+esc(q.desc||"")+'</textarea>'+(q.done?'<small>✓ Concluída'+(q.doneAt?' em '+esc(fdt(q.doneAt)):'')+(q.by?' por '+esc(q.by):'')+'</small>':'')+'</div></div>'}).join(""):'<div class="sub">Nenhuma etapa registrada.</div>')+
-        '<div class="row" style="flex-wrap:wrap;margin-top:6px"><input data-a="etnew" style="flex:1;min-width:0" placeholder="Nova etapa (ex.: Pedir orçamento)" autocomplete="off"><input data-a="etnewr" list="team" placeholder="Responsável" aria-label="Responsável pela etapa" style="width:140px" autocomplete="off"><input type="date" data-a="etnewd" value="'+hoje()+'" title="Data de atuação" aria-label="Data de atuação" style="width:150px"><button class="btn pri" type="button" data-a="etadd">Adicionar etapa</button></div></div>'+
+        (E.length?EO.map((o,pos)=>{const q=o.q,i=o.i;return '<div class="stp'+(q.done?' ok':'')+(!q.done&&q.d&&q.d<hoje()?' late':'')+'"><input type="checkbox" data-a="etchk" data-i="'+i+'"'+(q.done?' checked':'')+disE+' aria-label="Etapa concluída"><div class="etc"><div class="row" style="flex-wrap:wrap"><span class="sub">'+(pos+1)+'/'+E.length+'</span><input data-a="etn" data-i="'+i+'" value="'+esc(q.n||"")+'" placeholder="Nome da etapa" style="flex:1;min-width:150px;font-weight:600"'+disE+'><input data-a="etr" data-i="'+i+'" list="team" value="'+esc(q.r||"")+'" placeholder="Responsável" aria-label="Responsável pela etapa" style="width:140px" autocomplete="off"'+disE+'><input type="date" data-a="etd" data-i="'+i+'" value="'+esc(q.d||"")+'" title="Data de atuação" aria-label="Data de atuação" style="width:145px"'+disE+'><input type="time" data-a="eth" data-i="'+i+'" value="'+esc(q.h||"")+'" title="Hora (opcional)" aria-label="Hora (opcional)" style="width:110px"'+disE+'>'+(canWrite?'<button type="button" data-a="etdel" data-i="'+i+'" aria-label="Excluir etapa">✕</button>':'')+'</div><textarea rows="6" class="etdesc" data-a="etdesc" data-i="'+i+'" placeholder="Descreva o que foi feito nesta etapa"'+disE+'>'+esc(q.desc||"")+'</textarea>'+(q.done?'<small>✓ Concluída'+(q.doneAt?' em '+esc(fdt(q.doneAt)):'')+(q.by?' por '+esc(q.by):'')+'</small>':'')+'</div></div>'}).join(""):'<div class="sub">Nenhuma etapa registrada.</div>')+
+        '<div class="row" style="flex-wrap:wrap;margin-top:6px"><input data-a="etnew" style="flex:1;min-width:0" placeholder="Nova etapa (ex.: Pedir orçamento)" autocomplete="off"><input data-a="etnewr" list="team" placeholder="Responsável" aria-label="Responsável pela etapa" style="width:140px" autocomplete="off"><input type="date" data-a="etnewd" value="'+hoje()+'" title="Data de atuação" aria-label="Data de atuação" style="width:150px"><input type="time" data-a="etnewh" title="Hora (opcional)" aria-label="Hora (opcional)" style="width:110px"><button class="btn pri" type="button" data-a="etadd">Adicionar etapa</button></div></div>'+
         '<div><label class="lbl">Observação</label><textarea rows="3" data-a="obstxt" placeholder="Observação"'+dis+' aria-label="Observação">'+esc(x.obs||"")+'</textarea></div></div>':'')+
       '</div>'});
   const H=L.length?(gM?groupHtml(L,parts):parts.join("")):'<div class="empty">'+(tot?"Nenhuma tarefa com esses filtros.":(canWrite?"Nenhuma tarefa ainda. Adicione a primeira acima.":"Nenhuma tarefa cadastrada."))+'</div>';
@@ -598,10 +598,10 @@ function openTask(id,i){
   render();const bx=$("tvb");if(bx)bx.scrollTop=0;
 }
 function closeTask(){
-  if(!tvId)return;tvId=null;tvEdit=false;tvDraft=null;tvH="";tvEt=-1;
+  if(!tvId)return;tvId=null;tvEdit=false;tvDraft=null;tvH="";tvEt=-1;try{if(document.activeElement&&$("tv").contains(document.activeElement))document.activeElement.blur()}catch(e){}
   render();if(history.state&&history.state.tv){try{history.back()}catch(e){}}
 }
-window.addEventListener("popstate",()=>{if(tvId){tvEt=-1;tvId=null;tvEdit=false;tvDraft=null;tvH="";render()}});
+window.addEventListener("popstate",()=>{if(tvId){try{document.activeElement.blur()}catch(e){}tvEt=-1;tvId=null;tvEdit=false;tvDraft=null;tvH="";render()}});
 function respHtml(arr,can){
   return '<div>'+(arr.length?arr.map((r,i)=>'<span class="rch">👤 '+esc(r)+(can?'<button type="button" data-tv="rdel" data-i="'+i+'" aria-label="Remover '+esc(r)+'" title="Remover">✕</button>':'')+'</span>').join(""):'<span class="sub">Nenhum responsável definido.</span>')+'</div>'+
    (can?'<div class="row" style="margin-top:6px"><input id="tvRn" list="team" placeholder="Adicionar responsável (nome)" aria-label="Adicionar responsável" autocomplete="off" style="flex:1;min-width:180px"><button type="button" class="btn pri" data-tv="radd">＋ Adicionar responsável</button></div>':'');
@@ -626,17 +626,17 @@ function renderTask(){
      '<div class="tvact"><button type="button" class="btn pri" data-tv="save">💾 Salvar alterações</button><button type="button" class="btn" data-tv="cancel">Cancelar</button></div>';
     root.innerHTML=h;return;
   }
-  const E=ets(x),R=etRank(x),EO=E.map((q,i)=>({q,i})).sort((m,n)=>(m.q.d||"9999").localeCompare(n.q.d||"9999")||m.i-n.i),cu=EO.findIndex(o=>!o.q.done),cq=cu<0?null:EO[cu].q;
+  const E=ets(x),R=etRank(x),EO=E.map((q,i)=>({q,i})).sort((m,n)=>((m.q.d||"9999")+(m.q.h||"99:99")).localeCompare((n.q.d||"9999")+(n.q.h||"99:99"))||m.i-n.i),cu=EO.findIndex(o=>!o.q.done),cq=cu<0?null:EO[cu].q;
   const pc=E.length?Math.round(100*R.done/E.length):(x.done?100:0);
   const dis=canWrite?"":" disabled",disE=code?"":" disabled";
-  const stp=(o,pos)=>{const q=o.q,i=o.i;return '<div class="stp'+(q.done?' ok':'')+(!q.done&&q.d&&q.d<hoje()?' late':'')+'"><input type="checkbox" data-a="etchk" data-i="'+i+'"'+(q.done?' checked':'')+disE+' aria-label="Etapa concluída"><div class="etc"><div class="row" style="flex-wrap:wrap"><span class="sub">'+(pos+1)+'/'+E.length+'</span><input data-a="etn" data-i="'+i+'" value="'+esc(q.n||"")+'" placeholder="Nome da etapa" style="flex:1;min-width:150px;font-weight:600"'+disE+'><input data-a="etr" data-i="'+i+'" list="team" value="'+esc(q.r||"")+'" placeholder="Responsável" aria-label="Responsável pela etapa" style="width:140px" autocomplete="off"'+disE+'><input type="date" data-a="etd" data-i="'+i+'" value="'+esc(q.d||"")+'" title="Data de atuação" aria-label="Data de atuação" style="width:145px"'+disE+'>'+(canWrite?'<button type="button" data-a="etdel" data-i="'+i+'" aria-label="Excluir etapa">✕</button>':'')+'</div><textarea rows="6" class="etdesc" data-a="etdesc" data-i="'+i+'" placeholder="Descreva o que foi feito nesta etapa"'+disE+'>'+esc(q.desc||"")+'</textarea>'+(q.done?'<small>✓ Concluída'+(q.doneAt?' em '+esc(fdt(q.doneAt)):'')+(q.by?' por '+esc(q.by):'')+'</small>':'')+'</div></div>'};
+  const stp=(o,pos)=>{const q=o.q,i=o.i;return '<div class="stp'+(q.done?' ok':'')+(!q.done&&q.d&&q.d<hoje()?' late':'')+'"><input type="checkbox" data-a="etchk" data-i="'+i+'"'+(q.done?' checked':'')+disE+' aria-label="Etapa concluída"><div class="etc"><div class="row" style="flex-wrap:wrap"><span class="sub">'+(pos+1)+'/'+E.length+'</span><input data-a="etn" data-i="'+i+'" value="'+esc(q.n||"")+'" placeholder="Nome da etapa" style="flex:1;min-width:150px;font-weight:600"'+disE+'><input data-a="etr" data-i="'+i+'" list="team" value="'+esc(q.r||"")+'" placeholder="Responsável" aria-label="Responsável pela etapa" style="width:140px" autocomplete="off"'+disE+'><input type="date" data-a="etd" data-i="'+i+'" value="'+esc(q.d||"")+'" title="Data de atuação" aria-label="Data de atuação" style="width:145px"'+disE+'><input type="time" data-a="eth" data-i="'+i+'" value="'+esc(q.h||"")+'" title="Hora (opcional)" aria-label="Hora (opcional)" style="width:110px"'+disE+'>'+(canWrite?'<button type="button" data-a="etdel" data-i="'+i+'" aria-label="Excluir etapa">✕</button>':'')+'</div><textarea rows="6" class="etdesc" data-a="etdesc" data-i="'+i+'" placeholder="Descreva o que foi feito nesta etapa"'+disE+'>'+esc(q.desc||"")+'</textarea>'+(q.done?'<small>✓ Concluída'+(q.doneAt?' em '+esc(fdt(q.doneAt)):'')+(q.by?' por '+esc(q.by):'')+'</small>':'')+'</div></div>'};
   if(tvEt>=0&&E[tvEt]){
     const q=E[tvEt],i=tvEt,pos=R.rank[i]-1,md=q.done?'<span class="chip ok">✓ Concluída</span>':(q.d&&q.d<t?'<span class="chip bad">Atrasada '+dias(q.d,t)+' dia(s)</span>':(q.d===t?'<span class="chip warn">Hoje</span>':(q.d?'<span class="chip">Faltam '+dias(t,q.d)+' dia(s)</span>':'<span class="chip">Sem data</span>')));
     const cl=(k,v)=>'<div class="tvc"><small>'+k+'</small><b>'+v+'</b></div>';
     const h2='<div class="tvbar"><button type="button" class="tvback" data-tv="back" aria-label="Voltar">← Voltar</button><h2>'+esc(q.n||"(etapa sem nome)")+'</h2></div>'+
      '<div class="meta">'+md+'<span class="chip">Etapa '+R.rank[i]+' de '+E.length+'</span></div>'+
      '<button type="button" class="tvtk" data-tv="totask"><small>📌 Esta etapa pertence à tarefa (macro)</small><b>'+esc(x.t||"(sem nome)")+'</b>'+(x.mc?'<span class="chip mc">📁 '+esc(macName(x.mc)||"(macro)")+'</span>':'')+'<span class="sub">Toque para abrir a tarefa completa →</span></button>'+
-     '<div class="tvg">'+cl("📅 Data de atuação",esc(fd(q.d)))+cl("👤 Responsável pela etapa",q.r?esc(q.r):'<span class="sub">Não definido</span>')+cl("Situação",q.done?'✓ Concluída'+(q.doneAt?'<br><span class="sub">'+esc(fdt(q.doneAt,1))+(q.by?' · '+esc(q.by):'')+'</span>':''):'Pendente')+cl("📅 Prazo final da tarefa",esc(fd(x.due)))+cl("Etapas da tarefa",R.done+' de '+E.length+' concluída(s)')+'</div>'+
+     '<div class="tvg">'+cl("📅 Data de atuação",esc(fd(q.d))+(q.h?" · 🕒 "+esc(q.h):""))+cl("👤 Responsável pela etapa",q.r?esc(q.r):'<span class="sub">Não definido</span>')+cl("Situação",q.done?'✓ Concluída'+(q.doneAt?'<br><span class="sub">'+esc(fdt(q.doneAt,1))+(q.by?' · '+esc(q.by):'')+'</span>':''):'Pendente')+cl("📅 Prazo final da tarefa",esc(fd(x.due)))+cl("Etapas da tarefa",R.done+' de '+E.length+' concluída(s)')+'</div>'+
      '<div class="tvs"><div class="task tvt" data-id="'+esc(x.id)+'"><h3>Detalhes da etapa</h3>'+stp({q,i},pos)+'</div></div>'+
      '<div class="tvact"><button type="button" class="btn pri" data-tv="totask">📌 Abrir a tarefa completa</button><button type="button" class="btn" data-tv="back">← Voltar</button></div>';
     if(h2!==tvH){root.innerHTML=h2;tvH=h2;fitDesc(root)}
@@ -662,8 +662,8 @@ function renderTask(){
    '</div>'+
    '<div class="tvs"><h3>👤 Responsáveis pela tarefa</h3>'+respHtml(respsOf(x),canWrite)+'</div>'+
    '<div class="tvs"><div class="task tvt" data-id="'+esc(x.id)+'"><h3>Etapas '+(E.length?'<span class="sub">· '+R.done+'/'+E.length+' ('+pc+'%)</span>':'')+'</h3>'+(E.length?'<div class="pb"><i style="width:'+pc+'%"></i></div>':'')+
-    (E.length?EO.map((o,pos)=>{const q=o.q,i=o.i;return '<div class="stp'+(q.done?' ok':'')+(!q.done&&q.d&&q.d<t?' late':'')+'"><input type="checkbox" data-a="etchk" data-i="'+i+'"'+(q.done?' checked':'')+disE+' aria-label="Etapa concluída"><div class="etc"><div class="row" style="flex-wrap:wrap"><span class="sub">'+(pos+1)+'/'+E.length+'</span><input data-a="etn" data-i="'+i+'" value="'+esc(q.n||"")+'" placeholder="Nome da etapa" style="flex:1;min-width:150px;font-weight:600"'+disE+'><input data-a="etr" data-i="'+i+'" list="team" value="'+esc(q.r||"")+'" placeholder="Responsável" aria-label="Responsável pela etapa" style="width:140px" autocomplete="off"'+disE+'><input type="date" data-a="etd" data-i="'+i+'" value="'+esc(q.d||"")+'" title="Data de atuação" aria-label="Data de atuação" style="width:145px"'+disE+'>'+(canWrite?'<button type="button" data-a="etdel" data-i="'+i+'" aria-label="Excluir etapa">✕</button>':'')+'</div><textarea rows="6" class="etdesc" data-a="etdesc" data-i="'+i+'" placeholder="Descreva o que foi feito nesta etapa"'+disE+'>'+esc(q.desc||"")+'</textarea>'+(q.done?'<small>✓ Concluída'+(q.doneAt?' em '+esc(fdt(q.doneAt)):'')+(q.by?' por '+esc(q.by):'')+'</small>':'')+'</div></div>'}).join(""):'<div class="sub">Nenhuma etapa registrada.</div>')+
-    '<div class="row" style="flex-wrap:wrap;margin-top:6px"><input data-a="etnew" style="flex:1;min-width:0" placeholder="Nova etapa (ex.: Pedir orçamento)" autocomplete="off"><input data-a="etnewr" list="team" placeholder="Responsável" aria-label="Responsável pela etapa" style="width:140px" autocomplete="off"><input type="date" data-a="etnewd" value="'+hoje()+'" title="Data de atuação" aria-label="Data de atuação" style="width:150px"><button class="btn pri" type="button" data-a="etadd">Adicionar etapa</button></div>'+
+    (E.length?EO.map((o,pos)=>{const q=o.q,i=o.i;return '<div class="stp'+(q.done?' ok':'')+(!q.done&&q.d&&q.d<t?' late':'')+'"><input type="checkbox" data-a="etchk" data-i="'+i+'"'+(q.done?' checked':'')+disE+' aria-label="Etapa concluída"><div class="etc"><div class="row" style="flex-wrap:wrap"><span class="sub">'+(pos+1)+'/'+E.length+'</span><input data-a="etn" data-i="'+i+'" value="'+esc(q.n||"")+'" placeholder="Nome da etapa" style="flex:1;min-width:150px;font-weight:600"'+disE+'><input data-a="etr" data-i="'+i+'" list="team" value="'+esc(q.r||"")+'" placeholder="Responsável" aria-label="Responsável pela etapa" style="width:140px" autocomplete="off"'+disE+'><input type="date" data-a="etd" data-i="'+i+'" value="'+esc(q.d||"")+'" title="Data de atuação" aria-label="Data de atuação" style="width:145px"'+disE+'><input type="time" data-a="eth" data-i="'+i+'" value="'+esc(q.h||"")+'" title="Hora (opcional)" aria-label="Hora (opcional)" style="width:110px"'+disE+'>'+(canWrite?'<button type="button" data-a="etdel" data-i="'+i+'" aria-label="Excluir etapa">✕</button>':'')+'</div><textarea rows="6" class="etdesc" data-a="etdesc" data-i="'+i+'" placeholder="Descreva o que foi feito nesta etapa"'+disE+'>'+esc(q.desc||"")+'</textarea>'+(q.done?'<small>✓ Concluída'+(q.doneAt?' em '+esc(fdt(q.doneAt)):'')+(q.by?' por '+esc(q.by):'')+'</small>':'')+'</div></div>'}).join(""):'<div class="sub">Nenhuma etapa registrada.</div>')+
+    '<div class="row" style="flex-wrap:wrap;margin-top:6px"><input data-a="etnew" style="flex:1;min-width:0" placeholder="Nova etapa (ex.: Pedir orçamento)" autocomplete="off"><input data-a="etnewr" list="team" placeholder="Responsável" aria-label="Responsável pela etapa" style="width:140px" autocomplete="off"><input type="date" data-a="etnewd" value="'+hoje()+'" title="Data de atuação" aria-label="Data de atuação" style="width:150px"><input type="time" data-a="etnewh" title="Hora (opcional)" aria-label="Hora (opcional)" style="width:110px"><button class="btn pri" type="button" data-a="etadd">Adicionar etapa</button></div>'+
     '<div style="margin-top:12px"><label class="lbl">Observação</label>'+(canWrite?'<textarea rows="3" data-a="obstxt" placeholder="Observação" aria-label="Observação">'+esc(x.obs||"")+'</textarea>':((x.obs||"").trim()?'<div class="tvobs">'+esc(x.obs)+'</div>':'<div class="sub">Sem observação.</div>'))+'</div>'+
    '</div></div>'+
    '<div class="tvact">'+(canWrite?'<button type="button" class="btn pri" data-tv="edit">✏️ Editar tarefa</button><button type="button" class="btn" data-tv="done">'+(x.done?'↩ Reabrir tarefa':'✔ Marcar como concluída')+'</button><button type="button" class="btn dg" data-tv="del">🗑 Excluir tarefa</button>':'<span class="sub">Modo checagem: você pode criar etapas, descrever e marcar. Dados da tarefa só o editor altera.</span>')+'<button type="button" class="btn" data-tv="back">← Voltar</button></div>';
@@ -704,7 +704,7 @@ const dlg=$("dlg");
 function renumN(){[...$("dEts").children].forEach((r,i)=>r.querySelector(".nn").textContent=(i+1)+".")}
 function addNRow(focus){
   const d=document.createElement("div");d.className="nrow";
-  d.innerHTML='<span class="sub nn"></span><input class="ne-n" placeholder="Descreva a etapa (ex.: Mapear as informações do crachá)" aria-label="Etapa" autocomplete="off"><input class="ne-r" list="team" placeholder="Responsável" aria-label="Responsável pela etapa" autocomplete="off"><input class="ne-d" type="date" aria-label="Prazo da etapa" title="Prazo da etapa"><button type="button" class="ib ne-x" aria-label="Remover etapa">✕</button>';
+  d.innerHTML='<span class="sub nn"></span><input class="ne-n" placeholder="Descreva a etapa (ex.: Mapear as informações do crachá)" aria-label="Etapa" autocomplete="off"><input class="ne-r" list="team" placeholder="Responsável" aria-label="Responsável pela etapa" autocomplete="off"><input class="ne-d" type="date" aria-label="Prazo da etapa" title="Prazo da etapa"><input class="ne-h" type="time" aria-label="Hora (opcional)" title="Hora (opcional)"><button type="button" class="ib ne-x" aria-label="Remover etapa">✕</button>';
   $("dEts").appendChild(d);renumN();if(focus)d.querySelector(".ne-n").focus();
 }
 function setMode(m){
@@ -745,7 +745,7 @@ $("dlgF").addEventListener("submit",e=>{
     const nm=$("dK").value.trim();if(!nm){$("dK").focus();return}
     saveMacros(cfgMacros.concat([{id:newMid(),name:nm,pl:curPl}]));dlg.close();return;
   }
-  const E=[...$("dEts").children].map(r=>({n:r.querySelector(".ne-n").value.trim(),desc:"",r:r.querySelector(".ne-r").value.trim(),d:r.querySelector(".ne-d").value||"",done:false})).filter(q=>q.n);
+  const E=[...$("dEts").children].map(r=>({n:r.querySelector(".ne-n").value.trim(),desc:"",r:r.querySelector(".ne-r").value.trim(),d:r.querySelector(".ne-d").value||"",h:r.querySelector(".ne-h").value||"",done:false})).filter(q=>q.n);
   if(mode==="l"){
     const id=$("dMac").value;if(!id||!docs[id]){$("dMac").focus();return}
     if(!E.length){const f=$("dEts").querySelector(".ne-n");if(f)f.focus();return}
@@ -765,18 +765,19 @@ $("dlgF").addEventListener("submit",e=>{
 const onAll=(t,f)=>{$("list").addEventListener(t,f);$("tv").addEventListener(t,f)};
 onAll("change",e=>{
   const el=e.target,card=el.closest(".task");if(!card||!code)return;const id=card.dataset.id,a=el.dataset.a,cur=docs[id]||{};
-  if(!canWrite&&!/^et(chk|n|d|r|desc)$/.test(a))return;
+  if(!canWrite&&!/^et(chk|n|d|r|h|desc)$/.test(a))return;
   if(a==="chk")write(id,el.checked?{done:true,doneAt:Date.now(),by:me||"",upd:Date.now()}:{done:false,doneAt:0,by:"",upd:Date.now()});
   else if(a==="t"){const v=el.value.trim();if(!v){render();return}if(v!==cur.t)write(id,{t:v,upd:Date.now()})}
   else if(a==="due"){if((el.value||"")!==(cur.due||""))write(id,{due:el.value||"",upd:Date.now()})}
   else if(a==="resp"){const rl=el.value.split(/\s*,\s*/).map(z=>z.trim()).filter(Boolean),v=rl.join(", ");if(v!==(cur.resp||""))write(id,{resp:v,resps:rl,upd:Date.now()})}
   else if(a==="mc"){if((el.value||"")!==(cur.mc||""))write(id,{mc:el.value||"",upd:Date.now()})}
   else if(a==="st"){if((el.value||"")!==(cur.st||""))write(id,{st:el.value||"",upd:Date.now()})}
-  else if(a==="etchk"||a==="etn"||a==="etd"||a==="etr"||a==="etdesc"){
+  else if(a==="etchk"||a==="etn"||a==="etd"||a==="eth"||a==="etr"||a==="etdesc"){
     const E=ets(cur).map(q=>Object.assign({},q)),i=+el.dataset.i;if(!E[i])return;
     if(a==="etchk"){E[i].done=el.checked;E[i].doneAt=el.checked?Date.now():0;E[i].by=el.checked?(me||""):""}
     else if(a==="etn")E[i].n=el.value.trim();
     else if(a==="etd")E[i].d=el.value||"";
+    else if(a==="eth")E[i].h=el.value||"";
     else if(a==="etr")E[i].r=el.value.trim();
     else E[i].desc=el.value.trim();
     saveEts(id,E)}
@@ -784,10 +785,10 @@ onAll("change",e=>{
 });
 function addEt(card){
   if(!code||!card)return;const inp=card.querySelector('[data-a="etnew"]'),v=inp?inp.value.trim():"";if(!v)return;
-  const id=card.dataset.id,d=(card.querySelector('[data-a="etnewd"]')||{}).value||hoje(),rr=((card.querySelector('[data-a="etnewr"]')||{}).value||"").trim();
-  inp.value="";saveEts(id,ets(docs[id]||{}).concat([{n:v,desc:"",r:rr,d,done:false}]));
+  const id=card.dataset.id,d=(card.querySelector('[data-a="etnewd"]')||{}).value||hoje(),rr=((card.querySelector('[data-a="etnewr"]')||{}).value||"").trim(),hh=(card.querySelector('[data-a="etnewh"]')||{}).value||"";
+  inp.value="";saveEts(id,ets(docs[id]||{}).concat([{n:v,desc:"",r:rr,d,h:hh,done:false}]));
 }
-onAll("keydown",e=>{if(e.key==="Enter"&&e.target.dataset&&(e.target.dataset.a==="etnew"||e.target.dataset.a==="etnewd"||e.target.dataset.a==="etnewr")){e.preventDefault();addEt(e.target.closest(".task"));e.target.blur()}});
+onAll("keydown",e=>{if(e.key==="Enter"&&e.target.dataset&&(e.target.dataset.a==="etnew"||e.target.dataset.a==="etnewd"||e.target.dataset.a==="etnewh"||e.target.dataset.a==="etnewr")){e.preventDefault();addEt(e.target.closest(".task"));e.target.blur()}});
 let delArm=null;
 onAll("click",e=>{
   const b=e.target.closest("button[data-a]");if(!b)return;const id=b.closest(".task").dataset.id;
