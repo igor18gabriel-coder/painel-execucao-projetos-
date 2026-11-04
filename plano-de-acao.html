@@ -149,6 +149,40 @@ dialog::backdrop{background:rgba(3,10,35,.72)}
 .tvact .dg{border-color:#c0392b;color:var(--red)}
 .tvobs{white-space:pre-wrap;overflow-wrap:anywhere}
 @media print{#tv .tvact,#tv .tvback{display:none}}
+#tv{position:fixed;inset:0;z-index:50;background:rgba(3,10,35,.8);display:flex;align-items:flex-start;justify-content:center;padding:24px 12px;overflow:auto}
+.tvbox{background:var(--bg);border:1px solid var(--bd);border-radius:16px;padding:18px;width:min(920px,100%);display:grid;gap:14px;margin:auto;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+body.tvopen{overflow:hidden}
+@media (max-width:720px){#tv{padding:0}.tvbox{border-radius:0;min-height:100%;padding:14px}}
+/* calendário no novo layout */
+#cal{background:none;border:0;padding:0}
+.chd h1{margin:0;font-size:30px;line-height:1.15}.chd p{margin:4px 0 14px;color:var(--mut)}
+.ccard{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:14px}
+.ct{padding-bottom:12px;margin-bottom:12px;border-bottom:1px solid var(--bd);gap:8px}
+.ct h2{font-size:22px}.ct h2 small{display:block;font-size:13px;font-weight:500;color:var(--mut);margin-top:2px}
+.seg .btn{padding:8px 14px}
+.cg{gap:8px}
+.ch{padding:6px 0 4px;letter-spacing:.06em}
+.cd{border-radius:14px;min-height:128px;padding:8px;background:var(--inp)}
+.cg.wk .cd{min-height:320px}.cg.d1 .cd{min-height:200px;display:grid;gap:8px;align-content:start}
+.dh{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.dn{font-size:14px;padding:0;min-width:28px;height:28px;line-height:28px;text-align:center;border-radius:50%;margin:0}
+.td{box-shadow:none}.td .dn{background:var(--yl);color:#0a2a6b}
+.dc{font-size:11px;font-weight:700;color:var(--mut);background:var(--bd);border-radius:10px;padding:1px 7px}
+.cc{border:1px solid rgba(141,180,255,.4);border-left:1px solid rgba(141,180,255,.4);border-radius:10px;padding:6px 8px;margin-bottom:6px;white-space:normal;background:var(--bluebg);color:#e3ecff}
+.cc.k-e,.cc.k-e.ok,.cc.k-e.bad{background:var(--bluebg);border:1px solid rgba(141,180,255,.4)}
+.cc.ok,.cc.k-e.ok{background:var(--grnbg);color:var(--grn);border-color:rgba(110,231,160,.45)}
+.cc.bad,.cc.k-e.bad{background:var(--redbg);color:var(--red);border-color:rgba(255,138,128,.45)}
+.cc.warn{background:var(--ambbg);color:var(--amb);border-color:rgba(255,196,107,.45)}
+.cc .c1{display:flex;justify-content:space-between;gap:6px;align-items:baseline}.cc .c1 b{font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cc .cr{font-size:11px;font-weight:700;opacity:.85;white-space:nowrap}
+.cc .c2{font-size:11.5px;opacity:.85;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:1px}
+.cc .c3{font-size:11px;opacity:.75;margin-top:2px}
+.cg.wk .cc .c1 b,.cg.wk .cc .c2,.cg.d1 .cc .c1 b,.cg.d1 .cc .c2{white-space:normal}
+.cg.d1 .cc{padding:12px 14px;margin:0}.cg.d1 .cc .c1 b{font-size:15px}.cg.d1 .cc .c2{font-size:13px}
+.cc:hover{filter:brightness(1.12)}
+.cg.d1 .td .dn,.cg.d1 .dn{background:none;color:var(--mut);padding:0;min-width:0;text-align:left;font-size:13px;cursor:default}
+.mr{display:block;padding:2px 4px}
+@media (max-width:720px){.cd{min-height:70px;padding:4px;border-radius:8px}.cg{gap:3px}.cc .c2,.cc .cr{display:none}.cc{padding:3px 5px;margin-bottom:3px}.dc{display:none}.chd h1{font-size:24px}}
 </style></head><body>
 <div class="wrap">
 <header>
@@ -195,7 +229,7 @@ dialog::backdrop{background:rgba(3,10,35,.72)}
     <aside id="colR" aria-label="Calendário"><div id="cal"></div></aside>
   </div>
   </div>
-  <section id="tv" aria-label="Tarefa" hidden></section>
+  <section id="tv" aria-label="Tarefa" hidden><div id="tvb" class="tvbox" role="dialog" aria-modal="true"></div></section>
 </main>
 </div>
 
@@ -310,15 +344,16 @@ function calItems(){
 const canDrag=k=>k==="t"?canWrite:!!code;
 function chip(o,full){
   const sel=calSel&&calSel.k===o.k&&calSel.id===o.id&&calSel.i===o.i;
-  const lab=o.k==="e"?'<b>'+esc(o.tk)+' '+o.pos+'/'+o.n+'</b> · '+esc(o.t):'🏁 '+esc(o.t);
-  const small=full&&(o.mc||o.r)?'<small>'+[o.mc?'📁 '+esc(o.mc):'',o.r?'👤 '+esc(o.r):''].filter(Boolean).join(' · ')+'</small>':'';
+  const ttl=o.k==="e"?o.tk:o.t,sub=o.k==="e"?o.t:"Prazo final";
+  const right=o.k==="e"?o.pos+'/'+o.n:'🏁';
+  const meta=[o.mc?'📁 '+esc(o.mc):'',o.r?'👤 '+esc(o.r):''].filter(Boolean).join(' · ');
   const tip=(o.k==="e"?o.tk+" — etapa "+o.pos+" de "+o.n+": "+o.t:"Prazo final: "+o.t)+(o.mc?" · Macro: "+o.mc:"")+(o.r?" · Resp.: "+o.r:"");
-  return '<div class="cc k-'+o.k+' '+o.cls+(o.done&&o.k==="e"?' dim':'')+(sel?' sel':'')+'" draggable="'+canDrag(o.k)+'" data-k="'+o.k+'" data-id="'+esc(o.id)+'" data-i="'+o.i+'" title="'+esc(tip)+'">'+lab+small+'</div>';
+  return '<div class="cc k-'+o.k+' '+o.cls+(o.done&&o.k==="e"?' dim':'')+(sel?' sel':'')+'" draggable="'+canDrag(o.k)+'" data-k="'+o.k+'" data-id="'+esc(o.id)+'" data-i="'+o.i+'" title="'+esc(tip)+'"><div class="c1"><b>'+esc(ttl||"(sem nome)")+'</b><span class="cr">'+right+'</span></div><div class="c2">'+esc(sub||"")+'</div>'+(full&&meta?'<div class="c3">'+meta+'</div>':'')+'</div>';
 }
 function cell(d,items,opt){
   const its=items.filter(o=>o.d===d).sort((a,b)=>(a.k===b.k?0:a.k==="t"?-1:1));
   const max=opt.max||99,vis=its.slice(0,max);
-  return '<div class="cd'+(opt.other?' o':'')+(d===hoje()?' td':'')+'" data-date="'+d+'"><div class="dn" data-go="'+d+'" title="Abrir este dia">'+(opt.label||parseD(d).getDate())+'</div>'+vis.map(o=>chip(o,opt.full)).join("")+(its.length>vis.length?'<div class="mr" data-go="'+d+'">+'+(its.length-vis.length)+' mais</div>':'')+'</div>';
+  return '<div class="cd'+(opt.other?' o':'')+(d===hoje()?' td':'')+'" data-date="'+d+'"><div class="dh"><span class="dn" data-go="'+d+'" title="Abrir este dia">'+(opt.label||parseD(d).getDate())+'</span>'+(its.length&&!opt.label?'<span class="dc" title="'+its.length+' item(ns)">'+its.length+'</span>':'')+'</div>'+vis.map(o=>chip(o,opt.full)).join("")+(its.length>vis.length?'<div class="mr" data-go="'+d+'">+'+(its.length-vis.length)+' mais</div>':'')+'</div>';
 }
 function renderCal(){
   const root=$("cal");if(!root||!code||dragging)return;
@@ -329,7 +364,7 @@ function renderCal(){
     title=MES[ad.getMonth()]+" de "+ad.getFullYear();
     const first=new Date(ad.getFullYear(),ad.getMonth(),1),st=addDays(isoD(first),-first.getDay());
     grid='<div class="cg">'+DOW.map(x=>'<div class="ch">'+x+'</div>').join("");
-    for(let n=0;n<42;n++){const d=addDays(st,n);grid+=cell(d,items,{max:3,other:parseD(d).getMonth()!==ad.getMonth()})}
+    for(let n=0;n<42;n++){const d=addDays(st,n);grid+=cell(d,items,{max:2,other:parseD(d).getMonth()!==ad.getMonth()})}
     grid+='</div>';
   }else if(calV==="week"){
     const st=addDays(calD,-ad.getDay()),en=addDays(st,6);
@@ -353,9 +388,12 @@ function renderCal(){
         '<div class="row"><label class="lbl" style="margin:0">'+(calSel.k==="t"?"Prazo final":"Data de atuação")+'</label><input type="date" data-cal="date" value="'+esc(d)+'"'+(ok?"":" disabled")+'><button class="btn pri" type="button" data-cal="open">Abrir na lista</button><button class="btn" type="button" data-cal="close">Fechar</button></div>'+(ok?'':'<div class="sub">Só o editor muda o prazo final da tarefa.</div>')+'</div>';
     }
   }
-  const html='<div class="ct"><button class="btn" type="button" data-cal="prev" aria-label="Anterior">‹</button><button class="btn" type="button" data-cal="today">Hoje</button><button class="btn" type="button" data-cal="next" aria-label="Próximo">›</button><h2>'+esc(title)+'</h2>'+
+  const rng=calV==="month"?[isoD(new Date(ad.getFullYear(),ad.getMonth(),1)),isoD(new Date(ad.getFullYear(),ad.getMonth()+1,0))]:calV==="week"?[addDays(calD,-ad.getDay()),addDays(calD,-ad.getDay()+6)]:[calD,calD];
+  const inR=items.filter(o=>o.d>=rng[0]&&o.d<=rng[1]),nT=new Set(inR.map(o=>o.id)).size,nE=inR.filter(o=>o.k==="e").length;
+  const cnt=inR.length?inR.length+' item(ns) '+(calV==="month"?'neste mês':calV==="week"?'nesta semana':'neste dia')+' · '+nT+' tarefa(s)'+(nE?' · '+nE+' etapa(s)':''):'Nada agendado '+(calV==="month"?'neste mês':calV==="week"?'nesta semana':'neste dia');
+  const html='<div class="chd"><h1>Calendário</h1><p>Organize as tarefas e etapas do plano</p></div><div class="ccard"><div class="ct"><button class="btn" type="button" data-cal="prev" aria-label="Anterior">‹</button><button class="btn" type="button" data-cal="today">Hoje</button><button class="btn" type="button" data-cal="next" aria-label="Próximo">›</button><h2>'+esc(title)+'<small>'+esc(cnt)+'</small></h2>'+
     '<div class="seg" role="group" aria-label="Visualização">'+[["month","Mês"],["week","Semana"],["day","Dia"]].map(v=>'<button type="button" class="btn'+(calV===v[0]?' on':'')+'" data-view="'+v[0]+'">'+v[1]+'</button>').join("")+'</div></div>'+
-    '<div class="cf"><label><input type="checkbox" data-flt="t"'+(calT?" checked":"")+'> Prazos finais (tarefas sem etapa)</label><label><input type="checkbox" data-flt="e"'+(calE?" checked":"")+'> Etapas das tarefas</label>'+(canWrite||code?'<span>Arraste para mudar a data</span>':'')+'</div>'+grid+tray+det;
+    '<div class="cf"><label><input type="checkbox" data-flt="t"'+(calT?" checked":"")+'> Prazos finais (tarefas sem etapa)</label><label><input type="checkbox" data-flt="e"'+(calE?" checked":"")+'> Etapas das tarefas</label>'+(canWrite||code?'<span>Arraste para mudar a data</span>':'')+'</div>'+grid+'</div>'+tray+det;
   if(html!==calH){root.innerHTML=html;calH=html}
 }
 function applyDate(k,id,i,d){
@@ -520,7 +558,7 @@ function render(){
   $("h1").hidden=canWrite;$("h1i").hidden=!canWrite;
   $("sub").textContent=hj?hj+" tarefa(s) vencem hoje":"Tarefas, prazos e checagem";
   if(tvId&&!docs[tvId]){tvId=null;tvEdit=false;tvDraft=null}
-  $("mainw").hidden=!!tvId;$("tv").hidden=!tvId;
+  document.body.classList.toggle("tvopen",!!tvId);$("tv").hidden=!tvId;
   if(tvId&&!tvEdit)renderTask();
 }
 
@@ -531,7 +569,7 @@ function saveResps(id,arr){arr=[...new Set(arr.map(z=>String(z).trim()).filter(B
 function openTask(id,i){
   if(!docs[id])return;tvId=id;tvEdit=false;tvDraft=null;tvH="";tvHi=(i>=0?i:-1);
   try{history.pushState({tv:id},"")}catch(e){}
-  render();window.scrollTo(0,0);
+  render();const bx=$("tvb");if(bx)bx.scrollTop=0;
 }
 function closeTask(){
   if(!tvId)return;tvId=null;tvEdit=false;tvDraft=null;tvH="";
@@ -543,7 +581,7 @@ function respHtml(arr,can){
    (can?'<div class="row" style="margin-top:6px"><input id="tvRn" list="team" placeholder="Adicionar responsável (nome)" aria-label="Adicionar responsável" autocomplete="off" style="flex:1;min-width:180px"><button type="button" class="btn pri" data-tv="radd">＋ Adicionar responsável</button></div>':'');
 }
 function renderTask(){
-  const root=$("tv"),d=docs[tvId];if(!d||!root)return;
+  const root=$("tvb"),d=docs[tvId];if(!d||!root)return;
   const x=Object.assign({id:tvId},d),t=hoje(),late=!x.done&&!!x.due&&x.due<t,today=!x.done&&x.due===t;
   const SXL={and:["Em andamento","chip"],agu:["Aguardando","chip warn"],par:["Parada","chip bad"]};
   const tpl=x.tp==="e"?"🎯 Estratégica":"⚙️ Operacional";
@@ -601,10 +639,12 @@ function addResp(){
 $("tv").addEventListener("input",e=>{const f=e.target.dataset&&e.target.dataset.f;if(f&&tvDraft&&tvEdit&&e.target.type!=="radio")tvDraft[f]=e.target.value});
 $("tv").addEventListener("change",e=>{const f=e.target.dataset&&e.target.dataset.f;if(f&&tvDraft&&tvEdit)tvDraft[f]=e.target.value});
 $("tv").addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.id==="tvRn"){e.preventDefault();addResp()}});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&tvId&&!dlg.open){if(tvEdit){tvEdit=false;tvDraft=null;tvH="";render()}else closeTask()}});
 $("tv").addEventListener("click",e=>{
+  if(e.target===$("tv")&&!tvEdit){closeTask();return}
   const b=e.target.closest("[data-tv]");if(!b)return;const a=b.dataset.tv,id=tvId,x=docs[id];if(!x)return;
   if(a==="back")closeTask();
-  else if(a==="edit"){if(!canWrite)return;tvDraft={t:x.t||"",tp:x.tp==="e"?"e":"o",mc:x.mc||"",due:x.due||"",st:x.st||"",obs:x.obs||"",resps:respsOf(x).slice()};tvEdit=true;tvH="";renderTask();window.scrollTo(0,0)}
+  else if(a==="edit"){if(!canWrite)return;tvDraft={t:x.t||"",tp:x.tp==="e"?"e":"o",mc:x.mc||"",due:x.due||"",st:x.st||"",obs:x.obs||"",resps:respsOf(x).slice()};tvEdit=true;tvH="";renderTask();$("tv").scrollTop=0}
   else if(a==="cancel"){tvEdit=false;tvDraft=null;tvH="";render()}
   else if(a==="save"){
     if(!canWrite||!tvDraft)return;const D=tvDraft,pn=$("tvRn")?$("tvRn").value.split(/\s*,\s*/).map(z=>z.trim()).filter(Boolean):[];
