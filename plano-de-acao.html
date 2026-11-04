@@ -186,6 +186,11 @@ body.tvopen{overflow:hidden}
 .tvtk{display:grid;gap:4px;text-align:left;font:inherit;color:var(--tx);background:var(--card);border:2px solid var(--yl);border-radius:12px;padding:12px 14px;cursor:pointer}
 .tvtk small{color:var(--yl);font-weight:700}.tvtk b{font-size:18px;overflow-wrap:anywhere}.tvtk:hover{background:var(--bluebg)}
 .tvtk .chip{justify-self:start}
+.cc{display:flex;gap:6px;align-items:stretch}.cc .cb{flex:1;min-width:0}
+.cmv{display:flex;flex-direction:column;gap:3px;justify-content:center}
+.cmv button{border:0;background:rgba(255,255,255,.16);color:inherit;border-radius:6px;width:26px;height:22px;font-size:11px;cursor:pointer;padding:0;line-height:1}
+.cmv button:hover:not(:disabled){background:var(--yl);color:#0a2a6b}.cmv button:disabled{opacity:.25;cursor:default}
+.cf select{font:inherit;font-size:13px;padding:3px 6px;border-radius:8px;background:var(--inp);color:var(--tx);border:1px solid var(--bd);max-width:200px}
 </style></head><body>
 <div class="wrap">
 <header>
@@ -293,7 +298,7 @@ const hoje=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth(
 const fd=s=>{const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(s||"");return m?m[3]+"/"+m[2]+"/"+m[1]:"sem data"};
 const fdt=(ms,y)=>{if(!ms)return"";const d=new Date(ms);return String(d.getDate()).padStart(2,"0")+"/"+String(d.getMonth()+1).padStart(2,"0")+(y?"/"+d.getFullYear():"")+" "+String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0")};
 const dias=(a,b)=>Math.round((Date.parse(b+"T12:00:00")-Date.parse(a+"T12:00:00"))/864e5);
-function load(r){const c=(r.docs||[]).find(d=>d.col==="meta"&&d.id==="pacfg");cfgName=c&&c.data&&c.data.name?String(c.data.name):"";cfgMacros=c&&c.data&&Array.isArray(c.data.macros)?c.data.macros:[];cfgPlans=c&&c.data&&Array.isArray(c.data.plans)&&c.data.plans.length?c.data.plans:[{id:"p1",name:"FACULDADE 100%"},{id:"p2",name:"Plano 2"}];if(!cfgPlans.some(q=>q.id===curPl))curPl=cfgPlans[0].id;cfgSize=c&&c.data&&+c.data.size?Math.min(80,Math.max(14,+c.data.size)):22;const n={};(r.docs||[]).forEach(d=>{if(d.col==="meta"&&d.id.indexOf(P)===0)n[d.id.slice(P.length)]=d.data});docs=n}
+function load(r){const c=(r.docs||[]).find(d=>d.col==="meta"&&d.id==="pacfg");cfgName=c&&c.data&&c.data.name?String(c.data.name):"";cfgMacros=c&&c.data&&Array.isArray(c.data.macros)?c.data.macros:[];cfgPlans=c&&c.data&&Array.isArray(c.data.plans)&&c.data.plans.length?c.data.plans:[{id:"p1",name:"FACULDADE 100%"},{id:"p2",name:"Plano 2"}];if(!cfgPlans.some(q=>q.id===curPl))curPl=cfgPlans[0].id;cfgSize=c&&c.data&&+c.data.size?Math.min(80,Math.max(14,+c.data.size)):22;const n={};(r.docs||[]).forEach(d=>{if(d.col==="meta"&&d.id.indexOf(P)===0)n[d.id.slice(P.length)]=d.data});docs=n;const oo={};(r.docs||[]).forEach(d=>{if(d.col==="meta"&&d.id.indexOf("pord_")===0&&d.data&&Array.isArray(d.data.ord))oo[d.id.slice(5)]=d.data.ord});ords=oo}
 async function write(id,patch,modo){
   if(!canWrite)return;writing++;
   try{
@@ -335,33 +340,50 @@ const addDays=(s,n)=>{const d=parseD(s);d.setDate(d.getDate()+n);return isoD(d)}
 const MES=["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
 const DOW=["dom","seg","ter","qua","qui","sex","sáb"],DOWL=["domingo","segunda-feira","terça-feira","quarta-feira","quinta-feira","sexta-feira","sábado"];
 let tpF=lsGet("pa_tp")||"",calV=lsGet("pa_calv")||"month",calD=hoje(),calT=true,calE=true,calSel=null,dragging=false,calH="",mainV=lsGet("pa_view")||"cal";
+let ords={},calP="",calAll=[],calCur=[];
+const nm=z=>String(z||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim().toLowerCase();
+const splitN=v=>String(v||"").split(/\s*,\s*/).map(z=>z.trim()).filter(Boolean);
+function calNames(){const m=new Map();listPlan().forEach(x=>{respsOf(x).concat(...ets(x).map(q=>splitN(q.r))).forEach(n=>{if(!m.has(nm(n)))m.set(nm(n),n)})});return[...m.values()].sort((a,b)=>a.localeCompare(b,"pt-BR"))}
+function matchPerson(n){const m=nm(n);if(!m||m==="alguem")return"";const L=calNames();let f=L.find(x=>nm(x)===m);if(f)return f;f=L.find(x=>nm(x).split(/\s+/)[0]===m.split(/\s+/)[0]);return f||""}
+function dayOrder(d,pool){
+  const ol=ords[d]||[];
+  return pool.map((o,n)=>({o,n})).sort((a,b)=>{const ia=ol.indexOf(a.o.key),ib=ol.indexOf(b.o.key);return (ia<0?1e6:ia)-(ib<0?1e6:ib)||(a.o.k===b.o.k?0:a.o.k==="t"?-1:1)||a.n-b.n}).map(v=>v.o);
+}
+function moveItem(d,key,dir){
+  if(!code)return;
+  const vis=dayOrder(d,calCur.filter(o=>o.d===d)).map(o=>o.key),full=dayOrder(d,calAll.filter(o=>o.d===d)).map(o=>o.key);
+  const i=vis.indexOf(key),j=i+dir;if(i<0||j<0||j>=vis.length)return;
+  const a=full.indexOf(vis[i]),b=full.indexOf(vis[j]);[full[a],full[b]]=[full[b],full[a]];
+  ords[d]=full;calH="";renderCal();writing++;
+  rpc("plano_ordem",{p_code:code,p_dia:d,p_ord:full}).catch(()=>alert("Não consegui salvar a ordem. Verifique a internet e tente de novo.")).finally(()=>{writing--;poll()});
+}
 function calItems(){
   const out=[];
   list().forEach(x=>{
     const E=ets(x),R=etRank(x),mn=macName(x.mc),dated=E.some(q=>q.d);
-    if(calE)E.forEach((q,i)=>{if(q.d)out.push({k:"e",id:x.id,i,d:q.d,t:q.n||"(etapa)",tk:x.t||"(sem nome)",pos:R.rank[i],n:R.n,mc:mn,sub:x.t||"",cls:q.done?"ok":(q.d<hoje()?"bad":""),done:!!q.done,r:q.r||x.resp||""})});
-    if(calT&&x.due&&!dated)out.push({k:"t",id:x.id,i:-1,d:x.due,t:x.t||"(sem nome)",mc:mn,sub:x.resp||"",r:x.resp||"",cls:x.done?"ok":x.late?"bad":x.today?"warn":"",done:!!x.done});
+    if(calE)E.forEach((q,i)=>{if(q.d)out.push({k:"e",key:x.id+"|"+(q.n||""),rs:q.r?splitN(q.r):respsOf(x),id:x.id,i,d:q.d,t:q.n||"(etapa)",tk:x.t||"(sem nome)",pos:R.rank[i],n:R.n,mc:mn,sub:x.t||"",cls:q.done?"ok":(q.d<hoje()?"bad":""),done:!!q.done,r:q.r||x.resp||""})});
+    if(calT&&x.due&&!dated)out.push({k:"t",key:x.id+"|",rs:respsOf(x),id:x.id,i:-1,d:x.due,t:x.t||"(sem nome)",mc:mn,sub:x.resp||"",r:x.resp||"",cls:x.done?"ok":x.late?"bad":x.today?"warn":"",done:!!x.done});
   });
   return out;
 }
 const canDrag=k=>k==="t"?canWrite:!!code;
-function chip(o,full){
+function chip(o,full,mv){
   const sel=calSel&&calSel.k===o.k&&calSel.id===o.id&&calSel.i===o.i;
   const ttl=o.t,sub=o.k==="e"?"📌 Tarefa: "+o.tk:"Prazo final da tarefa";
   const right=o.k==="e"?o.pos+'/'+o.n:'🏁';
   const meta=[o.mc?'📁 '+esc(o.mc):'',o.r?'👤 '+esc(o.r):''].filter(Boolean).join(' · ');
   const tip=(o.k==="e"?o.tk+" — etapa "+o.pos+" de "+o.n+": "+o.t:"Prazo final: "+o.t)+(o.mc?" · Macro: "+o.mc:"")+(o.r?" · Resp.: "+o.r:"");
-  return '<div class="cc k-'+o.k+' '+o.cls+(o.done&&o.k==="e"?' dim':'')+(sel?' sel':'')+'" draggable="'+canDrag(o.k)+'" data-k="'+o.k+'" data-id="'+esc(o.id)+'" data-i="'+o.i+'" title="'+esc(tip)+'"><div class="c1"><b>'+esc(ttl||"(sem nome)")+'</b><span class="cr">'+right+'</span></div><div class="c2">'+esc(sub||"")+'</div>'+(full&&meta?'<div class="c3">'+meta+'</div>':'')+'</div>';
+  return '<div class="cc k-'+o.k+' '+o.cls+(o.done&&o.k==="e"?' dim':'')+(sel?' sel':'')+'" draggable="'+canDrag(o.k)+'" data-k="'+o.k+'" data-id="'+esc(o.id)+'" data-i="'+o.i+'" title="'+esc(tip)+'" data-key="'+esc(o.key||"")+'"><div class="cb"><div class="c1"><b>'+esc(ttl||"(sem nome)")+'</b><span class="cr">'+right+'</span></div><div class="c2">'+esc(sub||"")+'</div>'+(full&&meta?'<div class="c3">'+meta+'</div>':'')+'</div>'+(mv&&mv.n>1&&code?'<div class="cmv"><button type="button" data-ord="up" aria-label="Subir na ordem do dia" title="Subir (fazer antes)"'+(mv.i===0?' disabled':'')+'>▲</button><button type="button" data-ord="down" aria-label="Descer na ordem do dia" title="Descer (fazer depois)"'+(mv.i===mv.n-1?' disabled':'')+'>▼</button></div>':'')+'</div>';
 }
 function cell(d,items,opt){
-  const its=items.filter(o=>o.d===d).sort((a,b)=>(a.k===b.k?0:a.k==="t"?-1:1));
+  const its=dayOrder(d,items.filter(o=>o.d===d));
   const max=opt.max||99,vis=its.slice(0,max);
-  return '<div class="cd'+(opt.other?' o':'')+(d===hoje()?' td':'')+'" data-date="'+d+'"><div class="dh"><span class="dn" data-go="'+d+'" title="Abrir este dia">'+(opt.label||parseD(d).getDate())+'</span>'+(its.length&&!opt.label?'<span class="dc" title="'+its.length+' item(ns)">'+its.length+'</span>':'')+'</div>'+vis.map(o=>chip(o,opt.full)).join("")+(its.length>vis.length?'<div class="mr" data-go="'+d+'">+'+(its.length-vis.length)+' mais</div>':'')+'</div>';
+  return '<div class="cd'+(opt.other?' o':'')+(d===hoje()?' td':'')+'" data-date="'+d+'"><div class="dh"><span class="dn" data-go="'+d+'" title="Abrir este dia">'+(opt.label||parseD(d).getDate())+'</span>'+(its.length&&!opt.label?'<span class="dc" title="'+its.length+' item(ns)">'+its.length+'</span>':'')+'</div>'+vis.map((o,ix)=>chip(o,opt.full,{i:ix,n:its.length})).join("")+(its.length>vis.length?'<div class="mr" data-go="'+d+'">+'+(its.length-vis.length)+' mais</div>':'')+'</div>';
 }
 function renderCal(){
   const root=$("cal");if(!root||!code||dragging)return;
   const a=document.activeElement;if(a&&root.contains(a)&&a.tagName==="INPUT"&&a.type==="date"){pend=true;return}
-  const items=calItems();let title,grid="";
+  calAll=calItems();const items=calP?calAll.filter(o=>o.rs.some(n=>nm(n)===nm(calP))):calAll;calCur=items;let title,grid="";
   const ad=parseD(calD);
   if(calV==="month"){
     title=MES[ad.getMonth()]+" de "+ad.getFullYear();
@@ -380,7 +402,7 @@ function renderCal(){
     title=DOWL[ad.getDay()]+", "+ad.getDate()+" de "+MES[ad.getMonth()]+" de "+ad.getFullYear();
     grid='<div class="cg d1">'+cell(calD,items,{full:true,label:"Neste dia"})+'</div>';
   }
-  const und=canWrite&&calT?list().filter(x=>!x.due&&!x.done&&!ets(x).some(q=>q.d)):[];
+  const und=canWrite&&calT?list().filter(x=>!x.due&&!x.done&&!ets(x).some(q=>q.d)&&(!calP||respsOf(x).some(n=>nm(n)===nm(calP)))):[];
   const tray=und.length?'<div class="tray"><div class="sub" style="margin-bottom:4px">Sem prazo final — arraste para um dia (ou clique para abrir a tarefa):</div>'+und.map(x=>chip({k:"t",id:x.id,i:-1,t:x.t||"(sem nome)",sub:x.resp||"",cls:"",done:false,mc:macName(x.mc),r:x.resp||""})).join("")+'</div>':"";
   let det="";
   if(calSel){
@@ -393,10 +415,10 @@ function renderCal(){
   }
   const rng=calV==="month"?[isoD(new Date(ad.getFullYear(),ad.getMonth(),1)),isoD(new Date(ad.getFullYear(),ad.getMonth()+1,0))]:calV==="week"?[addDays(calD,-ad.getDay()),addDays(calD,-ad.getDay()+6)]:[calD,calD];
   const inR=items.filter(o=>o.d>=rng[0]&&o.d<=rng[1]),nT=new Set(inR.map(o=>o.id)).size,nE=inR.filter(o=>o.k==="e").length;
-  const cnt=inR.length?inR.length+' item(ns) '+(calV==="month"?'neste mês':calV==="week"?'nesta semana':'neste dia')+' · '+nT+' tarefa(s)'+(nE?' · '+nE+' etapa(s)':''):'Nada agendado '+(calV==="month"?'neste mês':calV==="week"?'nesta semana':'neste dia');
+  const cnt=(calP?'👤 '+calP+': ':'')+(inR.length?inR.length+' item(ns) '+(calV==="month"?'neste mês':calV==="week"?'nesta semana':'neste dia')+' · '+nT+' tarefa(s)'+(nE?' · '+nE+' etapa(s)':''):'Nada agendado '+(calV==="month"?'neste mês':calV==="week"?'nesta semana':'neste dia'));
   const html='<div class="chd"><h1>Calendário</h1><p>Organize as tarefas e etapas do plano</p></div><div class="ccard"><div class="ct"><button class="btn" type="button" data-cal="prev" aria-label="Anterior">‹</button><button class="btn" type="button" data-cal="today">Hoje</button><button class="btn" type="button" data-cal="next" aria-label="Próximo">›</button><h2>'+esc(title)+'<small>'+esc(cnt)+'</small></h2>'+
     '<div class="seg" role="group" aria-label="Visualização">'+[["month","Mês"],["week","Semana"],["day","Dia"]].map(v=>'<button type="button" class="btn'+(calV===v[0]?' on':'')+'" data-view="'+v[0]+'">'+v[1]+'</button>').join("")+'</div></div>'+
-    '<div class="cf"><label><input type="checkbox" data-flt="t"'+(calT?" checked":"")+'> Prazos finais (tarefas sem etapa)</label><label><input type="checkbox" data-flt="e"'+(calE?" checked":"")+'> Etapas das tarefas</label>'+(canWrite||code?'<span>Arraste para mudar a data</span>':'')+'</div>'+grid+'</div>'+tray+det;
+    '<div class="cf"><label><input type="checkbox" data-flt="t"'+(calT?" checked":"")+'> Prazos finais (tarefas sem etapa)</label><label><input type="checkbox" data-flt="e"'+(calE?" checked":"")+'> Etapas das tarefas</label>'+'<label>👤 Pessoa <select data-flt="p" aria-label="Filtrar calendário por pessoa"><option value="">Todas as pessoas</option>'+(()=>{const L=calNames();if(calP&&!L.includes(calP))L.push(calP);return L.map(n=>'<option value="'+esc(n)+'"'+(n===calP?' selected':'')+'>'+esc(n)+'</option>').join("")})()+'</select></label>'+(canWrite||code?'<span>Arraste para mudar a data · ▲▼ muda a ordem do dia</span>':'')+'</div>'+grid+'</div>'+tray+det;
   if(html!==calH){root.innerHTML=html;calH=html}
 }
 function applyDate(k,id,i,d){
@@ -424,11 +446,12 @@ calEl.addEventListener("click",e=>{
     renderCal();return}
   const v=t.closest("[data-view]");if(v){calV=v.dataset.view;try{localStorage.setItem("pa_calv",calV)}catch(x){}renderCal();return}
   const g=t.closest("[data-go]");if(g){calD=g.dataset.go;calV="day";renderCal();return}
+  const mvb=t.closest("[data-ord]");if(mvb){const cc=mvb.closest(".cc"),cd=cc&&cc.closest(".cd");if(cc&&cd)moveItem(cd.dataset.date,cc.dataset.key,mvb.dataset.ord==="up"?-1:1);return}
   const c=t.closest(".cc");if(c){openTask(c.dataset.id,+c.dataset.i)}
 });
 calEl.addEventListener("change",e=>{
   const t=e.target;
-  if(t.dataset.flt){if(t.dataset.flt==="t")calT=t.checked;else calE=t.checked;renderCal();return}
+  if(t.dataset.flt){if(t.dataset.flt==="p")calP=t.value;else if(t.dataset.flt==="t")calT=t.checked;else calE=t.checked;calH="";renderCal();return}
   if(t.dataset.cal==="date"&&calSel){applyDate(calSel.k,calSel.id,calSel.i,t.value)}
 });
 calEl.addEventListener("dragstart",e=>{
@@ -797,12 +820,12 @@ $("szm").addEventListener("click",()=>setSize(-4));$("szp").addEventListener("cl
 $("h1i").addEventListener("keydown",e=>{if(e.key==="Enter")e.target.blur()});
 $("pdf").addEventListener("click",()=>window.print());
 function setLock(on){$("gate").hidden=!on;$("app").hidden=on;$("logout").hidden=on}
-function logout(msg){lastH="";code="";lsSet("pe_code","");clearInterval(pollT);docs={};canWrite=false;setLock(true);$("gErr").textContent=msg||""}
+function logout(msg){lastH="";code="";lsSet("pe_code","");clearInterval(pollT);docs={};canWrite=false;calP="";ords={};setLock(true);$("gErr").textContent=msg||""}
 async function login(c,name,silent){
   c=normCode(c);$("gBtn").disabled=true;$("gErr").textContent="";
   try{
     const r=await rpc("painel_ler",{p_code:c});
-    code=c;me=name||lsGet("pe_name")||"Alguém";canWrite=r.papel==="editor";load(r);
+    code=c;me=name||lsGet("pe_name")||"Alguém";canWrite=r.papel==="editor";load(r);calP=matchPerson(me);calH="";
     lsSet("pe_code",c);lsSet("pe_name",name||"");setLock(false);render();
     clearInterval(pollT);pollT=setInterval(()=>{if(!document.hidden)poll()},8000);
   }catch(e){
