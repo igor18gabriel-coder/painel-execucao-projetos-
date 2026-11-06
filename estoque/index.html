@@ -732,6 +732,8 @@ $("#btnAI").onclick=async()=>{
     if(!r.ok){
       if(d.erro==="sessao_invalida"){sair(true);return}
       if(d.erro==="sem_chave_api"){$("#aiOff").textContent="O reconhecimento por foto ainda não foi ativado: falta cadastrar a chave da API do Claude no Supabase. Enquanto isso, lance os itens manualmente abaixo.";$("#aiOff").hidden=false;return}
+      const avisos={chave_invalida:"A chave da API do Claude cadastrada no Supabase é inválida. Gere uma nova chave e cadastre de novo.",sem_credito:"A conta da API do Claude está sem crédito. Adicione crédito em console.anthropic.com (Billing)."};
+      if(avisos[d.erro]){$("#aiOff").textContent=avisos[d.erro];$("#aiOff").hidden=false;return}
       toast(d.erro==="limite_ia"?"Muitas análises seguidas. Aguarde um pouco.":d.erro==="resposta_invalida"?"Não entendi as fotos. Tente uma foto mais nítida.":"Falha na análise. Tente de novo.");return;
     }
     const arr=Array.isArray(d.itens)?d.itens:[];
