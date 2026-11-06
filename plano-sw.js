@@ -31,3 +31,21 @@ self.addEventListener("fetch", e => {
     })
   );
 });
+
+// Avisos (notificações push) das etapas
+self.addEventListener("push", e => {
+  let d = {};
+  try { d = e.data.json(); } catch (_) { d = { title: "Plano de Ação", body: e.data ? e.data.text() : "" }; }
+  e.waitUntil(self.registration.showNotification(d.title || "Plano de Ação", {
+    body: d.body || "", tag: d.tag, icon: "plano-app/icon-192.png", badge: "plano-app/icon-192.png",
+    data: { url: d.url || "plano-de-acao.html?app=1" }, requireInteraction: true
+  }));
+});
+self.addEventListener("notificationclick", e => {
+  e.notification.close();
+  const u = new URL((e.notification.data && e.notification.data.url) || "plano-de-acao.html", self.registration.scope).href;
+  e.waitUntil(clients.matchAll({ type: "window", includeUncontrolled: true }).then(l => {
+    for (const c of l) { if (c.url.indexOf("plano-de-acao.html") >= 0 && "focus" in c) return c.focus(); }
+    return clients.openWindow(u);
+  }));
+});
