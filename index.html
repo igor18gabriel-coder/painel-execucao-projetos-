@@ -684,6 +684,48 @@ function pdfTask(id){
   doc.save("Checklist_"+nm+".pdf");
 }
 $("list").addEventListener("click",e=>{const b=e.target.closest('[data-act="pdf"]');if(!b)return;pdfTask(b.closest(".task").dataset.id)});
+function pdfInsc(){
+  const ev=events[cur],d=formDoc();if(!ev||!d)return;
+  const rows=inscRows().slice().reverse(),fs=(d.fields||[]).filter(f=>f.type!=="section"),cs=Array.isArray(d.calc)?d.calc:[],ho=rows.some(r=>r.out);
+  if(!rows.length){alert("Ainda não há inscritos.");return}
+  const J=window.jspdf;if(!J){alert("Não foi possível carregar o gerador de PDF. Verifique a internet e tente de novo.");return}
+  const doc=new J.jsPDF({unit:"mm",format:"a4"}),M=15,W=210,B=W-2*M,LW=58,clean=x=>String(x==null?"":x).replace(/\*\*/g,"");let y=16,pg=1;
+  const head=()=>{try{doc.addImage(document.querySelector(".logo").src,"PNG",M,8,56,8)}catch(_){}
+    doc.setFillColor(255,172,3);doc.rect(0,0,W,3,"F");y=22};
+  const foot=n=>{doc.setFont("helvetica","normal");doc.setFontSize(8);doc.setTextColor(110);doc.text("Fastfood Milionário · Execução de Projetos · "+clean(ev.name),M,289);doc.text("Página "+n,W-M,289,{align:"right"})};
+  const need=h=>{if(y+h>272){foot(pg);doc.addPage();pg++;head()}};
+  head();
+  doc.setTextColor(10,42,107);doc.setFont("helvetica","bold");doc.setFontSize(18);doc.text("Inscritos",M,y+6);y+=12;
+  doc.setFont("helvetica","normal");doc.setFontSize(11);doc.setTextColor(70);doc.text(doc.splitTextToSize(clean(ev.name),B),M,y);y+=5;
+  doc.setDrawColor(0,78,195);doc.setLineWidth(.8);doc.line(M,y,W-M,y);y+=5;
+  const el=ho?rows.filter(r=>!r.out).length:rows.length;
+  doc.setFontSize(10);doc.setTextColor(100);
+  doc.text(rows.length+(rows.length===1?" inscrito":" inscritos")+(ho?" · "+el+" elegível(is) · "+(rows.length-el)+" fora do critério":"")+" · gerado em "+new Date().toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"}),M,y+2);y+=9;
+  rows.forEach((r,i)=>{
+    const pairs=fs.map(f=>{const v=(r.a||{})[f.id];return[clean(f.label),clean(Array.isArray(v)?v.join(", "):v)||"—"]}).concat(cs.map(c=>[clean(c.label),calcVal(c,r)||"—"]));
+    const nameV=pairs.length?pairs[0][1]:"";
+    const lines=pairs.slice(1).map(q=>({l:doc.splitTextToSize(q[0],LW-4),a:doc.splitTextToSize(q[1],B-LW-4)}));
+    doc.setFont("helvetica","normal");doc.setFontSize(10);
+    const hh=lines.reduce((s,z)=>s+Math.max(z.l.length,z.a.length)*4.6+2.2,0);
+    need(12+hh);
+    doc.setFillColor(232,238,252);doc.rect(M,y-4.5,B,8.5,"F");
+    doc.setFont("helvetica","bold");doc.setFontSize(12);doc.setTextColor(10,42,107);
+    doc.text(doc.splitTextToSize((i+1)+". "+nameV,B-62)[0],M+2,y+1);
+    doc.setFont("helvetica","normal");doc.setFontSize(8.5);doc.setTextColor(80);
+    doc.text(new Date(r.at||0).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})+(ho?" · "+(r.out?"Fora do critério":"Elegível"):""),W-M-2,y+1,{align:"right"});
+    y+=8;
+    lines.forEach(z=>{
+      const n=Math.max(z.l.length,z.a.length),h=n*4.6+2.2;
+      doc.setFontSize(9);doc.setFont("helvetica","bold");doc.setTextColor(90);doc.text(z.l,M+2,y+1.5);
+      doc.setFont("helvetica","normal");doc.setFontSize(10);doc.setTextColor(0);doc.text(z.a,M+LW,y+1.5);
+      doc.setDrawColor(225);doc.setLineWidth(.2);doc.line(M,y+h-1.2,W-M,y+h-1.2);y+=h;
+    });
+    y+=6;
+  });
+  foot(pg);
+  const nm=String(ev.name||"evento").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-zA-Z0-9]+/g,"_").replace(/^_|_$/g,"");
+  doc.save("Inscritos_"+nm+".pdf");
+}
 function pdfDia(){
   const ev=events[cur];if(!ev)return;
   const ts=tasksOf(cur).filter(t=>t.dia&&items(t).length).sort((a,b)=>String(a.area||"").localeCompare(String(b.area||""))||(a.n||0)-(b.n||0));
@@ -968,7 +1010,7 @@ function renderIns(){
       (canWrite?'<div class="ftools"><button class="btn" type="button" data-fa="up" aria-label="Subir">↑</button><button class="btn" type="button" data-fa="down" aria-label="Descer">↓</button><button class="btn danger" type="button" data-fa="del" aria-label="Excluir pergunta">✕</button></div>':'<div></div>')+
       (ch?'<div class="opts"><label class="lbl">Opções (uma por linha)</label><textarea rows="3" data-ff="opts"'+dis+'>'+esc((f.opts||[]).join("\n"))+'</textarea></div>':'')+'<div class="opts"><label class="lbl">Texto de ajuda (opcional)</label><input data-ff="help" value="'+esc(f.help||"")+'"'+dis+'>'+(f.if?'<div class="hint">Aparece só quando outra resposta for: '+esc((f.if.in||[]).join(" / "))+'</div>':'')+(f.end?'<div class="hint">Encerra a inscrição se a resposta for: '+esc(f.end.join(" / "))+'</div>':'')+'</div></div>'});
   h+=(canWrite?'<button class="btn" type="button" data-fa="add">➕ Adicionar pergunta</button>':'')+'</div></div></details>';
-  h+='<div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:16px"><h3 style="margin:0">Respostas ('+rows.length+')</h3>'+(rows.length?'<button class="btn" type="button" id="fCsv">⬇️ Baixar planilha (CSV)</button>':'')+'</div>';
+  h+='<div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:16px"><h3 style="margin:0">Respostas ('+rows.length+')</h3>'+(rows.length?'<button class="btn" type="button" id="fCsv">⬇️ Baixar planilha (CSV)</button><button class="btn" type="button" id="fPdf">📄 Gerar PDF dos inscritos</button>':'')+'</div>';
   if(!rows.length)h+='<div class="empty">Ninguém se inscreveu ainda. Envie o link acima.</div>';
   else{
     h+='<div class="itb"><table><thead><tr><th>#</th><th>Recebida em</th>'+(hasOut?'<th>Situação</th>':'')+fields.map(f=>'<th>'+esc(String(f.label).replace(/\*\*/g,""))+'</th>').join("")+calcs.map(c=>'<th>'+esc(c.label)+'</th>').join("")+(canWrite?'<th></th>':'')+'</tr></thead><tbody>';
@@ -990,6 +1032,7 @@ $("insPane").addEventListener("click",async e=>{
   const d=formDoc();if(!d)return;
   if(t.closest("#fCopy")){const u=formLink(d);if(!u)return;const _u0=u,b=t.closest("#fCopy");try{await navigator.clipboard.writeText(u);b.textContent="Link copiado!"}catch(_){const i=$("fUrl");i.select();b.textContent="Selecione e copie"}setTimeout(()=>{b.textContent="Copiar link"},2200);return}
   if(t.closest("#fWa")){const ev=events[cur]||{};window.open("https://wa.me/?text="+encodeURIComponent("Inscrição — "+(d.title||ev.name)+"\n"+formLink(d)),"_blank","noopener");return}
+  if(t.closest("#fPdf")){pdfInsc();return}
   if(t.closest("#fCsv")){
     const rows=inscRows(),fs=(d.fields||[]).filter(f=>f.type!=="section"),cs=Array.isArray(d.calc)?d.calc:[],ho=rows.some(r=>r.out),q=x=>'"'+String(x==null?"":x).replace(/"/g,'""')+'"';
     const lines=[["Recebida em"].concat(ho?["Situação"]:[]).concat(fs.map(f=>String(f.label).replace(/\*\*/g,""))).concat(cs.map(c=>c.label)).map(q).join(";")].concat(rows.slice().reverse().map(r=>[new Date(r.at||0).toLocaleString("pt-BR")].concat(ho?[r.out?"Fora do critério":"Elegível"]:[]).concat(fs.map(f=>{const v=(r.a||{})[f.id];return Array.isArray(v)?v.join(", "):v})).concat(cs.map(c=>calcVal(c,r))).map(q).join(";")));
