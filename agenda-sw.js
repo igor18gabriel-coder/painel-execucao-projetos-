@@ -1,6 +1,6 @@
 // Service worker da AGENDA FM. Registrado com scope "./agenda.html":
 // não interfere nos outros painéis do site.
-const CACHE = "agenda-fm-v5";
+const CACHE = "agenda-fm-v6";
 const SHELL = ["agenda.html", "logo-unifm.png", "agenda-app/manifest.webmanifest", "agenda-app/icon-192.png", "agenda-app/icon-512.png"];
 
 const OFFLINE = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">

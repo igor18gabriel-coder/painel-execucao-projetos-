@@ -112,6 +112,15 @@ button{cursor:pointer}
 .bdlist li.now .nm{font-weight:800}
 .inline-form{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .inline-form input{border:1px solid var(--line);background:var(--surface);border-radius:7px;padding:6px 10px}
+.proj{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:700;padding:2px 7px;border-radius:5px;background:var(--accent-soft);color:var(--accent-tx);border:1px solid color-mix(in srgb,var(--accent-tx) 25%,transparent);max-width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;cursor:pointer}
+.proj svg{flex:none;color:var(--gold)}
+.plist2{display:flex;flex-direction:column;gap:6px;margin:0;padding:0;list-style:none}
+.plist2 li button{display:grid;grid-template-columns:auto 1fr;gap:2px 8px;width:100%;text-align:left;border:0;background:var(--sunk);border-radius:8px;padding:7px 9px;cursor:pointer}
+.plist2 li button:hover{background:var(--accent-soft)}
+.plist2 svg{grid-row:span 2;align-self:center;color:var(--gold)}
+.plist2 .nm{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.plist2 .dd{font-size:12px;color:var(--muted);font-family:var(--f-mono)}
+.plist2 li.now button{outline:2px solid var(--gold)}
 .count{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:var(--gold);color:#0b1a3d;font-size:12px;font-weight:800}
 
 .app{display:grid;grid-template-rows:auto 1fr;height:100%;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:12px;gap:12px}
@@ -214,7 +223,7 @@ button{cursor:pointer}
 .nowline::before{content:"";position:absolute;left:-4px;top:-3px;width:8px;height:8px;border-radius:50%;background:var(--now)}
 .closed-note{position:absolute;inset:8px 6px auto;font-size:12.5px;color:var(--danger);font-weight:700;text-align:center;pointer-events:none}
 
-.mgrid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));grid-auto-rows:minmax(104px,1fr);flex:1;overflow:auto}
+.mgrid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));grid-template-rows:auto;align-content:start;grid-auto-rows:minmax(104px,1fr);flex:1;overflow:auto}
 .mdow{position:sticky;top:0;background:var(--surface);z-index:2;padding:8px;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700;border-bottom:1px solid var(--line)}
 .mcell{border-right:1px solid var(--line-soft);border-bottom:1px solid var(--line-soft);padding:6px;display:flex;flex-direction:column;gap:3px;min-width:0;cursor:pointer}
 .mcell:hover{background:color-mix(in srgb,var(--sunk) 60%,transparent)}
@@ -407,6 +416,10 @@ dialog::backdrop{background:rgba(6,16,40,.5)}
         <div class="upc" id="upcoming"></div>
       </section>
       <section class="panel">
+        <h2>Projetos <a class="linkish" href="index.html" target="_blank" rel="noopener">Abrir painel</a></h2>
+        <ul class="plist2" id="projs"></ul>
+      </section>
+      <section class="panel">
         <h2>Aniversários</h2>
         <ul class="bdlist" id="bdays"></ul>
       </section>
@@ -552,6 +565,7 @@ const DIAS = ["dom","seg","ter","qua","qui","sex","sáb"];
 const LOCK = '<svg width="11" height="11" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="3" y="7" width="10" height="7" rx="1.5" stroke="currentColor" stroke-width="1.8"/><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2" stroke="currentColor" stroke-width="1.8"/></svg>';
 const CAKE = '<svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2.5 14h11M3.5 14V9.5h9V14M2.5 9.5h11V8a1 1 0 0 0-1-1h-9a1 1 0 0 0-1 1z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M8 7V5M5 7V5.5M11 7V5.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M8 2.2c.6.6.6 1.3 0 1.8-.6-.5-.6-1.2 0-1.8z" fill="currentColor"/></svg>';
 const CHK = '<svg class="chk" width="11" height="11" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="1.5" y="1.5" width="13" height="13" rx="3" stroke="currentColor" stroke-width="1.8"/><path d="m4.5 8.2 2.3 2.3 4.7-4.9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const FLAG = '<svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 14.5v-13M3.5 2.5h8.2l-1.6 3 1.6 3H3.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" fill="currentColor" fill-opacity=".25"/></svg>';
 const VID = '<svg class="vid" width="11" height="11" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="1.5" y="4" width="9" height="8" rx="1.5" stroke="currentColor" stroke-width="1.8"/><path d="m10.5 7 4-2.5v7L10.5 9" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>';
 
 const $ = s => document.querySelector(s);
@@ -573,7 +587,7 @@ const store = {
 
 const S = {
   code: store.get("code", null) || (() => { try { return sessionStorage.getItem("agfm_code"); } catch { return null; } })(),
-  me: null, admin: false, members: [], meetings: [], blocks: [], pending: [],
+  me: null, admin: false, members: [], meetings: [], blocks: [], pending: [], projects: [],
   view: store.get("view", innerWidth < 700 ? "lista" : "semana"), cursor: new Date(), mini: new Date(),
   hidden: new Set(store.get("hidden", [])), weekend: store.get("weekend", false), firstPaint: true,
 };
@@ -622,7 +636,7 @@ async function reload(){
   catch (e) { if (e.code === "codigo_invalido") return logout("Seu código não é mais válido. Peça um novo ao responsável."); }
 }
 function applyData(d){
-  S.members = d.membros || []; S.meetings = d.reunioes || []; S.blocks = d.bloqueios || []; S.pending = d.pendentes || [];
+  S.members = d.membros || []; S.meetings = d.reunioes || []; S.blocks = d.bloqueios || []; S.pending = d.pendentes || []; S.projects = d.projetos || [];
   S.me = Object.assign({}, S.members.find(m => m.id === d.me.id) || {}, d.me); S.admin = d.me.papel === "editor";
   if (document.querySelector("#dlgTeam[open]")) drawMembers();
   if (document.querySelector("#dlgMeet[open]")){ drawParticipants(); drawAvail(); }
@@ -710,6 +724,10 @@ const extTxt = mt => (mt.externos||"").trim();
 const allDay = mt => mt.inicio === "00:00" && mt.fim === "23:59";
 const timeTxt = mt => allDay(mt) ? "Dia inteiro" : `${mt.inicio}–${mt.fim}`;
 const birthdaysOn = k => S.members.filter(m => m.aniversario && m.aniversario === k.slice(5));
+const projectsOn = k => S.projects.filter(p => p.inicio <= k && k <= p.fim);
+const projChip = p => `<button type="button" class="proj" data-proj="${esc(p.id)}" title="Projeto: ${esc(p.nome)}">${FLAG}${esc(p.nome)}</button>`;
+const fmtD = k => k.split("-").reverse().slice(0,2).join("/");
+const projRange = p => p.inicio === p.fim ? fmtD(p.inicio) : `${fmtD(p.inicio)} a ${fmtD(p.fim)}`;
 const bdayChip = m => `<span class="bday" title="Aniversário de ${esc(m.nome)}">${CAKE}${esc(first(m.nome))}</span>`;
 const involved = mt => [...new Set([mt.organizador, ...(mt.participantes||[])].filter(Boolean))];
 const blocksFor = (mid, date) => S.blocks.filter(b => b.membroId === mid && b.dataInicio <= date && date <= (b.dataFim || b.dataInicio));
@@ -743,7 +761,7 @@ function render(){
   $("#btnTeam").hidden = !S.admin;
   $("#btnTeam").innerHTML = "Usuários e acessos" + (S.admin && S.pending.length ? ` <span class="count" aria-label="${S.pending.length} aguardando aprovação">${S.pending.length}</span>` : "");
   document.querySelectorAll(".seg button").forEach(b => b.setAttribute("aria-pressed", b.dataset.view === S.view));
-  renderLabel(); renderMini(); renderPeople(); renderUpcoming(); renderBdays(); renderMain();
+  renderLabel(); renderMini(); renderPeople(); renderUpcoming(); renderProjects(); renderBdays(); renderMain();
 }
 function renderLabel(){
   const c = S.cursor; let t;
@@ -777,6 +795,12 @@ function renderUpcoming(){
     const when = x.data === nowK ? "Hoje" : `${DIAS[d.getDay()]} ${d.getDate()}/${pad(d.getMonth()+1)}`;
     return `<div class="upc-item" role="button" tabindex="0" data-open="${esc(x.id)}"><span class="bar" style="background:${esc(colorOf(x.organizador))}"></span><div><div class="t">${esc(x.titulo)}</div><div class="s mono">${when} · ${esc(timeTxt(x))}${isTask(x)?" · tarefa":""}</div></div>${!isTask(x)&&x.link?`<a class="join" href="${esc(x.link)}" target="_blank" rel="noopener">Entrar</a>`:""}</div>`; }).join("")
     : `<p class="empty" style="margin:0">Nenhum compromisso marcado.</p>`;
+}
+function renderProjects(){
+  const td = todayStr();
+  const list = S.projects.filter(p => p.fim >= td).slice(0, 6);
+  $("#projs").innerHTML = list.length ? list.map(p => `<li class="${p.inicio <= td ? "now" : ""}"><button type="button" data-proj="${esc(p.id)}">${FLAG.replace(/12/g,"16")}<span class="nm">${esc(p.nome)}</span><span class="dd">${projRange(p)}${p.inicio <= td ? " · acontecendo" : ""}</span></button></li>`).join("")
+    : `<li class="empty">Nenhum projeto com data futura.</li>`;
 }
 function renderBdays(){
   const now = new Date(); now.setHours(0,0,0,0);
@@ -841,7 +865,7 @@ const noneSel = `<div class="state"><h3>Nenhuma agenda selecionada</h3><p>Marque
 function weekHTML(){
   const vis = new Set(visibleMembers().map(m => m.id)), a = startWeek(S.cursor), n = S.weekend ? 7 : 5, cols = [];
   for (let i = 0; i < n; i++){
-    const d = addDays(a, i), k = ymd(d), chips = birthdaysOn(k).map(bdayChip), blocks = [];
+    const d = addDays(a, i), k = ymd(d), chips = [...projectsOn(k).map(projChip), ...birthdaysOn(k).map(bdayChip)], blocks = [];
     for (const m of visibleMembers()) for (const b of blocksFor(m.id, k)){
       if (b.diaInteiro) chips.push(`<button type="button" class="lock" style="cursor:pointer" data-block="${esc(b.id)}" title="${esc(m.nome)}${b.motivo?": "+esc(b.motivo):""}">${LOCK}${esc(first(m.nome))}</button>`);
       else blocks.push({ id: b.id, s: toMin(b.inicio), e: toMin(b.fim), label: `${first(m.nome)}${b.motivo?" · "+b.motivo:""}` });
@@ -864,7 +888,7 @@ function teamHTML(){
       head: `<div class="pname"><span class="av" style="background:${esc(m.cor)};width:22px;height:22px;font-size:10px">${esc(initials(m.nome))}</span><span>${esc(m.nome)}</span></div>${m.cargo?`<div class="psub">${esc(m.cargo)}</div>`:""}<div class="chips">${st}</div>`,
       blocks: bl.filter(b => !b.diaInteiro).map(b => ({ id: b.id, s: toMin(b.inicio), e: toMin(b.fim), label: b.motivo || "Indisponível" })) };
   });
-  const tb = `<div class="toolbar"><span class="hint">Agenda de cada pessoa em ${d.getDate()}/${pad(d.getMonth()+1)}. Clique num espaço livre na coluna de alguém para marcar com essa pessoa.</span></div>`;
+  const tb = `<div class="toolbar">${projectsOn(k).map(projChip).join("")}<span class="hint">Agenda de cada pessoa em ${d.getDate()}/${pad(d.getMonth()+1)}. Clique num espaço livre na coluna de alguém para marcar com essa pessoa.</span></div>`;
   return tb + (cols.length ? gridHTML(cols) : noneSel);
 }
 function listHTML(){
@@ -881,9 +905,10 @@ function listHTML(){
       ...parts.map(({ b, m }) => ({ s: b.inicio, html: `<button type="button" class="litem blkrow" data-block="${esc(b.id)}"><span class="tm">${esc(b.inicio)}<span>${esc(b.fim)}</span></span><span></span><div><div class="t">${LOCK} ${esc(m.nome)} indisponível</div><div class="s">${esc(b.motivo || "Agenda fechada neste horário")}</div></div><span></span></button>` })),
     ].sort((a, b) => a.s.localeCompare(b.s));
     const weekday = ["domingo","segunda","terça","quarta","quinta","sexta","sábado"][d.getDay()];
-    const bds = birthdaysOn(k);
-    const empty = !items.length && !locks.length && !bds.length;
+    const bds = birthdaysOn(k), prs = projectsOn(k);
+    const empty = !items.length && !locks.length && !bds.length && !prs.length;
     h += `<section class="lday ${k===td?"today":""} ${empty?"empty":""}"><div class="lday-h"><h3>${k===td?"Hoje":weekday}<small>${d.getDate()} de ${MESES[d.getMonth()]}${empty?" · livre":""}</small></h3><button type="button" class="addday" data-add="${k}">+ Marcar</button></div>`;
+    if (prs.length) h += `<div class="chips">${prs.map(projChip).join("")}</div>`;
     if (bds.length) h += `<div class="chips">${bds.map(m => `<span class="bday">${CAKE}Aniversário de ${esc(m.nome)}</span>`).join("")}</div>`;
     if (locks.length) h += `<div class="chips">${locks.map(({ b, m }) => `<button type="button" class="lock" style="cursor:pointer" data-block="${esc(b.id)}">${LOCK}${esc(first(m.nome))} · agenda fechada${b.motivo?" ("+esc(b.motivo)+")":""}</button>`).join("")}</div>`;
     h += items.map(x => x.html).join("") + `</section>`;
@@ -899,7 +924,8 @@ function monthHTML(){
     const evs = S.meetings.filter(mt => mt.data === k && involved(mt).some(p => vis.has(p))).sort((a,b) => a.inicio.localeCompare(b.inicio));
     const locks = visibleMembers().filter(m => isClosed(m.id, k));
     h += `<div class="mcell ${d.getMonth()!==c.getMonth()?"out":""} ${k===td?"today":""}" role="button" tabindex="0" data-day="${k}" aria-label="${d.getDate()} de ${MESES[d.getMonth()]}"><span class="n">${d.getDate()}</span>`;
-    const bds = birthdaysOn(k);
+    const bds = birthdaysOn(k), prs = projectsOn(k);
+    if (prs.length) h += `<div class="chips">${prs.map(projChip).join("")}</div>`;
     if (bds.length) h += `<div class="chips">${bds.map(bdayChip).join("")}</div>`;
     if (locks.length) h += `<div class="chips">${locks.slice(0,2).map(m => `<span class="lock">${LOCK}${esc(first(m.nome))}</span>`).join("")}${locks.length>2?`<span class="more">+${locks.length-2}</span>`:""}</div>`;
     h += evs.slice(0,3).map(e => `<div class="mev" style="--c:${esc(colorOf(e.organizador))}" data-open="${esc(e.id)}"><i class="mono">${allDay(e)?"dia":esc(e.inicio)}</i><span>${isTask(e)?"Tarefa: ":""}${esc(e.titulo)}</span></div>`).join("");
@@ -1020,6 +1046,17 @@ async function deleteMeeting(id, btn){
   btn.disabled = true;
   try { await call("agenda_reuniao_excluir", { p_id: id }); document.querySelectorAll("dialog[open]").forEach(d => d.close()); toast("Excluído"); await reload(); }
   catch (err) { toast(err.message); } finally { btn.disabled = false; }
+}
+function viewProject(id){
+  const p = S.projects.find(x => x.id === id); if (!p) return;
+  const days = Math.round((parse(p.fim) - parse(p.inicio)) / 864e5) + 1;
+  $("#vTitle").textContent = p.nome;
+  $("#vBody").innerHTML = `<dl class="dt"><dt>Tipo</dt><dd><span class="proj" style="cursor:default">${FLAG}Projeto</span></dd>
+    <dt>Quando</dt><dd>${projRange(p)}${days > 1 ? ` · ${days} dias` : ""}</dd>
+    ${p.pessoas ? `<dt>Público</dt><dd>${p.pessoas} pessoas</dd>` : ""}
+    <dt>Origem</dt><dd>Painel de Execução de Projetos. Para mudar as datas, altere lá: a agenda atualiza sozinha.</dd></dl>`;
+  $("#vFoot").innerHTML = `<button class="btn" type="button" data-close>Fechar</button><a class="btn primary" href="index.html" target="_blank" rel="noopener" style="text-decoration:none">Abrir painel de projetos</a>`;
+  $("#dlgView").showModal();
 }
 function viewMeeting(id){
   const mt = S.meetings.find(x => x.id === id); if (!mt) return;
@@ -1174,6 +1211,7 @@ document.addEventListener("click", e => {
   const close = t.closest("[data-close]"); if (close){ close.closest("dialog")?.close(); return; }
   const view = t.closest(".seg button"); if (view){ S.view = view.dataset.view; store.set("view", S.view); S.firstPaint = true; render(); return; }
   if (t.closest("a.join")) return;
+  const pj = t.closest("[data-proj]"); if (pj){ e.stopPropagation(); viewProject(pj.dataset.proj); return; }
   const op = t.closest("[data-open]"); if (op){ e.stopPropagation(); viewMeeting(op.dataset.open); return; }
   const bk = t.closest("[data-block]"); if (bk){ e.stopPropagation(); const b = S.blocks.find(x => x.id === bk.dataset.block); if (b) openBlock(b); return; }
   const md = t.closest("#mini button[data-d]"); if (md){ S.cursor = parse(md.dataset.d); render(); return; }
