@@ -121,6 +121,9 @@ button{cursor:pointer}
 .plist2 .nm{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
 .plist2 .dd{font-size:12px;color:var(--muted);font-family:var(--f-mono)}
 .plist2 li.now button{outline:2px solid var(--gold)}
+.prog{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:800;padding:2px 7px;border-radius:5px;background:var(--gold);color:#0b1a3d;border:0;max-width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;cursor:pointer}
+.prog svg{flex:none}
+.typesw.three{grid-template-columns:1fr 1fr 1fr}
 .count{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:var(--gold);color:#0b1a3d;font-size:12px;font-weight:800}
 
 .app{display:grid;grid-template-rows:auto 1fr;height:100%;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:12px;gap:12px}
@@ -416,7 +419,7 @@ dialog::backdrop{background:rgba(6,16,40,.5)}
         <div class="upc" id="upcoming"></div>
       </section>
       <section class="panel">
-        <h2>Projetos <a class="linkish" href="index.html" target="_blank" rel="noopener">Abrir painel</a></h2>
+        <h2>Projetos e programações <a class="linkish" href="index.html" target="_blank" rel="noopener">Abrir painel</a></h2>
         <ul class="plist2" id="projs"></ul>
       </section>
       <section class="panel">
@@ -435,6 +438,7 @@ dialog::backdrop{background:rgba(6,16,40,.5)}
       <div class="typesw" role="group" aria-label="Tipo de evento">
         <button type="button" data-tipo="reuniao" aria-pressed="true"><span>Reunião<small>com outras pessoas</small></span></button>
         <button type="button" data-tipo="tarefa" aria-pressed="false"><span>Tarefa<small>fecha a agenda para trabalhar</small></span></button>
+        <button type="button" id="toProg" hidden><span>Programação<small>evento da empresa, para todos</small></span></button>
       </div>
       <label class="fld"><span id="mTituloLbl">Assunto</span><input id="mTitulo" required maxlength="140" placeholder="Ex.: Alinhamento do projeto"></label>
       <div class="row">
@@ -542,6 +546,23 @@ dialog::backdrop{background:rgba(6,16,40,.5)}
   </div>
 </dialog>
 
+<dialog id="dlgProg">
+  <form class="dlg" id="formProg" novalidate>
+    <div class="dlg-h"><h3 id="gTitle">Nova programação</h3><button class="btn ghost icon" type="button" data-close aria-label="Fechar">✕</button></div>
+    <div class="dlg-b">
+      <p class="empty" style="margin:0">Evento da empresa visível para todos (imersão, treinamento, feriado). Não fecha a agenda de ninguém.</p>
+      <label class="fld"><span>Nome</span><input id="gNomeProg" maxlength="140" placeholder="Ex.: Imersão"></label>
+      <div class="row">
+        <label class="fld"><span>Primeiro dia</span><input type="date" id="gIni"></label>
+        <label class="fld"><span>Último dia</span><input type="date" id="gFim"></label>
+      </div>
+      <label class="fld"><span>Local (opcional)</span><input id="gLocal" maxlength="120"></label>
+      <label class="fld"><span>Descrição (opcional)</span><textarea id="gDesc" maxlength="2000"></textarea></label>
+    </div>
+    <div class="dlg-f"><div class="msg" id="gMsg" role="status"></div><button class="btn danger" type="button" id="gDelete" hidden>Excluir</button><button class="btn" type="button" data-close>Cancelar</button><button class="btn primary" type="submit" id="gSave">Salvar programação</button></div>
+  </form>
+</dialog>
+
 <dialog id="dlgPwd">
   <form class="dlg" id="formPwd" novalidate>
     <div class="dlg-h"><h3>Minha senha</h3><button class="btn ghost icon" type="button" data-close aria-label="Fechar">✕</button></div>
@@ -566,6 +587,7 @@ const LOCK = '<svg width="11" height="11" viewBox="0 0 16 16" fill="none" aria-h
 const CAKE = '<svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2.5 14h11M3.5 14V9.5h9V14M2.5 9.5h11V8a1 1 0 0 0-1-1h-9a1 1 0 0 0-1 1z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M8 7V5M5 7V5.5M11 7V5.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M8 2.2c.6.6.6 1.3 0 1.8-.6-.5-.6-1.2 0-1.8z" fill="currentColor"/></svg>';
 const CHK = '<svg class="chk" width="11" height="11" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="1.5" y="1.5" width="13" height="13" rx="3" stroke="currentColor" stroke-width="1.8"/><path d="m4.5 8.2 2.3 2.3 4.7-4.9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const FLAG = '<svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 14.5v-13M3.5 2.5h8.2l-1.6 3 1.6 3H3.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" fill="currentColor" fill-opacity=".25"/></svg>';
+const STAR = '<svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="m8 1.8 1.9 3.9 4.3.6-3.1 3 .7 4.3L8 11.6l-3.8 2 .7-4.3-3.1-3 4.3-.6z" fill="currentColor"/></svg>';
 const VID = '<svg class="vid" width="11" height="11" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="1.5" y="4" width="9" height="8" rx="1.5" stroke="currentColor" stroke-width="1.8"/><path d="m10.5 7 4-2.5v7L10.5 9" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>';
 
 const $ = s => document.querySelector(s);
@@ -587,7 +609,7 @@ const store = {
 
 const S = {
   code: store.get("code", null) || (() => { try { return sessionStorage.getItem("agfm_code"); } catch { return null; } })(),
-  me: null, admin: false, members: [], meetings: [], blocks: [], pending: [], projects: [],
+  me: null, admin: false, members: [], meetings: [], blocks: [], pending: [], projects: [], progs: [],
   view: store.get("view", innerWidth < 700 ? "lista" : "semana"), cursor: new Date(), mini: new Date(),
   hidden: new Set(store.get("hidden", [])), weekend: store.get("weekend", false), firstPaint: true,
 };
@@ -636,7 +658,7 @@ async function reload(){
   catch (e) { if (e.code === "codigo_invalido") return logout("Seu código não é mais válido. Peça um novo ao responsável."); }
 }
 function applyData(d){
-  S.members = d.membros || []; S.meetings = d.reunioes || []; S.blocks = d.bloqueios || []; S.pending = d.pendentes || []; S.projects = d.projetos || [];
+  S.members = d.membros || []; S.meetings = d.reunioes || []; S.blocks = d.bloqueios || []; S.pending = d.pendentes || []; S.projects = d.projetos || []; S.progs = d.programacoes || [];
   S.me = Object.assign({}, S.members.find(m => m.id === d.me.id) || {}, d.me); S.admin = d.me.papel === "editor";
   if (document.querySelector("#dlgTeam[open]")) drawMembers();
   if (document.querySelector("#dlgMeet[open]")){ drawParticipants(); drawAvail(); }
@@ -725,6 +747,9 @@ const allDay = mt => mt.inicio === "00:00" && mt.fim === "23:59";
 const timeTxt = mt => allDay(mt) ? "Dia inteiro" : `${mt.inicio}–${mt.fim}`;
 const birthdaysOn = k => S.members.filter(m => m.aniversario && m.aniversario === k.slice(5));
 const projectsOn = k => S.projects.filter(p => p.inicio <= k && k <= p.fim);
+const progsOn = k => S.progs.filter(p => p.inicio <= k && k <= p.fim);
+const progChip = p => `<button type="button" class="prog" data-prog="${esc(p.id)}" title="Programação: ${esc(p.titulo)}">${STAR}${esc(p.titulo)}</button>`;
+const allOn = k => [...progsOn(k).map(progChip), ...projectsOn(k).map(projChip)];
 const projChip = p => `<button type="button" class="proj" data-proj="${esc(p.id)}" title="Projeto: ${esc(p.nome)}">${FLAG}${esc(p.nome)}</button>`;
 const fmtD = k => k.split("-").reverse().slice(0,2).join("/");
 const projRange = p => p.inicio === p.fim ? fmtD(p.inicio) : `${fmtD(p.inicio)} a ${fmtD(p.fim)}`;
@@ -798,8 +823,9 @@ function renderUpcoming(){
 }
 function renderProjects(){
   const td = todayStr();
-  const list = S.projects.filter(p => p.fim >= td).slice(0, 6);
-  $("#projs").innerHTML = list.length ? list.map(p => `<li class="${p.inicio <= td ? "now" : ""}"><button type="button" data-proj="${esc(p.id)}">${FLAG.replace(/12/g,"16")}<span class="nm">${esc(p.nome)}</span><span class="dd">${projRange(p)}${p.inicio <= td ? " · acontecendo" : ""}</span></button></li>`).join("")
+  const list = [...S.progs.map(p => ({ ...p, nome: p.titulo, kind: "prog" })), ...S.projects.map(p => ({ ...p, kind: "proj" }))]
+    .filter(p => p.fim >= td).sort((a, b) => a.inicio.localeCompare(b.inicio)).slice(0, 7);
+  $("#projs").innerHTML = list.length ? list.map(p => `<li class="${p.inicio <= td ? "now" : ""}"><button type="button" ${p.kind === "prog" ? `data-prog="${esc(p.id)}"` : `data-proj="${esc(p.id)}"`}>${p.kind === "prog" ? STAR.replace(/12/g,"16").replace('aria-hidden','style="color:var(--gold)" aria-hidden') : FLAG.replace(/12/g,"16")}<span class="nm">${esc(p.nome)}</span><span class="dd">${projRange(p)}${p.inicio.slice(0,4) !== td.slice(0,4) ? "/" + p.inicio.slice(0,4) : ""}${p.kind === "prog" ? " · programação" : ""}${p.inicio <= td ? " · acontecendo" : ""}</span></button></li>`).join("")
     : `<li class="empty">Nenhum projeto com data futura.</li>`;
 }
 function renderBdays(){
@@ -865,7 +891,7 @@ const noneSel = `<div class="state"><h3>Nenhuma agenda selecionada</h3><p>Marque
 function weekHTML(){
   const vis = new Set(visibleMembers().map(m => m.id)), a = startWeek(S.cursor), n = S.weekend ? 7 : 5, cols = [];
   for (let i = 0; i < n; i++){
-    const d = addDays(a, i), k = ymd(d), chips = [...projectsOn(k).map(projChip), ...birthdaysOn(k).map(bdayChip)], blocks = [];
+    const d = addDays(a, i), k = ymd(d), chips = [...allOn(k), ...birthdaysOn(k).map(bdayChip)], blocks = [];
     for (const m of visibleMembers()) for (const b of blocksFor(m.id, k)){
       if (b.diaInteiro) chips.push(`<button type="button" class="lock" style="cursor:pointer" data-block="${esc(b.id)}" title="${esc(m.nome)}${b.motivo?": "+esc(b.motivo):""}">${LOCK}${esc(first(m.nome))}</button>`);
       else blocks.push({ id: b.id, s: toMin(b.inicio), e: toMin(b.fim), label: `${first(m.nome)}${b.motivo?" · "+b.motivo:""}` });
@@ -888,7 +914,7 @@ function teamHTML(){
       head: `<div class="pname"><span class="av" style="background:${esc(m.cor)};width:22px;height:22px;font-size:10px">${esc(initials(m.nome))}</span><span>${esc(m.nome)}</span></div>${m.cargo?`<div class="psub">${esc(m.cargo)}</div>`:""}<div class="chips">${st}</div>`,
       blocks: bl.filter(b => !b.diaInteiro).map(b => ({ id: b.id, s: toMin(b.inicio), e: toMin(b.fim), label: b.motivo || "Indisponível" })) };
   });
-  const tb = `<div class="toolbar">${projectsOn(k).map(projChip).join("")}<span class="hint">Agenda de cada pessoa em ${d.getDate()}/${pad(d.getMonth()+1)}. Clique num espaço livre na coluna de alguém para marcar com essa pessoa.</span></div>`;
+  const tb = `<div class="toolbar">${allOn(k).join("")}<span class="hint">Agenda de cada pessoa em ${d.getDate()}/${pad(d.getMonth()+1)}. Clique num espaço livre na coluna de alguém para marcar com essa pessoa.</span></div>`;
   return tb + (cols.length ? gridHTML(cols) : noneSel);
 }
 function listHTML(){
@@ -906,9 +932,9 @@ function listHTML(){
     ].sort((a, b) => a.s.localeCompare(b.s));
     const weekday = ["domingo","segunda","terça","quarta","quinta","sexta","sábado"][d.getDay()];
     const bds = birthdaysOn(k), prs = projectsOn(k);
-    const empty = !items.length && !locks.length && !bds.length && !prs.length;
+    const empty = !items.length && !locks.length && !bds.length && !allOn(k).length;
     h += `<section class="lday ${k===td?"today":""} ${empty?"empty":""}"><div class="lday-h"><h3>${k===td?"Hoje":weekday}<small>${d.getDate()} de ${MESES[d.getMonth()]}${empty?" · livre":""}</small></h3><button type="button" class="addday" data-add="${k}">+ Marcar</button></div>`;
-    if (prs.length) h += `<div class="chips">${prs.map(projChip).join("")}</div>`;
+    if (allOn(k).length) h += `<div class="chips">${allOn(k).join("")}</div>`;
     if (bds.length) h += `<div class="chips">${bds.map(m => `<span class="bday">${CAKE}Aniversário de ${esc(m.nome)}</span>`).join("")}</div>`;
     if (locks.length) h += `<div class="chips">${locks.map(({ b, m }) => `<button type="button" class="lock" style="cursor:pointer" data-block="${esc(b.id)}">${LOCK}${esc(first(m.nome))} · agenda fechada${b.motivo?" ("+esc(b.motivo)+")":""}</button>`).join("")}</div>`;
     h += items.map(x => x.html).join("") + `</section>`;
@@ -925,7 +951,7 @@ function monthHTML(){
     const locks = visibleMembers().filter(m => isClosed(m.id, k));
     h += `<div class="mcell ${d.getMonth()!==c.getMonth()?"out":""} ${k===td?"today":""}" role="button" tabindex="0" data-day="${k}" aria-label="${d.getDate()} de ${MESES[d.getMonth()]}"><span class="n">${d.getDate()}</span>`;
     const bds = birthdaysOn(k), prs = projectsOn(k);
-    if (prs.length) h += `<div class="chips">${prs.map(projChip).join("")}</div>`;
+    if (allOn(k).length) h += `<div class="chips">${allOn(k).join("")}</div>`;
     if (bds.length) h += `<div class="chips">${bds.map(bdayChip).join("")}</div>`;
     if (locks.length) h += `<div class="chips">${locks.slice(0,2).map(m => `<span class="lock">${LOCK}${esc(first(m.nome))}</span>`).join("")}${locks.length>2?`<span class="more">+${locks.length-2}</span>`:""}</div>`;
     h += evs.slice(0,3).map(e => `<div class="mev" style="--c:${esc(colorOf(e.organizador))}" data-open="${esc(e.id)}"><i class="mono">${allDay(e)?"dia":esc(e.inicio)}</i><span>${isTask(e)?"Tarefa: ":""}${esc(e.titulo)}</span></div>`).join("");
@@ -967,6 +993,7 @@ function openMeeting(opts = {}){
   $("#mPart").dataset.sel = JSON.stringify([...sel]);
   $("#mBusca").value = ""; setMsg("", "");
   const ad = mt ? allDay(mt) : false; $("#mDia").checked = ad; $("#mInicio").disabled = $("#mFim").disabled = ad;
+  $("#toProg").hidden = !S.admin || !!mt; document.querySelector(".typesw").classList.toggle("three", S.admin && !mt);
   setTipo(mt ? (mt.tipo || "reuniao") : (opts.tipo || "reuniao"));
   $("#dlgMeet").showModal();
   setTimeout(() => $("#mTitulo").focus(), 30);
@@ -1047,6 +1074,51 @@ async function deleteMeeting(id, btn){
   try { await call("agenda_reuniao_excluir", { p_id: id }); document.querySelectorAll("dialog[open]").forEach(d => d.close()); toast("Excluído"); await reload(); }
   catch (err) { toast(err.message); } finally { btn.disabled = false; }
 }
+function viewProg(id){
+  const p = S.progs.find(x => x.id === id); if (!p) return;
+  const days = Math.round((parse(p.fim) - parse(p.inicio)) / 864e5) + 1;
+  $("#vTitle").textContent = p.titulo;
+  $("#vBody").innerHTML = `<dl class="dt"><dt>Tipo</dt><dd><span class="prog" style="cursor:default">${STAR}Programação</span></dd>
+    <dt>Quando</dt><dd>${projRange(p)}/${p.fim.slice(0,4)}${days > 1 ? ` · ${days} dias` : ""}</dd>
+    ${p.local ? `<dt>Local</dt><dd>${esc(p.local)}</dd>` : ""}
+    ${p.descricao ? `<dt>Descrição</dt><dd style="white-space:pre-wrap">${esc(p.descricao)}</dd>` : ""}</dl>`;
+  $("#vFoot").innerHTML = S.admin ? `<button class="btn" type="button" data-close>Fechar</button><button class="btn primary" type="button" id="vProgEdit">Editar</button>` : `<button class="btn" type="button" data-close>Fechar</button>`;
+  $("#dlgView").dataset.vprog = id;
+  $("#dlgView").showModal();
+}
+let editingProg = null;
+function openProg(p, date){
+  if (!S.admin) return;
+  editingProg = p || null;
+  $("#gTitle").textContent = p ? "Editar programação" : "Nova programação";
+  $("#gNomeProg").value = p?.titulo || ""; $("#gIni").value = p?.inicio || date || ymd(S.cursor); $("#gFim").value = p?.fim || date || ymd(S.cursor);
+  $("#gLocal").value = p?.local || ""; $("#gDesc").value = p?.descricao || "";
+  $("#gMsg").textContent = ""; $("#gMsg").className = "msg";
+  $("#gDelete").hidden = !p; $("#gDelete").classList.remove("armed"); $("#gDelete").textContent = "Excluir";
+  $("#dlgProg").showModal(); setTimeout(() => $("#gNomeProg").focus(), 30);
+}
+$("#formProg").addEventListener("submit", async e => {
+  e.preventDefault();
+  const msg = (t, k) => { $("#gMsg").textContent = t; $("#gMsg").className = "msg" + (k ? " " + k : ""); };
+  const titulo = $("#gNomeProg").value.trim(), ini = $("#gIni").value, fim = $("#gFim").value || ini;
+  if (!titulo) return msg("Informe o nome da programação.", "err");
+  if (!ini) return msg("Informe o primeiro dia.", "err");
+  if (fim < ini) return msg("O último dia precisa ser igual ou depois do primeiro.", "err");
+  $("#gSave").disabled = true;
+  const was = !!editingProg;
+  try { await call("agenda_programacao_salvar", { p_id: editingProg?.id || null, p_dados: { titulo, dataInicio: ini, dataFim: fim, local: $("#gLocal").value.trim(), descricao: $("#gDesc").value.trim() } });
+    $("#dlgProg").close(); toast(was ? "Programação atualizada" : "Programação adicionada à agenda"); await reload(); }
+  catch (err) { if (err.code === "codigo_invalido") return logout(err.message); msg(err.message, "err"); }
+  finally { $("#gSave").disabled = false; }
+});
+$("#gIni").addEventListener("change", () => { if (!$("#gFim").value || $("#gFim").value < $("#gIni").value) $("#gFim").value = $("#gIni").value; });
+$("#gDelete").addEventListener("click", async e => {
+  const btn = e.currentTarget;
+  if (!btn.classList.contains("armed")){ btn.classList.add("armed"); btn.textContent = "Confirmar exclusão"; return; }
+  btn.disabled = true;
+  try { await call("agenda_programacao_excluir", { p_id: editingProg.id }); $("#dlgProg").close(); toast("Programação excluída"); await reload(); }
+  catch (err) { toast(err.message); } finally { btn.disabled = false; }
+});
 function viewProject(id){
   const p = S.projects.find(x => x.id === id); if (!p) return;
   const days = Math.round((parse(p.fim) - parse(p.inicio)) / 864e5) + 1;
@@ -1211,6 +1283,9 @@ document.addEventListener("click", e => {
   const close = t.closest("[data-close]"); if (close){ close.closest("dialog")?.close(); return; }
   const view = t.closest(".seg button"); if (view){ S.view = view.dataset.view; store.set("view", S.view); S.firstPaint = true; render(); return; }
   if (t.closest("a.join")) return;
+  const pg = t.closest("[data-prog]"); if (pg){ e.stopPropagation(); viewProg(pg.dataset.prog); return; }
+  if (t.closest("#vProgEdit")){ const p = S.progs.find(x => x.id === $("#dlgView").dataset.vprog); $("#dlgView").close(); openProg(p); return; }
+  if (t.closest("#toProg")){ const d = $("#mData").value; $("#dlgMeet").close(); openProg(null, d); return; }
   const pj = t.closest("[data-proj]"); if (pj){ e.stopPropagation(); viewProject(pj.dataset.proj); return; }
   const op = t.closest("[data-open]"); if (op){ e.stopPropagation(); viewMeeting(op.dataset.open); return; }
   const bk = t.closest("[data-block]"); if (bk){ e.stopPropagation(); const b = S.blocks.find(x => x.id === bk.dataset.block); if (b) openBlock(b); return; }
@@ -1223,7 +1298,7 @@ document.addEventListener("click", e => {
     return;
   }
   if (t.closest("#bannerTeam")){ openTeam(); return; }
-  const tp = t.closest(".typesw button"); if (tp){ setTipo(tp.dataset.tipo); return; }
+  const tp = t.closest(".typesw button[data-tipo]"); if (tp){ setTipo(tp.dataset.tipo); return; }
   const ad = t.closest("[data-add]"); if (ad){ openMeeting({ date: ad.dataset.add }); return; }
   const em = t.closest("[data-edit-m]"); if (em){ const m = byId(em.dataset.editM); if (!m) return; editingMember = m;
     $("#uNome").value = m.nome; $("#uEmail").value = m.email||""; $("#uCargo").value = m.cargo||""; $("#uNasc").value = m.nascimento||""; $("#uPapel").value = m.papel||"usuario"; $("#uPapel").disabled = m.id === S.me.id; drawSwatches(m.cor);
