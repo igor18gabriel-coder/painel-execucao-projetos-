@@ -1,0 +1,653 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}[hidden]{display:none!important}img{max-width:100%}</style>
+<title>Custo Certo</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="icon" href="data:image/png;base64,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">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Barlow:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: mesma identidade da Trilha de Treinamento — faixa azul-marinho com borda dourada, logo UNIFM e abas; cada aba tem entradas à esquerda e resultado à direita (empilha no celular). */
+:root{
+  --bg:#edf0f6;--surface:#fff;--surface2:#f6f8fb;--tx:#18213a;--mut:#5f6b85;--line:#dbe1ec;
+  --navy:#0b2257;--navy2:#061a45;--gold:#f2a81d;--gold-ink:#0b2257;--green:#2a8a3e;--on:#fff;
+  --ok:#23843a;--okbg:#dcf3e2;--warn:#a96400;--warnbg:#fff0cf;--idle:#6b7690;--idlebg:#e7ebf2;--bad:#c4321f;--badbg:#fde3de;--info:#0b2257;--infobg:#e3e8f4;
+  --zok:#3fa55a;--zwarn:#f0b43c;--zbad:#d9533f;
+  --focus:#2a55c4;--inp:#fff;
+  --f-disp:"Outfit",system-ui,"Segoe UI",Roboto,sans-serif;
+  --f-body:"Barlow",system-ui,"Segoe UI",Roboto,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0a0f1d;--surface:#171e2e;--surface2:#1c2436;--tx:#e8ecf5;--mut:#9aa6c0;--line:#2a3449;
+  --navy:#17357d;--navy2:#0c2257;--gold:#f0a51c;--gold-ink:#0b1a3d;--green:#257a37;--on:#fff;
+  --ok:#6fdc8c;--okbg:#14381f;--warn:#ffc35c;--warnbg:#41300c;--idle:#a3aec6;--idlebg:#252e42;--bad:#ff8b7a;--badbg:#45201a;--info:#9db8ff;--infobg:#1d2a4d;
+  --zok:#2f8a48;--zwarn:#c9921f;--zbad:#c04634;
+  --focus:#7aa2ff;--inp:#121827;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0a0f1d;--surface:#171e2e;--surface2:#1c2436;--tx:#e8ecf5;--mut:#9aa6c0;--line:#2a3449;
+  --navy:#17357d;--navy2:#0c2257;--gold:#f0a51c;--gold-ink:#0b1a3d;--green:#257a37;--on:#fff;
+  --ok:#6fdc8c;--okbg:#14381f;--warn:#ffc35c;--warnbg:#41300c;--idle:#a3aec6;--idlebg:#252e42;--bad:#ff8b7a;--badbg:#45201a;--info:#9db8ff;--infobg:#1d2a4d;
+  --zok:#2f8a48;--zwarn:#c9921f;--zbad:#c04634;
+  --focus:#7aa2ff;--inp:#121827;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:var(--f-body);font-size:15px;line-height:1.45}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.pad{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.in{max-width:1180px;margin:0 auto}
+/* topo */
+.top{background:linear-gradient(180deg,var(--navy),var(--navy2));color:var(--on);position:relative;overflow:hidden;border-top:5px solid var(--gold)}
+.top::after{content:"UNIFM";position:absolute;right:-30px;top:-38px;font-family:var(--f-disp);font-weight:800;font-style:italic;font-size:210px;line-height:1;color:rgba(255,255,255,.045);pointer-events:none;transform:skewX(-10deg);white-space:nowrap}
+.top .in{position:relative;z-index:1;display:flex;flex-wrap:wrap;gap:12px 16px;align-items:center;justify-content:space-between;padding-block:14px 0}
+.brandrow{display:flex;gap:14px;align-items:center;min-width:0}
+.logo{height:58px;width:auto;flex:none;display:block}
+.brand h1{font-family:var(--f-disp);font-size:clamp(24px,3.4vw,32px);margin:0;line-height:1.05}
+.brand p{margin:2px 0 0;opacity:.85;font-size:13.5px}
+.hstats{display:flex;flex-wrap:wrap;gap:8px}
+.hs{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 12px;min-width:96px}
+.hs b{display:block;font-family:var(--f-disp);font-size:22px;line-height:1.1;font-variant-numeric:tabular-nums}
+.hs span{font-size:12px;opacity:.85}
+.tabs{display:flex;gap:2px;overflow-x:auto;flex-basis:100%;margin-top:6px}
+.tab{background:transparent;border:0;color:var(--on);opacity:.75;padding:10px 16px;font-weight:600;cursor:pointer;border-radius:8px 8px 0 0;white-space:nowrap;font-size:15px}
+.tab[aria-selected="true"]{background:var(--bg);color:var(--tx);opacity:1;box-shadow:inset 0 3px 0 var(--gold)}
+main{padding-block:18px 32px}
+h2.sec{font-family:var(--f-disp);font-size:22px;margin:0}
+h3.st{font-family:var(--f-disp);font-size:18px;margin:0}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.between{justify-content:space-between}
+.hint{font-size:12.5px;color:var(--mut)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;min-width:0}
+.cols{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:14px;margin-top:14px;align-items:start}
+.stack{display:flex;flex-direction:column;gap:14px;min-width:0}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 13px;cursor:pointer;font-weight:600;font-size:14px;white-space:nowrap}
+.btn:hover{border-color:var(--focus)}
+.btn.pri{background:var(--navy);border-color:var(--navy);color:var(--on)}
+.btn.grn{background:var(--green);border-color:var(--green);color:var(--on)}
+.btn.org{background:var(--gold);border-color:var(--gold);color:var(--gold-ink)}
+.btn.sm{padding:5px 10px;font-size:13px}
+.btn.danger{color:var(--bad)}
+.btn.danger.arm{background:var(--bad);border-color:var(--bad);color:var(--on)}
+.f{background:var(--inp);border:1px solid var(--line);border-radius:8px;padding:9px 10px;min-width:0;width:100%}
+.f.num{text-align:right;font-variant-numeric:tabular-nums}
+.field{display:flex;flex-direction:column;gap:4px;min-width:0}
+.lbl{font-size:12.5px;font-weight:600;color:var(--mut)}
+.money{position:relative}
+.money .f{padding-left:34px}
+.money::before{content:"R$";position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--mut);font-weight:600;pointer-events:none}
+.pct{position:relative}
+.pct .f{padding-right:28px}
+.pct::after{content:"%";position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--mut);font-weight:600;pointer-events:none}
+.g2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:12px}
+/* equação do CMV */
+.eq{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) auto minmax(0,1fr);gap:8px;align-items:end}
+.op{font-family:var(--f-disp);font-weight:800;font-size:22px;color:var(--gold);padding-bottom:6px;text-align:center}
+.formula{font-size:13px;color:var(--mut);background:var(--surface2);border:1px dashed var(--line);border-radius:8px;padding:8px 10px}
+.formula b{color:var(--tx)}
+/* resultado */
+.res{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden;min-width:0}
+.resh{background:linear-gradient(180deg,var(--navy),var(--navy2));color:var(--on);padding:14px 16px;border-top:4px solid var(--gold)}
+.resh small{opacity:.85;font-size:13px;display:block}
+.big{font-family:var(--f-disp);font-weight:800;font-size:clamp(40px,7vw,56px);line-height:1;font-variant-numeric:tabular-nums}
+.big em{font-style:normal;font-size:.5em;opacity:.8;margin-left:2px}
+.duo{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,170px),1fr));gap:10px;margin-top:8px}
+.duo>div{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:10px;padding:10px 12px;min-width:0}
+.duo>div.yr{background:var(--gold);border-color:var(--gold);color:var(--gold-ink)}
+.duo span{display:block;font-size:13px;font-weight:600;opacity:.9}
+.duo .big{font-size:clamp(28px,4.4vw,40px);overflow-wrap:anywhere}
+.resb{padding:14px 16px;display:flex;flex-direction:column;gap:12px}
+.chip{display:inline-block;font-size:12.5px;font-weight:700;padding:3px 10px;border-radius:12px;white-space:nowrap}
+.chip.ok{background:var(--okbg);color:var(--ok)}.chip.warn{background:var(--warnbg);color:var(--warn)}.chip.bad{background:var(--badbg);color:var(--bad)}.chip.idle{background:var(--idlebg);color:var(--idle)}
+.lines{display:flex;flex-direction:column}
+.ln{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid var(--line);font-size:14.5px}
+.ln:last-child{border-bottom:0}
+.ln span{color:var(--mut)}
+.ln b{font-variant-numeric:tabular-nums;text-align:right}
+.ln.tot b{font-family:var(--f-disp);font-size:18px}
+/* régua */
+.gauge{position:relative;padding-top:20px}
+.gbar{height:14px;border-radius:7px;background:var(--idlebg)}
+.gmark{position:absolute;top:0;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;transition:left .25s}
+.gmark span{font-size:11.5px;font-weight:700;background:var(--tx);color:var(--bg);border-radius:6px;padding:0 6px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.gmark i{width:3px;height:22px;background:var(--tx);border-radius:2px;margin-top:1px}
+.gscale{display:flex;justify-content:space-between;font-size:11.5px;color:var(--mut);margin-top:4px;font-variant-numeric:tabular-nums}
+.gmeta{position:absolute;top:20px;width:2px;height:14px;background:var(--surface);transform:translateX(-50%)}
+/* simulador */
+.sim{background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:10px}
+.sim input[type=range]{width:100%;accent-color:var(--gold)}
+.simv{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,130px),1fr));gap:8px}
+.simv div{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+.simv small{display:block;color:var(--mut);font-size:12px}
+.simv b{font-family:var(--f-disp);font-size:20px;font-variant-numeric:tabular-nums}
+.simv .gain b{color:var(--ok)}
+/* tabelas editáveis */
+.tblh,.tr{display:grid;gap:8px;align-items:center}
+.ing .tblh,.ing .tr{grid-template-columns:minmax(0,2fr) minmax(0,1.05fr) minmax(0,1.35fr) minmax(0,1.35fr) minmax(0,.75fr) minmax(0,.9fr) 32px}
+.eqp .tblh,.eqp .tr{grid-template-columns:minmax(0,2fr) minmax(0,.7fr) minmax(0,1.2fr) minmax(0,1.2fr) minmax(0,1.1fr) 32px}
+.tblh{font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);padding:0 2px 6px;border-bottom:1px solid var(--line)}
+.tbody{display:flex;flex-direction:column;gap:8px;padding-top:8px}
+.tr .f{padding:8px}
+.qu{display:flex;gap:4px;min-width:0}
+.qu .f{flex:1 1 0}
+.qu select.f{flex:0 0 64px;padding:8px 4px}
+.cost{font-family:var(--f-disp);font-weight:700;text-align:right;font-variant-numeric:tabular-nums;font-size:15.5px;overflow-wrap:anywhere}
+.cost.err{color:var(--bad);font-family:var(--f-body);font-size:12px;font-weight:600}
+.del{border:0;background:transparent;color:var(--bad);cursor:pointer;font-size:20px;line-height:1;width:32px;height:32px;border-radius:6px}
+.del:hover{background:var(--badbg)}
+.addrow{border:2px dashed var(--line);background:transparent;border-radius:10px;padding:10px;font-weight:700;color:var(--mut);cursor:pointer;width:100%;margin-top:10px}
+.addrow:hover{border-color:var(--gold);color:var(--tx)}
+/* cardápio */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:14px 0}
+.k{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.k small{color:var(--mut);font-size:12.5px;display:block}
+.k b{font-family:var(--f-disp);font-size:28px;line-height:1.1;font-variant-numeric:tabular-nums}
+.tw{overflow-x:auto}
+table.t{width:100%;border-collapse:collapse;font-size:14.5px;min-width:640px}
+table.t th{font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);text-align:left;padding:8px;border-bottom:1px solid var(--line)}
+table.t td{padding:10px 8px;border-bottom:1px solid var(--line);vertical-align:middle}
+table.t td.n,table.t th.n{text-align:right;font-variant-numeric:tabular-nums}
+table.t tr.click{cursor:pointer}
+table.t tr.click:hover td{background:var(--surface2)}
+.minibar{height:6px;background:var(--idlebg);border-radius:3px;overflow:hidden;margin-top:4px;min-width:60px}
+.minibar i{display:block;height:100%}
+.empty{text-align:center;color:var(--mut);padding:30px 16px;background:var(--surface);border:1px dashed var(--line);border-radius:12px}
+.empty b{display:block;color:var(--tx);font-size:16px;margin-bottom:4px}
+details.help{background:var(--infobg);color:var(--info);border-radius:10px;padding:10px 14px;margin-top:12px}
+details.help summary{cursor:pointer;font-weight:700}
+details.help ol{margin:8px 0 2px;padding-left:20px;display:flex;flex-direction:column;gap:3px;font-size:14px}
+.note{font-size:13.5px;padding:9px 11px;border-radius:8px;background:var(--warnbg);color:var(--warn)}
+.note.ok{background:var(--okbg);color:var(--ok)}
+.ex{font-size:12px;font-weight:700;background:var(--gold);color:var(--gold-ink);border-radius:6px;padding:1px 8px}
+.toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--tx);color:var(--bg);padding:9px 16px;border-radius:10px;font-weight:600;font-size:14px;z-index:60;max-width:calc(100vw - 32px)}
+footer{color:var(--mut);font-size:12.5px;text-align:center;margin-top:18px}
+@media (max-width:900px){
+  .cols{grid-template-columns:1fr}
+}
+@media (max-width:760px){
+  .tblh{display:none}
+  .ing .tr,.eqp .tr{grid-template-columns:1fr 1fr;border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--surface2);position:relative}
+  .tr>*{position:relative}
+  .tr [data-l]{display:flex;flex-direction:column;gap:3px}
+  .tr [data-l]::before{content:attr(data-l);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--mut)}
+  .tr .wide{grid-column:1/-1;padding-right:36px}
+  .tr .del{position:absolute;top:8px;right:8px}
+  .cost{text-align:left}
+  .eq{grid-template-columns:1fr}
+  .op{padding:0;font-size:18px;line-height:1}
+  .logo{height:46px}
+}
+@media (prefers-reduced-motion:reduce){.gmark{transition:none}}
+</style>
+</head><body>
+
+<header class="top pad">
+  <div class="in">
+    <div class="brandrow"><img class="logo" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIcAAACgCAYAAAAmTn+EAAAdwElEQVR42u2deZhlZX3nP79zblV1N013wGYRQYyBJC6BwWQ0KuA6GjTCaBDFAI/RGRUdCONC0NaBVoijoDghyZigY/IoGgMGXAATUYYRlSVEUIILm6gsDcjSQHVV3Xve7/xx3rf77cO9VXXPcuvUcp7n9O2+fe+57/J9f/ti09dt/JPOg9e8ZaZrONdziRmydAwzAExIuPzvmITDSJBkWILhGF810c2e+OpTxn/7zVdKpyZmm/IvLNAlycxMt0ur9vq3D3wkffCa53Zn1MOwfPypYZZIwiwxzE9WkpQ5BGY4JIFjbNXazD3l9e8ef+obrm7D/PrMNzEzp5kth/SuPeGM3kN3jJFMmHAGZpZ0UgAhcN3u9m+aGUn+jHxfBVknnVh739jvffRdnWzzNWePb71+/ZjGSQD5j/q/gM0+MCdIZhxTk5OflPRssK1hcxZuuc5PgGyfO7/5+vSBi0/sPXAn4+kY2yfl/2p9plqYr3OQZqL7oy1nSzoErFXAIBzhdC0z173vQ+MPfuMQTUKa7ACeHeAw63466HRh+tr3jXWSNXva1ofMqTMuOWdlBua2Tpmt7e4BrDVjUsIWdK3OPwpI6N7y6WekWx9wM1rdU49OyYV3NjWTaNXMbsC4GS0A/+OpJONjZFP3r2Vr5mbcaodTUu6JidzkpGmN9u8onZDhEkkyNPSmCmRmhqwLZK06UN0tPeQSsMSg1GIJsJze9oDWUY1tIHUOI53J+aQEKjlfyQwTaTdB1eZr4OmEU7sWT6CkB0ZVSmY5fXRtBMcOg5SsxudZQr0cwFq1WkZnBzmjPMxaOL9mr8STXENLdIa1ygXWbmAETcLqBEhNA7PWrZ1A5mo57AKRdoC01afdjDoPelIXBVcuuyTK+Z5JWrCb3V5gkktwM2kuMFRcMgMzuTCvoCW06u4+ZM4SC2e1jm3t1EE0cA6SVWPAVKTiaQFphjPMTV15/K5M/RAjrTQcOQfp6glgxsyU28haw4xza036a0xedtjOTmoP5TCwrjpuPLv7Cd1rTzlR0k6Sknne6YC732eK341Pzg6fRzL97OLn25Ybj5ieklSBHRgk01nqxnt379O94Yy35xq/cvvCxC4MMde51qAzxzoM+m4iaV1222c2dbb84Glbex0ZqoUj2NS33/yQfvHl9S5dK+SstN5Dj/GxMWbWHXhLsmqPR+WmU6xjfWRESWaAWeLN8F5f9wuvICLHKmj+3rbv+uOM19/y97TNDJ6l7v5r9x/PHhybzsYry6XCSDWNTewKG557g9xMD7MU4czSjixJZhNbpe1/xp+RzCxJzMCcLAU5/64XL51mp2gy0vGMLbfsMtH95T5TWx9FVakkicZtq7ndDr21UxchFx2mZjKtevDq/RJzOaMvkjjrrx8OSUC9llp8M7KIC6bdGNMal1l13d8QmU3A9BbWbP7qgTsyFeXbbrPMKRqvGLQGKqUpG5CRMpklzixN6uR2HWrk9GZmU27CtcMc4KwOYMQAwRImszXNGMKs/IE3hFk9rKQhcGwbaMKSNZyA4RKas1O0yRKghJVr5eprTXNuBRwr16yqrFaWYeUaAA5zK8uwcj1OOnZZr6PuI2bISTgWOkhn5Vp4ecNMpqyjZGx1x3ba918m1u/6uonudIIlo5B16nf897Of9DMb2ID3NeDvw9pl+j3XCr+tGp3/KrF+c83JZTD+JNjrxZ8zSaum/98bX+Ieu2tnOqscWVekKTiPlKSTbLPWJZZAYtujR/MrNbnM9XL2lG3/PyXZDpbrNJvZHilmiWWWGBmk/iMZkJLiZCkmS23M6CSWhbGE30xMZIDJIDEie0YqUya5fEwy0hSyjDD2NHHKZElqY+ZjvFzmuhlOhkyYXOotk1liCS4xEqfU9Y+KyjJIU//5TLZ9urmVMyUDjadZmnRQ4lKyDMllJB28oyxYQtNURmbKyEijqLrMRfaaNF+oNDFlWVeSN4ruYIVODaXb3+0khvNrRXc7JGRKTS7LwppmkD0K+x5555oD3v2dFUq6cs0SHSwZ5x+VwPkrq7Fy+eu12FHnZyYpKemdlZllTUZVVwiuyeLo8IrPcmaj0ej8OJMSEknfvZCUVpBuspVDMs+koeXKVp4M/CGwOpJnXSTLukjODqgeAzYD59VNPUIehqTdgKOAtfR3amqA/D4JXGBmmyWlZpZJ2gC8EVjl55NFJ8MVvu8Ksv3XzezH4VlN5p5IWgscDexa0GuyPuOM/WN3A18I44ue9yrgmcDWiDtYdPd7XgI8Bvwjkm5X+WtTRL5qPaWSLqwwrgvjcUm6rMKzHpD0PP+cTpOUSdKnKozz7f4Z4/71Zap2XdIBnlKCv/Q8Yn+3QWvIbtEJT4fgkynwZB9AFOb1lOhZw/B0B+wCXCjpUDP7SUMUJMx5vxJz7gLjwP6F6L5f98+d9pSeIeacAPt2hhxIPJkUeLjBfI6ZaFzDjC/1CxZfk/59G1L49lYFdgcukfTKhllMr8ScA7vPBpi8ho2aD2s0nVQMt29SUEsqJFWNF4TIsQrjCAB5KvAvkn7TyzFp7SmNOQUoe43VnGDWape9asy8q7pQqT/V+wAXS9rLAyRpWUJkkT20IG9laQGLWaLmMi8XfE3SLmbmlrCaqzbHc1hFcDQxr0BBDvIAWVMHQLQ9AbrOMWdLma1UmliDz+54gDwPON+rjqZ6Mtxdjd/VCjgW5goAeQXwKa+5JDUApE1U3NrMVlxNGkDTADlW0l/UBJA27UWStLAgiUU6/2KhICdIOj0AZIHAUTew0qTdgYyLisVslHSGV3E7qrPKzgJGny8HNXQUAMmA90k62cx6ba/lMV9wJC2lGG4RrmUP+IikN5lZT9LYCA+rWw6Ug8Ubz0/qN+lcSa8xs25TntxR7OUKOJqhegZ8XtIfeArSWYQy2pK2kC50FuEEcIGk53uApA3Pue6Dnq1QjmaAFkwEOwFflnRg3Z7c5aqttE2VtZLCXoixeALwRUm7ttCTu2jBkbUAWALuiCgBJWNBfgv4kqR1czjqsga0Fasic6xcs5Q9B44HzolU1bKe3BcCX5W0xjfvSNpuN1oBx9yLamZ2IvAVtltDKWlFPRT4h2Aga7sVtc3ailry+zv5TTwauKYGgLwK+DufKJUWAFKnhpbU4ZVdueaXPbcVOBz4cWQuLwuQP5Z0tjezd9rqT1oBx/yvMTPbTB7DcVskbJYFyEmS3mNm3SYK99VlBGursakKcItxFaqg8QQAZD4l4XbyDMF7I3N5WS3mo5Le4c3sbdsLJeRJL2WvNXUOzKfxOb+x6yosULfGYJ9eFECUSeqY2Y+AI8jTBsvYQSyyg/ylpGO9DNJp00FNgIdKPDyc6r19Z8KsZsl7Z2DfChTk0aa0geArMbOrgGOiYGaVaQDlgfVpSQcDW9omc9xfgeTuR54NVjcreSqwR4XTcHeNMpXNApCLvB0kLSSfDzvfMa/iPqOGhK5a2covGD4eICB+PXBoxfoXjy8mA38QkV0rQVp/1sdL2hQF+VvgAxUE1GBOeFJELa0t4LihIo872vN31VWw3At8ZSYcTtxNI7KVBBnkdOCMCjYQo7lcm0pk/IqSpCwg/jBJTwNcFa+j1wScpIOA/xglCFMiofj7NYLD5ohwDwB5P/DXHiDdsk0o26bKXgv8skTd/sBaJoAzg3ZQxmfgv+N8gtAnyROKVZKl/BS4w7Mnjaiva1Bz3wFc6GWI3iL3arvEzB4EvuUXMiuhrzvglZL+l5ll/vTPK/rad1nqeDXOgM8Bz45qRJTxSl5mZluBdFRdowNb9XN+A3BlBRbTOgvpZ0vUrijGLZwo6dOSVptZz5cd6gxoR5X6kyYv2G0gL2f4Wr+gSUnDEsAFC+GbCQA3syngNV7uWdQACZbEK8h9BlbR4vcm4FpJx0ia8CDJzMwV7szbRnaW9Cbgar+gvZKGoKDVXA1cGdjUqMmzp5qpmd3njWS3V/DDLPTlOp78diV9GjizwqIGgDzDU6JTJF0AXEfui3jYU4Qnkge/HAK8lLwkU9jgqj6GTdEGuQXqLR/kj1skvRz4hldR3WLzZXW8MJWQB7QcDTyrwkRiX8MzIqOOI7dapuRxlf1OfVohYiwFvmJmlzZZ9a8EQG6W9FLgMg+QbDElOyVemDIzmwZOqKG+RRKF1fUioK3zwAiCb/i/tMKJChrNJPCeWTQULRBAOmZ2C/B6ch9Wk7nJVrPHPVc7I6R/Fzg1Cm2rKux2InuIos1Mo/+r4mgKwut/N7OferC3JlOu4Ic52h+K1hm75uMWD7z6g8CXvK7erRHVdRt5Mj/Gs8zsb9vATuYAyIXAWyr4YRYOHJ69hMjoY4FLI4C0aSKKhNdzzew93jLrGjIIWU0AGTOzzwDvWSQASZJ+BU+8EenVwHkeINYSdSwWXk8zs7cEYIzK4FUBIF1PQc4CTq4QKLRwYYIh2MbMps3sGODd5EEtaZ8a3KOs8hPKGvwKOM7MNi0WYPShIGcCGwcU1G13DGnoK+8DeT4G/D5wSaRZKBKumgREVhBuLwaeZ2af9acwmycw2gSeIIP8OfDxBv0wVQ/x4OzvyF+QmtmN5P6TY4GTvC0kjQbhopriVrE8ZFG9deSWz3PM7AuRB7dXwsQ/DJ93TWgW/uAF7fBdktYB/8VTkKQiq+33f8PGxIR5W2ee+nriG758FvispEOBPyGPxN69qPXMo9Wd+gTjJAX/zh1eKP47M7s6Cvuz+WolobWEX/i0RA11aCB0zwMkaIf/VVIPeBvlLdMA9xXef6zEnOPnTVqJmIss+vfu5FlcLwaeSx7et67kJB8FfgJ8x7Ow75nZlriD0bCqqmeLTtIhwJ+RhxcUQaiI+rkI4GPkzrOTzWwqAlrdnZkCWD4G/J5nMUVjnisconi8q8jDFDaa2X3hIJP3z/kwcEDBmakBVNGimJjHgDOsbGBOoWVFeP/JwNPJ/SX7ktcK38UvdOp/vEueIPQgeUOfe8h9LzeZ2W19fkdtMmw11YintWUOKkRpxycwqzrJKBa1bET3IBKeDBBMra7yCzXMPS2Z4qBZzPJJhZydbRqJq5FM9msRpVlC4hQ1sdOoTmfdFtWYRSwE9fGymKuze5QVQvU0h9NGc/RBtnn0SrZ5Ptf6CK7z6cFsRdvCHKc1nWV8GqAaFjUzM7PJFrCodB49t5PZ1isYPM2sZ5JOIQ9tswH2Dyts4LDgmG1gdYFjNhXwYeAYM7u1cAA2RvO2OdIYNAs4QteqHwGv8x7ikVCQaD7rgc/PEjeiPtrIbGw1A05D0mYt/et4v5hj/nWnhub9NhpsFDhIMZD0iQbmclXHq5AbSkR7L4YrGyCUpV5dczVFaIVnnCLpPODRprWQKGL/acBbIxXYaprLZCcKzlmK4NAAI5AVrLBVwREssPsCbzWzs/ypzpp11ZiT9AFv66izpHaynIq32CwqeJ2/IeCdknbxp9qaYifecn0QcGTkcmC5lH2i5vZbjMCJmZEHUL/ds5Smf/cD3sDomqD6ywUcNuIaayd510LtDQIjqvEi8pgb11RloDZ2TRgFOJqK4wyWyg3Au6JMvjqNXSGz7vSmwxGKwb9L8Xbk3a1HAY5Y9jje+5rqpB7Bmn0keQNC1yDr6iVRGGBSMAgthTtZANYZqMfOwPtD6keNVGMCOI0RJTXdCOxV0JPdPKKo1AC/nyszXnOZywuWSyP3+F4+4gY/AZDHSjoLuLkGX07qwwz/mNzz3XiClPlIpKdEoWpFcLgK4ChjlNE8kpgGmeytAI4EuMvMHijETqwHfkgeUtBUmmLYvC+a2eurODgjh+Yu5LVH9i5Rv2RYI9i3Oj6g5gdLWRoN1soRl5MOLvg/kvQc4JoK1CMU5fszD+hRpFVaJ0LlksXGAgbTBDXzHWZ2taSyVMNJ2oM8KWpkCdmdGut5LTbV1kZEPQQcIempwO0l2EugGieQe1+zEYHDdQpu7LbYIjQwOmmR5KjEsRHkcbWnmdlxw7C2yLn2G8CfjriMg+u0KD5TLL1+s7HscbSks4Hrh5A9gnPtVGDtCKlGzlYkfZC8tGM3IoNuQKCLBuR+2Dw1jNieEj+rGA2dFD6XkldaPsnMflpnaOMIgd8hj2Q/WvMQPiIz+bPISziMvPhLhzwWYPdFssifJw/Dr1rnoqqcNaxhK4k0l2cC/z4PgIfxnU5uqMxKlN60qsaah6PUQzfgzhb47vrXyRawmDKLblEuzMa5rKZRTdZDgMMWAhgx+Z7rTltyt4VF/BOP99fMh0o74ChJB8/RSjSkU3y4hKU5AONL5EnnpQ/TYnPZpzW54MuqsoHvnwf8M8N3dAxWzQ8O2rSo2N0rgecP6VwLbOou4L0VD9SiiQRTy9pcTQObSowpaC4vlPSCUPmwD9VIgfeXkI0C1TidvDnAmuXUxqst4FhvZteRO/SSEtTD/MnegXpEVOMNbK/kPAzVSIF/B871BrNeHe7l5RbuV1lb8casD5UocRCox8tj6hG55Hf2zy1b+/0Un8g1XvEw1dLLfpRBO65NHSPN7HLg6yWpB+QxoNui5D3VeCvDF7UNjrhLzOxrFNqPVQpBp75KgU0H7XRa2Er9byrIHi+W9CIPCufjTk8uQTXCZ8+k5qCUtKbyTN0B90x096K7+Llen7vrhT8H3Ap8t6agnaqOt06U2XYpeTPisrLHpqhzxDuB3UpQjQS40Mz+b5WeNwWqlnXYsQGgDUnG/oK8P0qx8Nl8cmVdH+Q/LvM+Mp/fZ2a/ijoUtEIGMrNpSZvI65WVoR6HAC+SdCN5BelhgBH2bKvXbmoV2jvkRVTKomuzb6O5XAudZN4Mfomkb/kKR8MG4gj4H75s05ohc1CChnKumd3UJ8tOVcHxQIUH7e0teaPoK9JGd31MbT/iwWElTAkHF4xkwxjUHgE+1kBnqq0xOMpcT/SqWLaUSzPNs6DeN4BvezZRhnoMGxMaqjh/3Mx+7uWWXhQvUhUoDyTkdSUoifj9Qz3QEcdnthAjJuB/luT7w+buBnbyc+ATfu2LwvBYRSPnvYnXAiipOu0P/HrLrJcLST3+uaTmUlbjOtnMHopao8T7sIs3hJW1Qt8ZKMeWIbtDBqSOA88PpSBZ3leoj/rhEdUcudLMvtin0FzY3L1KltYIn70tIW8b+ssSfCp89uXLNEj5caTeU4+vAv82Aupx2oBKhmFzf7Ok19iAKeDOxHdour6EcSkIXP9J0oZlIndoUBt0v0GhkO5ZDbHZIOhebGbf9Gp0NmCMB1SY373ALwIr+HZJuSMDnkCe2AuLqH9ZE95hry0k5G1Qv18z9QinehrYOOgg+kM6FqnHSQlw3GJmD4cvXlExi+p4b0p2y0RrsTlkjx55TEWd+THBcnqumd3Qr2VZZDp/JnkHTpUEx1Uxqm4h7ytbhrU4T8KO8oNNlkFSk+Yhe3yZvG1qHWERYV3vAj40S65RmNMfRf1xKGGi+G5oOtwxs25Fp5aA0yStjWIdFgs4rIHW5UXNpaqwHljKqWZ2L32qFQdbhy/RcFRJlpJ4YfT6YgzpP5WMDgsnY3/yehRuGckes1EPAy7y1KNKZcGgut4KfG6WbtvB1nGE3wtXkqX8FNgsyeIfuhy4uSQZDN/5U0m/FQlmbdY61KDBI9Zc/rwmSvcRM5uKrLGDCrtsrNjZ6TIvM6WJL02QepX2CyXJYCDNq4BPeWnZWsxeYnCooVjW2O5xXUnNJVDh7wOfmYNqOOAYL/+VSZsM2Y4XETcdjhbo/5BXNC6TshAmfzBwpj816XLNso+oRxf4y5K/F/bgff40z0Y1diZvOFQmoSmECfwQ+J4PjciSqCNkamZ3AP84TJ+RPujrefbyxtANcQmyFQ0R72Fenrt1SJYdx4V+fYDBC/IyGo48JmT/kjm1YT4XBJbyuHR/3xFyP0mTvkmdK1FQ3Unq+fvwuCB9Gyr8+Nf1kn4uqStp2r/Odff8ZzPfCHFeBfCj4vXH+fWZ9s+a7bdm/OukpKdH5RgGPftwP65eyf1ykrb46od9fyv+sb/yX+yVrLgffvBRSS8cZSeBucDh7zWSflaho8DBBaPTXL+Z+N+8dcjf+etBvxPt1X6SfuXXOysxl65//Xzxt6zfyQL2JK8y+Gs1pA4+ChxhZt8KASkLDJC4KeCR5J7lTkRae32E1bAGE8C/mtn/HiZksfCbr40qNxb9NGkU9P2Qt5M8XHSuReUZdiW3bj+zAjsJz32Omf3rrLVDIkSeWJF6KELyY5L+c3j+cgwMqmvO0f6sl3RFxT0K3/tSP3ZiAyYRPnQleTfqKppHQHQPeKeZnRMGsZChhX4MSclY1mxEv5kVKEYIBdyT3Dz/7Ap7E6hGj7xl6Y3z6hMXNk/Sf5C0tYJwWpRBJOnjfRxFK9fcwAq5Mr8r6Sc1UPUga3xy6L2IyNd7Cw+rApAwmYs8+pHUWebxp3PuQ7QXR0p6pAZgBOH1Xkm7B0F9WMk+9a+X1zCgImJvk/Ty+GSsgOTx6x/9+519ZIWqe3BCaQoe2T72lnRzQciscvUiBJ8tae8VVtM3LgNJvy/pK33Yc9W1vyxSs62qdHyAt1tkNQEkfsY9ko6PfsuWI0hiTU7SOkkfjdapV9OaO7/eewZw1CUMvTEiS071XLEs8z1JrypQriWv+vo5JtG/XyvpRzWykUB1wr69olYqHQHk3Q0AxBUW4GJJLxh0qpaSTBHPSdJLJX2zAIq6D+HGRizWEUA2NjB49WFZl0h6WWEBFy01iQCRFt5/iaSvzrIOdQHjy40etEguOKUhgPQjo9dIenssuMZqXpuBEgl9RUDsJukdkq6aY+51AeNK799JGl2viIKcVBB01ABI4uc+IOk8Sa+QtKaPZtXxr0kbwNAHEKmkQySdI+nuWdhq3cC4yVcNYpi1sQp+gtBW6r8B5xRiEGigb0mxT+vN5LmpX/POsF8NcANYXFusrjIO0enboVtUn8DfDvAs8krERwAH9Skf1cSa9cgdij8EDjOzO4etGW9VKYgHyHHk0U47R4NqKkjH9clKv4c81+Kb5InMvzSzu+bp41CJdh9uEMh8W7QnkXtKX0geGXdAnzkkDUajhT34HvBqM9tcpktUHV0LA0B+B/gi8DTyElCdhkPxXBQSVySVDwM3keesfh/4CXnR1s0+bK8u2WsDeVutfTx1OMiD4sl95p411Ca93+FJgQuBN5jZVNkuE3W5kQNA9gA+B7y0ZEGSqovCLCfyEfLSSncBdwJ3+/t+8piTSfKcDVeofLQG2NXfG8jbke/pAbAneTFYGwBeV2jJSsOHJYmqDL3XB4+Xbj9iDQTRJOSpgO8tkLhRx4jGPWLShjcnK3SnHLVAHNZ4BniLmf193A2TNpSLDml6HrGHAX9FXtzFtaCcdrHo7TCR6IO+00jWXElB/XbgzWZ2uReCs6rCtzWl6no2swH4GHBcIXtrxftaH7UA+HvyKj/31hmKaU36C4J0LOnV5NV1f6NhlXc5XPEB+5mXLf6huOat70IQbA0+GHa9l0NOBFYPsF2sXLODIpZnziFPrH4wlH6quxSnjcrrGFGRpwOnsj0TXEO2jlhuV1Fe+wawycy+0wS1WJD+JTEV8f8+DHgbcHiBj6YrMklfY9/lwCfM7CuRncU1WbjXFijqe1vkuU96OsmDxCKQlI0OXwqgiKnoFcBZoVVGaC8/ish9Y2FD4RSB5Dm+V/tryJOpYlVtKWs4KjQACPLFpcAnzezifpSX5dAWqw9I9gbeDBxNXteq6KRaCkCJjXQxlbgXuIC87tf1/WQ2lmHPtMBuLJJJVpOb4V8HvIK8Im8/03SyyAChgsW4B1wNfAa4KHiXi+vBMm6oN1Bw9e/t44FyOLmXc8OAzklFy2VbwGAFCpGRe0wvBi711QH7UlJWui0OBklxoXzy8MHAy4CXAL89i9OraOK2hmt9uLiTU+G6n9xLfCnwdTP7cTE+pg6T97IARz+WE4qwFgJpfgc4lDx24kByb2k6hJ9kPj1r+31mLrA9AvyAvOTT5cBVZnbPbPIWK31aa6MoFPmxl1P2AZ5OXvv7QHKT/V6eFa1uYEiPeKpwJ3ADeaOB64GbfVnIfkFGbjH0p7ElUNZgWyjgIOFN0hOAPYB1HiS7eQF3vX8NwFlTaInuyAOHtpDXywj3Zg+IR/y/7zGzLbPE26rNFGLQ9f8BNL5rq+kW5/YAAAAASUVORK5CYII=" alt="UNIFM"><div class="brand"><h1>Custo Certo</h1><p>CMV e CMO para restaurantes · calcule, compare e ajuste preços</p></div></div>
+    <div class="hstats" aria-label="Resumo do mês">
+      <div class="hs"><b id="hCmv">–</b><span>CMV do mês</span></div>
+      <div class="hs"><b id="hCmo">–</b><span>CMO do mês</span></div>
+      <div class="hs"><b id="hPrime">–</b><span>CMV + CMO</span></div>
+    </div>
+    <nav class="tabs" role="tablist" aria-label="Seções">
+      <button class="tab" role="tab" aria-selected="true" data-tab="sim">Simulação rápida</button>
+      <button class="tab" role="tab" aria-selected="false" data-tab="mes">CMV do mês</button>
+      <button class="tab" role="tab" aria-selected="false" data-tab="ficha">Ficha técnica</button>
+      <button class="tab" role="tab" aria-selected="false" data-tab="cardapio">Cardápio</button>
+      <button class="tab" role="tab" aria-selected="false" data-tab="cmo">Mão de obra (CMO)</button>
+    </nav>
+  </div>
+</header>
+
+<main class="pad"><div class="in">
+
+<!-- ===== SIMULAÇÃO RÁPIDA ===== -->
+<section id="v-sim">
+  <div class="row between"><h2 class="sec">Simulação rápida</h2><span class="hint">Ex.: “faturo 150 mil, tenho CMV de 40%, quanto ganho se reduzir 2%?”</span></div>
+  <div class="cols">
+    <div class="card stack">
+      <h3 class="st">Sua pergunta</h3>
+      <div class="field"><label class="lbl" for="qFat">Se eu faturo</label><div class="money"><input class="f num mny" id="qFat" inputmode="decimal"></div></div>
+      <div class="g2">
+        <div class="field"><label class="lbl" for="qCmv">e tenho CMV de</label><div class="pct"><input class="f num" id="qCmv" inputmode="decimal"></div></div>
+        <div class="field"><label class="lbl" for="qRed">quanto fica se eu diminuir</label><div class="pct"><input class="f num" id="qRed" inputmode="decimal"></div></div>
+      </div>
+      <div class="sim" style="gap:6px">
+        <span class="lbl">Como ler a redução</span>
+        <label class="row" style="gap:8px"><input type="radio" name="qModo" id="qModoP" value="p"> <span><b>Pontos percentuais</b> · 40% vira 38% (mais comum)</span></label>
+        <label class="row" style="gap:8px"><input type="radio" name="qModo" id="qModoR" value="r"> <span><b>Do próprio CMV</b> · 40% menos 2% dele vira 39,2%</span></label>
+      </div>
+      <div class="formula" id="qFrase">–</div>
+    </div>
+    <div class="res">
+      <div class="resh"><small>Sua economia com a redução</small><div class="duo"><div><span>No mês</span><div class="big" id="qEco">–</div></div><div class="yr"><span>No ano (12 meses)</span><div class="big" id="qAno">–</div></div></div></div>
+      <div class="resb">
+        <div class="lines">
+          <div class="ln"><span>CMV hoje</span><b id="qAt">–</b></div>
+          <div class="ln"><span>CMV depois da redução</span><b id="qNv">–</b></div>
+          <div class="ln tot"><span>Economia no mês</span><b id="qEc2">–</b></div>
+          <div class="ln tot"><span>Economia no ano</span><b id="qEa">–</b></div>
+          <div class="ln"><span>Lucro bruto passa de</span><b id="qLb">–</b></div>
+          <div class="ln"><span>Cada 1 ponto de CMV vale</span><b id="qPt">–</b></div>
+        </div>
+        <div class="note ok" id="qOutro"></div>
+        <button class="btn sm" type="button" id="qUsar">Levar estes valores para a aba CMV do mês</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CMV DO MÊS ===== -->
+<section id="v-mes" hidden>
+  <div class="row between"><h2 class="sec">CMV do mês</h2><div class="row"><span class="ex" id="exMes">Valores de exemplo</span><button class="btn sm" id="clrMes" type="button">Limpar valores</button></div></div>
+  <details class="help"><summary>Como usar</summary><ol>
+    <li>Digite o <b>faturamento</b> do mês (o que entrou com vendas).</li>
+    <li>Preencha o <b>estoque inicial</b> (contagem do 1º dia), as <b>compras</b> de insumos do mês e o <b>estoque final</b> (contagem do último dia).</li>
+    <li>O CMV aparece na hora. Use o simulador para ver quanto sobra se o CMV cair.</li>
+  </ol></details>
+  <div class="cols">
+    <div class="stack">
+      <div class="card stack">
+        <h3 class="st">Vendas e meta</h3>
+        <div class="g2">
+          <div class="field"><label class="lbl" for="mFat">Faturamento do mês</label><div class="money"><input class="f num mny" id="mFat" inputmode="decimal"></div></div>
+          <div class="field"><label class="lbl" for="mMeta">Meta de CMV</label><div class="pct"><input class="f num" id="mMeta" inputmode="decimal"></div><span class="hint">Restaurantes costumam mirar entre 28% e 35%.</span></div>
+        </div>
+      </div>
+      <div class="card stack">
+        <h3 class="st">Insumos do mês</h3>
+        <div class="eq">
+          <div class="field"><label class="lbl" for="mEi">Estoque inicial</label><div class="money"><input class="f num mny" id="mEi" inputmode="decimal"></div></div>
+          <div class="op" aria-hidden="true">+</div>
+          <div class="field"><label class="lbl" for="mComp">Compras do mês</label><div class="money"><input class="f num mny" id="mComp" inputmode="decimal"></div></div>
+          <div class="op" aria-hidden="true">−</div>
+          <div class="field"><label class="lbl" for="mEf">Estoque final</label><div class="money"><input class="f num mny" id="mEf" inputmode="decimal"></div></div>
+        </div>
+        <div class="formula"><b>CMV</b> = estoque inicial + compras − estoque final &nbsp;·&nbsp; <b>CMV %</b> = CMV ÷ faturamento × 100</div>
+        <span class="hint">Sem contagem de estoque? Deixe os estoques em zero: o cálculo usa só as compras (fica menos preciso).</span>
+      </div>
+    </div>
+    <div class="stack">
+      <div class="res">
+        <div class="resh"><small>CMV do mês</small><div class="big" id="rPct">–</div><div id="rVal" style="margin-top:4px;font-weight:600">–</div></div>
+        <div class="resb">
+          <div class="row between"><span id="rChip" class="chip idle">Preencha os valores</span><span class="hint" id="rMetaTxt"></span></div>
+          <div class="gauge" aria-hidden="true"><div class="gbar" id="gBar"></div><div class="gmeta" id="gMeta"></div><div class="gmark" id="gMark"><span id="gLab">0%</span><i></i></div></div>
+          <div class="gscale"><span>0%</span><span>15%</span><span>30%</span><span>45%</span><span>60%</span></div>
+          <div class="lines">
+            <div class="ln"><span>Faturamento</span><b id="lFat">–</b></div>
+            <div class="ln"><span>(−) CMV</span><b id="lCmv">–</b></div>
+            <div class="ln tot"><span>Lucro bruto</span><b id="lLb">–</b></div>
+            <div class="ln"><span>Margem bruta</span><b id="lMb">–</b></div>
+            <div class="ln"><span>Cada 1 ponto de CMV vale</span><b id="lPt">–</b></div>
+          </div>
+        </div>
+      </div>
+      <div class="sim">
+        <div class="row between"><h3 class="st">Simulador de redução</h3><b id="sRedTxt" style="font-family:var(--f-disp);font-size:18px">3 pontos</b></div>
+        <input type="range" id="sRed" min="0" max="10" step="0.5" aria-label="Pontos de redução do CMV">
+        <div class="simv">
+          <div><small>CMV passaria para</small><b id="sNovo">–</b></div>
+          <div class="gain"><small>Economia por mês</small><b id="sMes">–</b></div>
+          <div class="gain"><small>Economia por ano</small><b id="sAno">–</b></div>
+        </div>
+        <span class="hint" id="sMetaTxt"></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FICHA TÉCNICA ===== -->
+<section id="v-ficha" hidden>
+  <div class="row between"><h2 class="sec">Ficha técnica do prato</h2><div class="row"><button class="btn sm" id="fNovo" type="button">Novo prato</button><button class="btn sm grn" id="fSalvar" type="button">Salvar no cardápio</button></div></div>
+  <details class="help"><summary>Como usar</summary><ol>
+    <li>Dê um nome ao prato, diga quantas porções a receita rende e o preço de venda.</li>
+    <li>Para cada ingrediente, informe <b>quanto pagou</b> e o <b>tamanho da embalagem</b>, depois <b>quanto vai na receita</b>. O custo é calculado sozinho.</li>
+    <li>Use <b>Perda</b> para itens com descarte (casca, aparas, encolhimento). Inclua embalagem e descartáveis.</li>
+    <li>Veja o CMV do prato e o preço sugerido para bater a meta. Salve no cardápio.</li>
+  </ol></details>
+  <div class="card stack" style="margin-top:14px">
+    <div class="g2">
+      <div class="field" style="grid-column:span 2;min-width:0"><label class="lbl" for="fNome">Nome do prato</label><input class="f" id="fNome" placeholder="Ex.: X-Burguer da Casa"></div>
+      <div class="field"><label class="lbl" for="fPorc">Rende (porções)</label><input class="f num" id="fPorc" inputmode="decimal"></div>
+      <div class="field"><label class="lbl" for="fPreco">Preço de venda (porção)</label><div class="money"><input class="f num mny" id="fPreco" inputmode="decimal"></div></div>
+    </div>
+  </div>
+  <div class="cols">
+    <div class="card ing">
+      <div class="row between" style="margin-bottom:10px"><h3 class="st">Ingredientes</h3><span class="hint">Unidades: kg, g, L, ml, un</span></div>
+      <div class="tblh"><div>Ingrediente</div><div>Preço pago</div><div>Embalagem</div><div>Usado na receita</div><div>Perda</div><div style="text-align:right">Custo</div><div></div></div>
+      <div class="tbody" id="ingList"></div>
+      <button class="addrow" id="addIng" type="button">+ Adicionar ingrediente</button>
+    </div>
+    <div class="res">
+      <div class="resh"><small id="fTit">CMV do prato</small><div class="big" id="fPct">–</div><div id="fPctSub" style="margin-top:4px;font-weight:600">–</div></div>
+      <div class="resb">
+        <div class="row between"><span id="fChip" class="chip idle">–</span><span class="hint" id="fMetaTxt"></span></div>
+        <div class="lines">
+          <div class="ln"><span>Custo da receita inteira</span><b id="fTot">–</b></div>
+          <div class="ln"><span>Custo por porção</span><b id="fCp">–</b></div>
+          <div class="ln"><span>Preço de venda</span><b id="fPv">–</b></div>
+          <div class="ln tot"><span>Sobra por porção (margem)</span><b id="fMc">–</b></div>
+        </div>
+        <div class="sim">
+          <h3 class="st">Preço sugerido</h3>
+          <div class="simv">
+            <div><small>Para CMV de <span id="fMetaLbl">32%</span></small><b id="fSug">–</b></div>
+            <div><small>Diferença do preço atual</small><b id="fDif">–</b></div>
+          </div>
+          <span class="hint">Preço sugerido = custo por porção ÷ meta de CMV. A meta é a mesma da aba CMV do mês.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CARDÁPIO ===== -->
+<section id="v-cardapio" hidden>
+  <div class="row between"><h2 class="sec">Cardápio</h2><span class="hint">Toque em um prato para abrir a ficha técnica</span></div>
+  <div class="kpis">
+    <div class="k"><small>Pratos com ficha</small><b id="cN">0</b></div>
+    <div class="k"><small>CMV médio do cardápio</small><b id="cMed">–</b></div>
+    <div class="k"><small>Acima da meta</small><b id="cAcima" style="color:var(--bad)">0</b></div>
+    <div class="k"><small>Maior sobra por porção</small><b id="cTop" style="font-size:18px">–</b></div>
+  </div>
+  <div class="card" style="padding:6px 8px" id="cWrap"></div>
+</section>
+
+<!-- ===== CMO ===== -->
+<section id="v-cmo" hidden>
+  <div class="row between"><h2 class="sec">Mão de obra (CMO)</h2><div class="row"><span class="ex" id="exCmo">Valores de exemplo</span><button class="btn sm" id="clrCmo" type="button">Limpar equipe</button></div></div>
+  <details class="help"><summary>Como usar</summary><ol>
+    <li>Liste cada função da equipe, quantas pessoas, o salário base e os benefícios por pessoa (vale-transporte, refeição, etc.).</li>
+    <li>Ajuste o <b>percentual de encargos</b> (INSS, FGTS, férias, 13º). Confirme o seu com o contador: muda conforme o regime da empresa.</li>
+    <li>Some freelancers, diárias e pró-labore. O CMO é comparado com o faturamento da aba CMV do mês.</li>
+  </ol></details>
+  <div class="cols">
+    <div class="stack">
+      <div class="card eqp">
+        <div class="row between" style="margin-bottom:10px"><h3 class="st">Equipe fixa</h3></div>
+        <div class="tblh"><div>Função</div><div>Pessoas</div><div>Salário base</div><div>Benefícios/pessoa</div><div style="text-align:right">Custo total</div><div></div></div>
+        <div class="tbody" id="eqList"></div>
+        <button class="addrow" id="addEq" type="button">+ Adicionar função</button>
+      </div>
+      <div class="card stack">
+        <h3 class="st">Encargos e extras</h3>
+        <div class="g2">
+          <div class="field"><label class="lbl" for="oEnc">Encargos sobre salário</label><div class="pct"><input class="f num" id="oEnc" inputmode="decimal"></div><span class="hint">Referência comum: 35% a 80%.</span></div>
+          <div class="field"><label class="lbl" for="oExt">Freelancers e diárias no mês</label><div class="money"><input class="f num mny" id="oExt" inputmode="decimal"></div></div>
+          <div class="field"><label class="lbl" for="oPro">Pró-labore dos sócios</label><div class="money"><input class="f num mny" id="oPro" inputmode="decimal"></div></div>
+          <div class="field"><label class="lbl" for="oMeta">Meta de CMO</label><div class="pct"><input class="f num" id="oMeta" inputmode="decimal"></div><span class="hint">Restaurantes costumam mirar entre 20% e 30%.</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="stack">
+      <div class="res">
+        <div class="resh"><small>CMO do mês</small><div class="big" id="oPct">–</div><div id="oVal" style="margin-top:4px;font-weight:600">–</div></div>
+        <div class="resb">
+          <div class="row between"><span id="oChip" class="chip idle">–</span><span class="hint" id="oMetaTxt"></span></div>
+          <div class="lines">
+            <div class="ln"><span>Salários</span><b id="oSal">–</b></div>
+            <div class="ln"><span>Encargos</span><b id="oEncV">–</b></div>
+            <div class="ln"><span>Benefícios</span><b id="oBen">–</b></div>
+            <div class="ln"><span>Freelancers e pró-labore</span><b id="oExV">–</b></div>
+            <div class="ln tot"><span>CMO total</span><b id="oTot">–</b></div>
+            <div class="ln"><span>Faturamento do mês</span><b id="oFat">–</b></div>
+            <div class="ln"><span>Pessoas na equipe</span><b id="oPes">–</b></div>
+          </div>
+        </div>
+      </div>
+      <div class="res">
+        <div class="resh"><small>CMV + CMO (custo principal)</small><div class="big" id="pPct">–</div><div id="pVal" style="margin-top:4px;font-weight:600">–</div></div>
+        <div class="resb">
+          <span id="pChip" class="chip idle">–</span>
+          <span class="hint">Somados, CMV e CMO costumam ficar abaixo de 60% a 65% do faturamento num restaurante saudável. O que sobra paga aluguel, contas, impostos e o lucro.</span>
+          <div class="lines">
+            <div class="ln"><span>CMV</span><b id="pCmv">–</b></div>
+            <div class="ln"><span>CMO</span><b id="pCmo">–</b></div>
+            <div class="ln tot"><span>Sobra para as demais despesas</span><b id="pSob">–</b></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>Os dados ficam salvos neste navegador. UNIFM · Universidade Fastfood Milionário</footer>
+</div></main>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(function(){
+const $=id=>document.getElementById(id);
+const KEY='custocerto-v1';
+const UN={kg:['m',1000],g:['m',1],l:['v',1000],ml:['v',1],un:['u',1]};
+const ULAB={kg:'kg',g:'g',l:'L',ml:'ml',un:'un'};
+let uidc=0;const uid=()=>'i'+Date.now().toString(36)+(uidc++);
+
+function num(v){ if(v==null)return 0; let s=String(v).replace(/[R$\s%]/g,''); if(!s)return 0; if(s.includes(',')) s=s.replace(/\./g,'').replace(',','.'); else if(/^\d{1,3}(\.\d{3})+$/.test(s)) s=s.replace(/\./g,''); const n=parseFloat(s); return isFinite(n)?n:0; }
+/* máscara de dinheiro: separa milhares com ponto enquanto digita; vírgula para centavos */
+function maskMoney(v){let s=v.replace(/[^\d,]/g,'');const i=s.indexOf(',');let int=i>=0?s.slice(0,i):s;const dec=i>=0?s.slice(i+1).replace(/,/g,'').slice(0,2):null;int=int.replace(/^0+(?=\d)/,'');const intF=int?int.replace(/\B(?=(\d{3})+(?!\d))/g,'.'):(dec!==null?'0':'');return dec!==null?intF+','+dec:intF;}
+document.addEventListener('input',e=>{const el=e.target;if(!el.classList||!el.classList.contains('mny'))return;
+ let v=el.value,pos=el.selectionStart??v.length;
+ if(e.data==='.'&&!v.slice(0,pos-1).includes(',')&&!v.slice(pos).includes(','))v=v.slice(0,pos-1)+','+v.slice(pos);
+ const keep=v.slice(0,pos).replace(/[^\d,]/g,'').length;const nv=maskMoney(v);if(nv===el.value)return;el.value=nv;
+ let c=0,p=0;while(p<nv.length&&c<keep){if(/[\d,]/.test(nv[p]))c++;p++;}try{el.setSelectionRange(p,p);}catch(err){}
+},true);
+const brl=n=>(isFinite(n)?n:0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const fmt2=n=>(isFinite(n)?n:0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+const pc=(n,d=1)=>isFinite(n)?n.toLocaleString('pt-BR',{minimumFractionDigits:d,maximumFractionDigits:d})+'%':'–';
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+const ing=(n,p,eq,eu,uq,uu,pe)=>({id:uid(),n,p,eq,eu,uq,uu,pe:pe||'0'});
+function examples(){return [
+ {id:uid(),ex:true,nome:'X-Burguer da Casa',porc:'1',preco:'32,90',itens:[
+  ing('Pão brioche','6,90','6','un','1','un'),ing('Blend bovino','42,00','1','kg','160','g'),ing('Queijo cheddar','48,00','1','kg','40','g'),
+  ing('Bacon','39,90','1','kg','30','g','30'),ing('Alface e tomate','9,90','1','kg','40','g','15'),ing('Molho da casa','18,00','1','kg','25','g'),
+  ing('Embalagem e guardanapo','45,00','100','un','1','un')]},
+ {id:uid(),ex:true,nome:'Pizza Margherita (8 fatias)',porc:'1',preco:'59,90',itens:[
+  ing('Farinha de trigo','5,50','1','kg','300','g'),ing('Mussarela','38,00','1','kg','250','g'),ing('Molho de tomate','12,00','1','kg','120','g'),
+  ing('Tomate','8,00','1','kg','100','g','10'),ing('Manjericão (maço)','4,00','1','un','0,5','un'),ing('Azeite','45,00','1','l','15','ml'),
+  ing('Caixa de pizza','120,00','50','un','1','un')]},
+ {id:uid(),ex:true,nome:'Batata frita (porção)',porc:'1',preco:'24,90',itens:[
+  ing('Batata congelada','22,00','1','kg','300','g'),ing('Óleo de fritura','9,50','1','l','50','ml'),ing('Embalagem','30,00','50','un','1','un')]}
+];}
+function blank(){return {id:uid(),nome:'',porc:'1',preco:'',itens:[ing('','','1','kg','','g')]};}
+function defaults(){const p=examples();return{
+  tab:'sim',meta:'32',q:{fat:'150.000,00',cmv:'40',red:'2',modo:'p'},
+  mes:{fat:'140.000,00',ei:'18.000,00',comp:'52.000,00',ef:'14.000,00',ex:true},red:3,
+  pratos:p,ficha:JSON.parse(JSON.stringify(p[0])),
+  cmo:{ex:true,enc:'40',ext:'2.500,00',pro:'0,00',meta:'25',eq:[
+    {id:uid(),n:'Cozinheiro(a)',q:'2',s:'2.400,00',b:'450,00'},{id:uid(),n:'Auxiliar de cozinha',q:'2',s:'1.800,00',b:'450,00'},
+    {id:uid(),n:'Atendente',q:'3',s:'1.700,00',b:'450,00'},{id:uid(),n:'Caixa',q:'1',s:'1.800,00',b:'450,00'},{id:uid(),n:'Gerente',q:'1',s:'4.000,00',b:'450,00'}]}
+};}
+let S;
+try{S=JSON.parse(localStorage.getItem(KEY)||'null');}catch(e){S=null;}
+if(!S||!S.mes||!S.cmo)S=defaults();
+if(!S.q)S.q={fat:'150.000,00',cmv:'40',red:'2',modo:'p'};
+let saveT;function save(){clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}},250);}
+function toast(t){const el=$('toast');el.textContent=t;el.hidden=false;clearTimeout(el._t);el._t=setTimeout(()=>el.hidden=true,2200);}
+
+function status(v,meta,margin){ if(!isFinite(v)||v<=0)return['idle','Preencha os valores']; if(v<=meta)return['ok','Dentro da meta']; if(v<=meta+margin)return['warn','Atenção: um pouco acima']; return['bad','Acima da meta']; }
+function setChip(el,st){el.className='chip '+st[0];el.textContent=st[1];}
+
+/* ---------- abas ---------- */
+document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
+function showTab(t){S.tab=t;document.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===t?'true':'false'));
+ ['sim','mes','ficha','cardapio','cmo'].forEach(x=>$('v-'+x).hidden=x!==t); if(t==='cardapio')renderCardapio(); save();}
+
+/* ---------- formatação de dinheiro ao sair do campo ---------- */
+document.addEventListener('focusout',e=>{const el=e.target; if(el.classList&&el.classList.contains('mny')&&el.value.trim()!==''){el.value=fmt2(num(el.value)); el.dispatchEvent(new Event('input',{bubbles:true}));}});
+
+/* ---------- CMV DO MÊS ---------- */
+const mF={mFat:'fat',mEi:'ei',mComp:'comp',mEf:'ef'};
+function loadMes(){for(const id in mF)$(id).value=S.mes[mF[id]]||'';$('mMeta').value=S.meta;$('sRed').value=S.red;$('exMes').hidden=!S.mes.ex;}
+for(const id in mF)$(id).addEventListener('input',()=>{S.mes[mF[id]]=$(id).value;S.mes.ex=false;$('exMes').hidden=true;calcMes();save();});
+$('mMeta').addEventListener('input',()=>{S.meta=$('mMeta').value;calcAll();save();});
+$('sRed').addEventListener('input',()=>{S.red=num($('sRed').value);calcMes();save();});
+$('clrMes').addEventListener('click',()=>{S.mes={fat:'',ei:'',comp:'',ef:'',ex:false};loadMes();calcAll();save();$('mFat').focus();});
+
+function mesVals(){const fat=num(S.mes.fat),cmv=num(S.mes.ei)+num(S.mes.comp)-num(S.mes.ef);return{fat,cmv,pct:fat>0?cmv/fat*100:NaN};}
+function calcMes(){
+ const meta=num(S.meta)||0,{fat,cmv,pct}=mesVals();
+ $('rPct').innerHTML=isFinite(pct)?pc(pct).replace('%','<em>%</em>'):'–';
+ $('rVal').textContent=fat>0?brl(cmv)+' de '+brl(fat):'Informe o faturamento';
+ setChip($('rChip'),status(pct,meta,5));
+ $('rMetaTxt').textContent='Meta: '+pc(meta,0);
+ const mx=60,cl=v=>Math.max(0,Math.min(100,v/mx*100));
+ const a=cl(meta),b=cl(meta+5);
+ $('gBar').style.background=`linear-gradient(90deg,var(--zok) 0 ${a}%,var(--zwarn) ${a}% ${b}%,var(--zbad) ${b}% 100%)`;
+ $('gMeta').style.left=a+'%';
+ $('gMark').style.left=cl(isFinite(pct)?pct:0)+'%';$('gLab').textContent=isFinite(pct)?pc(pct):'0%';
+ $('lFat').textContent=brl(fat);$('lCmv').textContent=brl(cmv);$('lLb').textContent=brl(fat-cmv);
+ $('lMb').textContent=fat>0?pc((fat-cmv)/fat*100):'–';$('lPt').textContent=brl(fat/100);
+ const r=num(S.red);$('sRedTxt').textContent=fmt2(r).replace(',00','')+(r===1?' ponto':' pontos');
+ $('sNovo').textContent=isFinite(pct)?pc(Math.max(0,pct-r)):'–';
+ $('sMes').textContent=brl(fat*r/100);$('sAno').textContent=brl(fat*r/100*12);
+ if(isFinite(pct)&&pct>meta){const g=fat*(pct-meta)/100;$('sMetaTxt').textContent=`Chegando na meta de ${pc(meta,0)}, a economia seria de ${brl(g)} por mês (${brl(g*12)} por ano).`;}
+ else $('sMetaTxt').textContent=isFinite(pct)?'O CMV já está dentro da meta.':'';
+ head();
+}
+
+/* ---------- FICHA TÉCNICA ---------- */
+function unitOpts(sel){return Object.keys(UN).map(u=>`<option value="${u}"${u===sel?' selected':''}>${ULAB[u]}</option>`).join('');}
+function ingCost(it){
+ const p=num(it.p),eq=num(it.eq),uq=num(it.uq),pe=Math.min(95,Math.max(0,num(it.pe)));
+ if(!uq||!p)return{v:0};
+ if(!eq)return{err:'Informe a embalagem'};
+ const a=UN[it.eu],b=UN[it.uu]; if(!a||!b||a[0]!==b[0])return{err:'Unidades não combinam'};
+ return{v:p/(eq*a[1])*(uq*b[1])/(1-pe/100)};
+}
+function renderIng(){
+ $('ingList').innerHTML=S.ficha.itens.map(it=>`<div class="tr" data-id="${it.id}">
+  <div class="wide" data-l="Ingrediente"><input class="f" data-k="n" value="${esc(it.n)}" placeholder="Ex.: Queijo" aria-label="Ingrediente"></div>
+  <div data-l="Preço pago"><div class="money"><input class="f num mny" data-k="p" value="${esc(it.p)}" inputmode="decimal" aria-label="Preço pago"></div></div>
+  <div data-l="Embalagem"><div class="qu"><input class="f num" data-k="eq" value="${esc(it.eq)}" inputmode="decimal" aria-label="Tamanho da embalagem"><select class="f" data-k="eu" aria-label="Unidade da embalagem">${unitOpts(it.eu)}</select></div></div>
+  <div data-l="Usado na receita"><div class="qu"><input class="f num" data-k="uq" value="${esc(it.uq)}" inputmode="decimal" aria-label="Quantidade usada"><select class="f" data-k="uu" aria-label="Unidade usada">${unitOpts(it.uu)}</select></div></div>
+  <div data-l="Perda"><div class="pct"><input class="f num" data-k="pe" value="${esc(it.pe)}" inputmode="decimal" aria-label="Perda em porcentagem"></div></div>
+  <div data-l="Custo"><div class="cost" data-cost></div></div>
+  <button class="del" type="button" data-del aria-label="Remover ingrediente">×</button></div>`).join('');
+ calcFicha();
+}
+$('ingList').addEventListener('input',e=>{const k=e.target.dataset.k;if(!k)return;const id=e.target.closest('.tr').dataset.id;const it=S.ficha.itens.find(x=>x.id===id);if(it){it[k]=e.target.value;calcFicha();save();}});
+$('ingList').addEventListener('change',e=>{if(e.target.tagName==='SELECT'){const id=e.target.closest('.tr').dataset.id;const it=S.ficha.itens.find(x=>x.id===id);it[e.target.dataset.k]=e.target.value;calcFicha();save();}});
+$('ingList').addEventListener('click',e=>{if(!e.target.hasAttribute('data-del'))return;const id=e.target.closest('.tr').dataset.id;S.ficha.itens=S.ficha.itens.filter(x=>x.id!==id);if(!S.ficha.itens.length)S.ficha.itens.push(ing('','','1','kg','','g'));renderIng();save();});
+$('addIng').addEventListener('click',()=>{const last=S.ficha.itens[S.ficha.itens.length-1];S.ficha.itens.push(ing('','','1',last?last.eu:'kg','',last?last.uu:'g'));renderIng();save();const r=$('ingList').lastElementChild;r&&r.querySelector('input').focus();});
+[['fNome','nome'],['fPorc','porc'],['fPreco','preco']].forEach(([id,k])=>$(id).addEventListener('input',()=>{S.ficha[k]=$(id).value;calcFicha();save();}));
+function loadFicha(){$('fNome').value=S.ficha.nome;$('fPorc').value=S.ficha.porc;$('fPreco').value=S.ficha.preco;renderIng();}
+function pratoCalc(p){let tot=0;p.itens.forEach(it=>{const c=ingCost(it);if(c.v)tot+=c.v;});const por=num(p.porc)||1,cp=tot/por,pv=num(p.preco);return{tot,cp,pv,pct:pv>0?cp/pv*100:NaN};}
+function calcFicha(){
+ const meta=num(S.meta)||0;
+ document.querySelectorAll('#ingList .tr').forEach(r=>{const it=S.ficha.itens.find(x=>x.id===r.dataset.id);const c=ingCost(it),el=r.querySelector('[data-cost]');
+  if(c.err){el.className='cost err';el.textContent=c.err;}else{el.className='cost';el.textContent=c.v?brl(c.v):'–';}});
+ const {tot,cp,pv,pct}=pratoCalc(S.ficha);
+ $('fTit').textContent='CMV · '+(S.ficha.nome||'prato sem nome');
+ $('fPct').innerHTML=isFinite(pct)?pc(pct).replace('%','<em>%</em>'):'–';
+ $('fPctSub').textContent=pv>0?brl(cp)+' de custo em '+brl(pv):'Informe o preço de venda';
+ setChip($('fChip'),status(pct,meta,5));$('fMetaTxt').textContent='Meta: '+pc(meta,0);
+ $('fTot').textContent=brl(tot);$('fCp').textContent=brl(cp);$('fPv').textContent=pv?brl(pv):'–';$('fMc').textContent=pv?brl(pv-cp):'–';
+ $('fMetaLbl').textContent=pc(meta,0);
+ const sug=meta>0?cp/(meta/100):NaN;$('fSug').textContent=cp>0&&isFinite(sug)?brl(sug):'–';
+ const d=sug-pv;$('fDif').textContent=cp>0&&pv>0?(d>0?'+ ':'− ')+brl(Math.abs(d)):'–';
+ $('fDif').style.color=cp>0&&pv>0?(d>0?'var(--bad)':'var(--ok)'):'';
+}
+$('fNovo').addEventListener('click',()=>{S.ficha=blank();loadFicha();save();$('fNome').focus();});
+$('fSalvar').addEventListener('click',()=>{
+ if(!S.ficha.nome.trim()){toast('Dê um nome ao prato antes de salvar');$('fNome').focus();return;}
+ const copy=JSON.parse(JSON.stringify(S.ficha));delete copy.ex;const i=S.pratos.findIndex(p=>p.id===copy.id);
+ if(i>=0)S.pratos[i]=copy;else S.pratos.push(copy);S.ficha.ex=false;save();toast('Prato salvo no cardápio');
+});
+
+/* ---------- CARDÁPIO ---------- */
+function renderCardapio(){
+ const meta=num(S.meta)||0;
+ const rows=S.pratos.map(p=>({p,...pratoCalc(p)})).sort((a,b)=>(isFinite(b.pct)?b.pct:-1)-(isFinite(a.pct)?a.pct:-1));
+ $('cN').textContent=rows.length;
+ const val=rows.filter(r=>isFinite(r.pct));
+ const sv=val.reduce((s,r)=>s+r.pv,0),sc=val.reduce((s,r)=>s+r.cp,0);
+ $('cMed').textContent=sv>0?pc(sc/sv*100):'–';
+ $('cAcima').textContent=val.filter(r=>r.pct>meta).length;
+ const top=val.slice().sort((a,b)=>(b.pv-b.cp)-(a.pv-a.cp))[0];$('cTop').textContent=top?top.p.nome+' · '+brl(top.pv-top.cp):'–';
+ if(!rows.length){$('cWrap').innerHTML='<div class="empty"><b>Nenhum prato no cardápio</b>Monte uma ficha técnica e toque em “Salvar no cardápio”.</div>';return;}
+ $('cWrap').innerHTML=`<div class="tw"><table class="t"><thead><tr><th>Prato</th><th class="n">Custo/porção</th><th class="n">Preço</th><th class="n">Sobra</th><th>CMV</th><th>Situação</th><th></th></tr></thead><tbody>${rows.map(r=>{
+  const st=status(r.pct,meta,5),col=st[0]==='ok'?'var(--zok)':st[0]==='warn'?'var(--zwarn)':'var(--zbad)';
+  return `<tr class="click" data-id="${r.p.id}" tabindex="0"><td><b>${esc(r.p.nome)}</b>${r.p.ex?' <span class="ex">exemplo</span>':''}</td><td class="n">${brl(r.cp)}</td><td class="n">${r.pv?brl(r.pv):'–'}</td><td class="n">${r.pv?brl(r.pv-r.cp):'–'}</td>
+  <td><b style="font-variant-numeric:tabular-nums">${pc(r.pct)}</b><div class="minibar"><i style="width:${Math.min(100,(r.pct||0)/60*100)}%;background:${col}"></i></div></td>
+  <td><span class="chip ${st[0]}">${st[1]}</span></td><td><button class="btn sm danger" type="button" data-rm="${r.p.id}">Excluir</button></td></tr>`;}).join('')}</tbody></table></div>`;
+}
+$('cWrap').addEventListener('click',e=>{
+ const rm=e.target.closest('[data-rm]');
+ if(rm){e.stopPropagation();if(!rm.classList.contains('arm')){rm.classList.add('arm');rm.textContent='Confirmar';setTimeout(()=>{if(rm.isConnected){rm.classList.remove('arm');rm.textContent='Excluir';}},3000);return;}
+  S.pratos=S.pratos.filter(p=>p.id!==rm.dataset.rm);save();renderCardapio();toast('Prato excluído');return;}
+ const tr=e.target.closest('tr.click');if(tr)openPrato(tr.dataset.id);
+});
+$('cWrap').addEventListener('keydown',e=>{if(e.key==='Enter'){const tr=e.target.closest('tr.click');if(tr)openPrato(tr.dataset.id);}});
+function openPrato(id){const p=S.pratos.find(x=>x.id===id);if(!p)return;S.ficha=JSON.parse(JSON.stringify(p));loadFicha();showTab('ficha');window.scrollTo(0,0);}
+
+/* ---------- CMO ---------- */
+function renderEq(){
+ $('eqList').innerHTML=S.cmo.eq.map(r=>`<div class="tr" data-id="${r.id}">
+  <div class="wide" data-l="Função"><input class="f" data-k="n" value="${esc(r.n)}" placeholder="Ex.: Cozinheiro(a)" aria-label="Função"></div>
+  <div data-l="Pessoas"><input class="f num" data-k="q" value="${esc(r.q)}" inputmode="decimal" aria-label="Número de pessoas"></div>
+  <div data-l="Salário base"><div class="money"><input class="f num mny" data-k="s" value="${esc(r.s)}" inputmode="decimal" aria-label="Salário base"></div></div>
+  <div data-l="Benefícios/pessoa"><div class="money"><input class="f num mny" data-k="b" value="${esc(r.b)}" inputmode="decimal" aria-label="Benefícios por pessoa"></div></div>
+  <div data-l="Custo total"><div class="cost" data-cost></div></div>
+  <button class="del" type="button" data-del aria-label="Remover função">×</button></div>`).join('');
+ calcCmo();
+}
+function eqCost(r){const q=num(r.q),s=num(r.s),b=num(r.b),enc=num(S.cmo.enc)/100;return{q,sal:q*s,enc:q*s*enc,ben:q*b,tot:q*(s*(1+enc)+b)};}
+const markCmo=()=>{if(S.cmo.ex){S.cmo.ex=false;$('exCmo').hidden=true;}};
+$('eqList').addEventListener('input',e=>{const k=e.target.dataset.k;if(!k)return;const r=S.cmo.eq.find(x=>x.id===e.target.closest('.tr').dataset.id);if(r){r[k]=e.target.value;markCmo();calcCmo();save();}});
+$('eqList').addEventListener('click',e=>{if(!e.target.hasAttribute('data-del'))return;const id=e.target.closest('.tr').dataset.id;S.cmo.eq=S.cmo.eq.filter(x=>x.id!==id);markCmo();renderEq();save();});
+$('addEq').addEventListener('click',()=>{S.cmo.eq.push({id:uid(),n:'',q:'1',s:'',b:''});renderEq();save();const r=$('eqList').lastElementChild;r&&r.querySelector('input').focus();});
+[['oEnc','enc'],['oExt','ext'],['oPro','pro'],['oMeta','meta']].forEach(([id,k])=>$(id).addEventListener('input',()=>{S.cmo[k]=$(id).value;if(k!=='meta')markCmo();calcCmo();save();}));
+$('clrCmo').addEventListener('click',()=>{S.cmo.eq=[{id:uid(),n:'',q:'1',s:'',b:''}];S.cmo.ext='';S.cmo.pro='';S.cmo.ex=false;$('exCmo').hidden=true;loadCmo();save();});
+function loadCmo(){$('oEnc').value=S.cmo.enc;$('oExt').value=S.cmo.ext;$('oPro').value=S.cmo.pro;$('oMeta').value=S.cmo.meta;$('exCmo').hidden=!S.cmo.ex;renderEq();}
+function cmoVals(){let sal=0,enc=0,ben=0,pes=0;S.cmo.eq.forEach(r=>{const c=eqCost(r);sal+=c.sal;enc+=c.enc;ben+=c.ben;pes+=c.q;});const ex=num(S.cmo.ext)+num(S.cmo.pro);return{sal,enc,ben,ex,pes,tot:sal+enc+ben+ex};}
+function calcCmo(){
+ document.querySelectorAll('#eqList .tr').forEach(row=>{const r=S.cmo.eq.find(x=>x.id===row.dataset.id);const c=eqCost(r);row.querySelector('[data-cost]').textContent=c.tot?brl(c.tot):'–';});
+ const v=cmoVals(),{fat,cmv,pct:cmvPct}=mesVals(),meta=num(S.cmo.meta)||0,pct=fat>0?v.tot/fat*100:NaN;
+ $('oPct').innerHTML=isFinite(pct)?pc(pct).replace('%','<em>%</em>'):'–';
+ $('oVal').textContent=fat>0?brl(v.tot)+' de '+brl(fat):'Informe o faturamento na aba CMV do mês';
+ setChip($('oChip'),status(pct,meta,5));$('oMetaTxt').textContent='Meta: '+pc(meta,0);
+ $('oSal').textContent=brl(v.sal);$('oEncV').textContent=brl(v.enc);$('oBen').textContent=brl(v.ben);$('oExV').textContent=brl(v.ex);
+ $('oTot').textContent=brl(v.tot);$('oFat').textContent=brl(fat);$('oPes').textContent=fmt2(v.pes).replace(',00','');
+ const pr=fat>0?(cmv+v.tot)/fat*100:NaN;
+ $('pPct').innerHTML=isFinite(pr)?pc(pr).replace('%','<em>%</em>'):'–';
+ $('pVal').textContent=fat>0?brl(cmv+v.tot)+' de '+brl(fat):'–';
+ const st=!isFinite(pr)?['idle','Preencha os valores']:pr<=60?['ok','Saudável (até 60%)']:pr<=65?['warn','No limite (60% a 65%)']:['bad','Alto (acima de 65%)'];
+ setChip($('pChip'),st);
+ $('pCmv').textContent=fat>0?brl(cmv)+' · '+pc(cmvPct):'–';$('pCmo').textContent=fat>0?brl(v.tot)+' · '+pc(pct):'–';
+ $('pSob').textContent=fat>0?brl(fat-cmv-v.tot)+' · '+pc(100-pr):'–';
+ head();
+}
+
+
+/* ---------- SIMULAÇÃO RÁPIDA ---------- */
+function loadQ(){$('qFat').value=S.q.fat;$('qCmv').value=S.q.cmv;$('qRed').value=S.q.red;$(S.q.modo==='r'?'qModoR':'qModoP').checked=true;calcQ();}
+[['qFat','fat'],['qCmv','cmv'],['qRed','red']].forEach(([id,k])=>$(id).addEventListener('input',()=>{S.q[k]=$(id).value;calcQ();save();}));
+document.querySelectorAll('input[name=qModo]').forEach(r=>r.addEventListener('change',()=>{S.q.modo=r.value;calcQ();save();}));
+function qCalc(modo){const f=num(S.q.fat),c=num(S.q.cmv),r=num(S.q.red);const nv=modo==='r'?c*(1-r/100):c-r;return{f,c,r,nv:Math.max(0,nv),eco:f*(c-Math.max(0,nv))/100};}
+function calcQ(){
+ const m=S.q.modo==='r'?'r':'p',a=qCalc(m),o=qCalc(m==='p'?'r':'p');
+ const ok=a.f>0&&a.c>0;
+ $('qEco').textContent=ok?brl(a.eco):'–';$('qAno').textContent=ok?brl(a.eco*12):'–';$('qEa').textContent=ok?brl(a.eco*12):'–';
+ $('qAt').textContent=ok?pc(a.c,1)+' · '+brl(a.f*a.c/100):'–';
+ $('qNv').textContent=ok?pc(a.nv,2)+' · '+brl(a.f*a.nv/100):'–';
+ $('qEc2').textContent=ok?brl(a.eco):'–';
+ $('qLb').textContent=ok?brl(a.f*(1-a.c/100))+' → '+brl(a.f*(1-a.nv/100)):'–';
+ $('qPt').textContent=a.f>0?brl(a.f/100):'–';
+ $('qFrase').innerHTML=ok?`Faturando <b>${brl(a.f)}</b> com CMV de <b>${pc(a.c,1)}</b>, se reduzir <b>${fmt2(a.r).replace(',00','')}${m==='p'?' pontos':'% do CMV'}</b>, o CMV vai para <b>${pc(a.nv,2)}</b> e sobram <b>${brl(a.eco)}</b> a mais por mês, ou <b>${brl(a.eco*12)}</b> no ano.`:'Preencha os campos ao lado.';
+ $('qOutro').hidden=!ok;
+ if(ok)$('qOutro').textContent=m==='p'?`Se a redução fosse de ${fmt2(a.r).replace(',00','')}% do próprio CMV (${pc(a.c,1)} → ${pc(o.nv,2)}), a economia seria de ${brl(o.eco)} por mês (${brl(o.eco*12)} no ano).`:`Se a redução fosse de ${fmt2(a.r).replace(',00','')} pontos (${pc(a.c,1)} → ${pc(o.nv,2)}), a economia seria de ${brl(o.eco)} por mês (${brl(o.eco*12)} no ano).`;
+}
+$('qUsar').addEventListener('click',()=>{const f=num(S.q.fat),c=num(S.q.cmv);S.mes={fat:fmt2(f),ei:'0,00',comp:fmt2(f*c/100),ef:'0,00',ex:false};S.red=Math.min(10,num(S.q.red));loadMes();calcAll();save();showTab('mes');toast('Valores levados para o CMV do mês');});
+
+/* ---------- topo ---------- */
+function head(){const {fat,cmv,pct}=mesVals(),o=cmoVals().tot;$('hCmv').textContent=pc(pct);$('hCmo').textContent=fat>0?pc(o/fat*100):'–';$('hPrime').textContent=fat>0?pc((cmv+o)/fat*100):'–';}
+function calcAll(){calcMes();calcFicha();calcCmo();if(S.tab==='cardapio')renderCardapio();}
+
+loadQ();loadMes();loadFicha();loadCmo();calcAll();showTab(S.tab||'sim');
+})();
+</script>
+
+</body></html>
