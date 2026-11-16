@@ -1,7 +1,7 @@
-// Service worker do Custo Certo. Escopo: só a pasta custo/.
+// Service worker do Calculador de CMV e CMO. Escopo: só a pasta custo/.
 // Não interfere na Agenda, na Despensa nem nos outros painéis do site.
 // Os cálculos funcionam sem internet: a página fica guardada no aparelho.
-const CACHE = "custocerto-v1";
+const CACHE = "custocerto-v2";
 const SHELL = ["./", "index.html", "manifest.webmanifest", "icon-192.png", "icon-512.png", "apple-touch-icon.png"];
 
 self.addEventListener("install", e => {

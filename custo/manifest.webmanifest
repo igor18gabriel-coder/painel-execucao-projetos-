@@ -1,7 +1,7 @@
 {
   "id": "custo-certo",
-  "name": "Custo Certo · CMV e CMO",
-  "short_name": "Custo Certo",
+  "name": "Calculador de CMV e CMO",
+  "short_name": "Calculadora CMV",
   "description": "CMV e CMO para restaurantes: simulação rápida, CMV do mês, ficha técnica, cardápio e mão de obra.",
   "lang": "pt-BR",
   "start_url": "./",
