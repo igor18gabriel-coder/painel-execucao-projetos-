@@ -103,6 +103,7 @@ textarea{min-height:64px;resize:vertical}
 @media(prefers-reduced-motion:reduce){.toast{transition:none}}
 .relogio{display:none;font:700 64px/1 "Barlow Condensed",sans-serif;color:#e8c766;white-space:nowrap}
 .row.prox{border:3px solid var(--gold);box-shadow:0 0 0 4px var(--goldS)}
+.row.prox .hora{color:light-dark(#9a7410,#e8c766)}
 .tag.px{background:var(--gold);color:#13224a}
 .sair{display:none;position:fixed;right:14px;bottom:14px;min-height:44px;padding:0 14px;border-radius:10px;border:1px solid #33467a;background:#1b2e5e;color:#fff;opacity:.35}
 .sair:hover,.sair:focus-visible{opacity:1}
@@ -123,8 +124,9 @@ body.tv .list{display:block;column-gap:1vw}
 @media(min-width:1100px){body.tv .list{columns:2}}
 body.tv .list>.row{break-inside:avoid;margin-bottom:.8vh}
 body.tv .meta>span{flex:none}
-body.tv .row{grid-template-columns:7.5vh 4.4vh minmax(0,1fr) auto;gap:1.2vw;align-items:center;padding:.8vh 1vw;border-radius:1vh}
+body.tv .row{grid-template-columns:10vh 4.4vh minmax(0,1fr) auto;gap:1.2vw;align-items:center;padding:.8vh 1vw;border-radius:1vh}
 body.tv .hora{font-size:3.4vh;padding:0}
+body.tv .row.prox .hora{background:var(--gold);color:#13224a;border-radius:.8vh;padding:.5vh 0;text-align:center}
 body.tv .box{width:4.4vh;height:4.4vh;font-size:2.7vh;border-width:.3vh;border-color:#8fa3d6}
 body.tv .box.realizada{color:#e9edf7}
 body.tv .box.venda{border-color:var(--ok)}body.tv .box.nao_veio{border-color:var(--bad)}body.tv .box.remarcada{border-color:var(--rem)}
