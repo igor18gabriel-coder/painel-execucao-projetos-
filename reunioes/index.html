@@ -134,7 +134,7 @@ body.tv .cl small{font-size:15px}body.tv .cl b{font-size:32px}
 }
 </style>
 </head>
-<body>
+<body tabindex="-1" style="outline:none">
 <header class="top"><div class="wrap">
   <div class="brand"><svg class="crown" viewBox="0 0 22 16" aria-hidden="true"><path d="M1 4l5 5 5-8 5 8 5-5-2 11H3z" fill="#c9a43a"/></svg>UNIFM · Comercial</div>
   <div class="hd">
@@ -417,17 +417,31 @@ $('#bnova').addEventListener('click',()=>abrir(null));
 // ---------- modo TV ----------
 const tvOn=()=>location.hash==='#tv';
 const relogio=()=>{const d=new Date();$('#relogio').textContent=pad(d.getHours())+':'+pad(d.getMinutes())};
-function aplicaTV(){document.body.classList.toggle('tv',tvOn());if(tvOn()){dia=iso(new Date());filtro=''}render();carregar()}
+function aplicaTV(){document.body.classList.toggle('tv',tvOn());if(tvOn())try{document.body.focus({preventScroll:true})}catch(_){};if(tvOn()){dia=iso(new Date());filtro=''}render();carregar()}
 window.addEventListener('hashchange',aplicaTV);
 $('#btv').addEventListener('click',()=>{location.hash='tv';try{const p=document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen();if(p&&p.catch)p.catch(()=>{})}catch(_){}});
 $('#sair').addEventListener('click',()=>{location.hash='';try{if(document.fullscreenElement)document.exitFullscreen()}catch(_){}});
 setInterval(()=>{relogio();if(tvOn()){const h=iso(new Date());if(h!==dia){dia=h;carregar()}else render()}},30000);
 setInterval(()=>{if(!document.querySelector('dialog[open]'))carregar()},20000);
-let desce=true;
-setInterval(()=>{if(!tvOn())return;const el=document.scrollingElement,max=el.scrollHeight-innerHeight;if(max<20)return;
+let desce=true,manualAte=0;
+// controle remoto: setas / canal / page up-down rolam a tela; a rolagem automática pausa por 1 minuto
+document.addEventListener('keydown',e=>{
+  if(!tvOn()||document.querySelector('dialog[open]'))return;
+  const k=e.key,c=e.keyCode,passo=Math.round(innerHeight*0.6);
+  let dy=0;
+  if(k==='ArrowDown'||k==='PageDown'||k==='ChannelDown'||c===34||c===428)dy=passo;
+  else if(k==='ArrowUp'||k==='PageUp'||k==='ChannelUp'||c===33||c===427)dy=-passo;
+  else if(k==='Home')dy=-1e6;else if(k==='End')dy=1e6;
+  if(!dy)return;
+  e.preventDefault();manualAte=Date.now()+60000;
+  const fim=matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth';
+  window.scrollBy({top:dy,behavior:fim});
+});
+setInterval(()=>{if(!tvOn()||Date.now()<manualAte)return;const el=document.scrollingElement,max=el.scrollHeight-innerHeight;if(max<20)return;
   const fim=matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth';window.scrollTo({top:desce?max:0,behavior:fim});desce=!desce},15000);
 relogio();
 document.body.classList.toggle('tv',tvOn());
+if(tvOn())try{document.body.focus({preventScroll:true})}catch(_){}
 
 render();
 
