@@ -39,11 +39,17 @@ h1{font:800 clamp(22px,2.6vw,34px)/1.05 "Roboto Condensed",sans-serif;margin:0;t
 .dnav button,.dnav input{height:44px;border-radius:10px;border:1px solid rgba(255,255,255,.18);background:#032d82;color:#fff;padding:0 12px}
 .dnav input{font-size:16px;color-scheme:dark}
 .dnav .hoje{background:var(--gold);border-color:var(--gold);color:var(--goldtx);font-weight:700}
-.kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:clamp(8px,1vw,14px)}
+.kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:clamp(8px,1vw,14px)}
 .kpi{background:var(--card);border-radius:6px;padding:14px 10px;display:flex;flex-direction:column-reverse;align-items:center;justify-content:center;text-align:center;gap:6px}
 .kpi b{display:block;font:800 clamp(28px,3.4vw,54px)/1 "Roboto Condensed",sans-serif;white-space:nowrap;font-variant-numeric:tabular-nums}
 .kpi span{font-size:clamp(12px,1.2vw,18px);text-transform:uppercase;letter-spacing:.02em}
 .kpi.g{background:var(--hi)}
+.kpi.lead{border:2px solid rgba(245,196,0,.45)}
+.kpi.lead small{font-size:clamp(11px,1vw,15px);color:var(--mut)}
+.kpi.lead.novo b{color:var(--gold)}
+.kpi.lead.pulse{animation:pulsa 1s ease-in-out 12}
+@keyframes pulsa{0%,100%{box-shadow:0 0 0 0 rgba(245,196,0,0);background:var(--card)}50%{box-shadow:0 0 0 10px rgba(245,196,0,.55);background:#6b5800}}
+@media(prefers-reduced-motion:reduce){.kpi.lead.pulse{animation:none;background:#6b5800}}
 .band{padding:20px max(4vw,16px) 48px}
 .bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;margin-bottom:14px}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
@@ -119,7 +125,7 @@ body.tv .top{padding:1.4vh 2vw 1.2vh}
 body.tv .hd{margin:.37vh 0 .92vh;align-items:center}
 body.tv h1{font-size:2.8vh}
 body.tv .kpis{gap:.8vw}body.tv .kpi{padding:1vh .8vw;gap:.5vh}
-body.tv .kpi b{font-size:4.4vh}body.tv .kpi span{font-size:1.75vh}
+body.tv .kpi.lead small{font-size:1.5vh}body.tv .kpi b{font-size:4.4vh}body.tv .kpi span{font-size:1.75vh}
 body.tv .band{padding:1.1vh 2vw 5.52vh}
 body.tv .list{display:block;column-gap:1vw}
 @media(min-width:1100px){body.tv .list{columns:2}}
@@ -250,7 +256,7 @@ body.tv .sair{font-size:1.47vh;min-height:3.68vh;right:1vw;bottom:.92vh}
 <datalist id="ents"><option value="30min"><option value="45min"><option value="1h"><option value="1h30"><option value="2h"></datalist>
 <div class="toast" id="toast" role="status"></div>
 <button class="sair" id="sair">Sair do modo TV</button>
-<div class="dica">Controle: ▲▼ escolhe a reunião · ◀▶ escolhe a ação · OK marca (OK de novo desfaz)</div>
+<div class="dica">Controle: ▲▼ escolhe a reunião · ◀▶ escolhe a ação · OK marca (OK de novo desfaz)<span id="dsom"> · Som dos leads: aperte OK uma vez para ativar</span></div>
 
 <script>
 {
@@ -283,7 +289,7 @@ function render(){
   const comp=real.length+nv.length?Math.round(real.length/(real.length+nv.length)*100)+'%':'—';
   const conv=real.length?Math.round(vendas.length/real.length*100)+'%':'—';
   $('#kpis').innerHTML=[[doDia.length,'reuniões no dia'],[real.length,'realizadas'],[vendas.length+' · '+conv,'vendas · conversão'],[nv.length,'não compareceram'],[rem.length,'remarcadas']]
-    .map(([b,s],i)=>`<div class="kpi${i===2?' g':''}"><b>${esc(b)}</b><span>${esc(s)}</span></div>`).join('');
+    .map(([b,s],i)=>`<div class="kpi${i===2?' g':''}"><b>${esc(b)}</b><span>${esc(s)}</span></div>`).join('')+leadCard();
   // closers
   const cls=[...new Set(reunioes.map(r=>r.closer).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pt'));
   $('#closers').innerHTML=cls.map(c=>`<option value="${esc(c)}">`).join('');
@@ -364,9 +370,39 @@ async function carregar(){
     const d=await api('reu_reunioes?select=*&data=eq.'+encodeURIComponent(dia)+'&order=hora');
     reunioes=Array.isArray(d)?d.map(r=>({...r,seg:Array.isArray(r.seg)?r.seg:[],fat:r.fat==null?'':Number(r.fat)})):[];
     const h=new Date();$('#aviso').textContent='Atualizado às '+pad(h.getHours())+':'+pad(h.getMinutes())+' · atualiza sozinho a cada 20 s · clique no status para marcar; “Remarcada” pede o novo horário.';
-    render();
+    render();carregarLeads();
   }catch(e){$('#aviso').textContent='Sem conexão com o banco agora. Tentando de novo…'}
   finally{carregando=false}
+}
+// ---------- leads do Clint (só totais) ----------
+let leads={dia:'',total:null,ultimo:null},pulsarAte=0,novoAte=0,audioCtx=null;
+function leadCard(){
+  const hoje=dia===iso(new Date()),u=leads.dia===dia&&leads.ultimo?new Date(leads.ultimo):null;
+  const tx=u?'último às '+pad(u.getHours())+':'+pad(u.getMinutes()):(leads.total===0?'nenhum ainda':'');
+  const n=leads.dia===dia&&leads.total!=null?leads.total:'—',agora=Date.now();
+  return `<div class="kpi lead${agora<pulsarAte?' pulse':''}${agora<novoAte?' novo':''}"><small>${esc(tx)}</small><b>${esc(n)}</b><span>${hoje?'leads hoje':'leads no dia'}</span></div>`;
+}
+function bipe(){
+  if(!audioCtx)return;
+  try{if(audioCtx.state==='suspended')audioCtx.resume();const t=audioCtx.currentTime;
+    [[880,0],[1320,.18],[880,.42],[1320,.6]].forEach(([f,d])=>{const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type='sine';o.frequency.value=f;
+      g.gain.setValueAtTime(0.0001,t+d);g.gain.exponentialRampToValueAtTime(0.35,t+d+.02);g.gain.exponentialRampToValueAtTime(0.0001,t+d+.16);
+      o.connect(g).connect(audioCtx.destination);o.start(t+d);o.stop(t+d+.18)})}catch(_){}
+}
+function liberaSom(){
+  if(!audioCtx){try{const A=window.AudioContext||window.webkitAudioContext;if(A)audioCtx=new A()}catch(_){}}
+  try{if(audioCtx&&audioCtx.state==='suspended')audioCtx.resume()}catch(_){}
+  const d=document.getElementById('dsom');if(d&&audioCtx)d.remove();
+}
+document.addEventListener('pointerdown',liberaSom,true);document.addEventListener('keydown',liberaSom,true);
+let buscandoLeads=false;
+async function carregarLeads(){
+  if(buscandoLeads)return;buscandoLeads=true;const d=dia;
+  try{const r=await api('rpc/reu_leads_resumo',{p_dia:d});const t=Number(r&&r.total)||0;
+    if(d===iso(new Date())&&leads.dia===d&&leads.total!=null&&t>leads.total){
+      pulsarAte=Date.now()+12000;novoAte=Date.now()+5*60000;bipe();toast(t-leads.total>1?(t-leads.total)+' novos leads chegaram':'Novo lead chegou');setTimeout(render,12100);setTimeout(render,5*60000+100)}
+    leads={dia:d,total:t,ultimo:r&&r.ultimo_em||null};render();
+  }catch(_){}finally{buscandoLeads=false}
 }
 async function carregarSegs(){try{const c=await api('reu_config?select=valor&chave=eq.segmentos');const l=c&&c[0]&&c[0].valor;if(Array.isArray(l)&&l.length){segs=l.map(x=>({c:String(x.c||''),n:String(x.n||'')}));render()}}catch(_){}}
 
@@ -461,6 +497,7 @@ $('#btv').addEventListener('click',()=>{location.hash='tv';try{const p=document.
 $('#sair').addEventListener('click',()=>{location.hash='';try{if(document.fullscreenElement)document.exitFullscreen()}catch(_){}});
 setInterval(()=>{relogio();if(tvOn()){const h=iso(new Date());if(h!==dia){dia=h;carregar()}else render()}},30000);
 setInterval(()=>{if(!document.querySelector('dialog[open]'))carregar()},20000);
+setInterval(()=>{if(leads.dia===dia)carregarLeads()},10000);
 let desce=true,manualAte=0;
 const TVA=['feita','venda','nao_veio','remarcar'];
 const suave=()=>matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth';
