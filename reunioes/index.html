@@ -21,14 +21,17 @@ button{cursor:pointer}
 :focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 .top{background:var(--bg);color:#fff;padding:18px max(3vw,14px) 14px}
 .marca{display:flex;align-items:center;gap:clamp(12px,2vw,32px);flex-wrap:wrap;margin-bottom:14px}
-.logo{height:clamp(52px,7vw,110px);width:auto;display:block}
+.brandrow{display:flex;align-items:center;gap:14px;min-width:0}
+.logo{height:clamp(54px,6vw,92px);width:auto;display:block;flex:none}
+.bt b{display:block;font-weight:800;font-size:clamp(22px,2.6vw,38px);line-height:1.05;text-transform:uppercase;letter-spacing:.02em}
+.bt span{display:block;font-size:clamp(13px,1.2vw,18px);color:var(--mut);margin-top:2px}
 .vsep{width:1px;align-self:stretch;min-height:56px;background:rgba(255,255,255,.35)}
 .lema{letter-spacing:.32em;font-size:clamp(11px,1.1vw,17px);line-height:1.8;text-transform:uppercase}
 .spacer{flex:1 1 0}
 .clock .cdia{font-size:clamp(13px,1.2vw,19px);letter-spacing:.04em;text-transform:capitalize}
 .clock .cdata{font-size:clamp(18px,1.9vw,30px);font-weight:600}
 .clock .chora{font-size:clamp(36px,4.6vw,72px);font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
-@media(max-width:720px){.lema,.marca .vsep{display:none}.clock{text-align:right}}
+@media(max-width:720px){.lema,.marca .vsep,.clock{display:none}}
 .wrap{max-width:1180px;margin:0 auto}
 .hd{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:14px;margin:8px 0 18px}
 h1{font:800 clamp(22px,2.6vw,34px)/1.05 "Roboto Condensed",sans-serif;margin:0;text-transform:uppercase;letter-spacing:.04em;text-wrap:balance}
@@ -110,7 +113,7 @@ body.tv .wrap{max-width:none}
 body.tv .dnav,body.tv .bar,body.tv .ctrl,body.tv .cl button,body.tv #aviso,body.tv .cl small{display:none}
 body.tv .sair{display:block}
 body.tv .hdr{position:sticky;top:0;z-index:5;box-shadow:0 .6vh 1.2vh #0006}
-body.tv .hdr{background:var(--bg)}body.tv .logo{height:9vh}body.tv .marca{margin-bottom:1vh;gap:1.6vw}body.tv .vsep{min-height:6vh}
+body.tv .hdr{background:var(--bg)}body.tv .logo{height:8vh}body.tv .brandrow{gap:1vw}body.tv .bt b{font-size:3.6vh}body.tv .bt span{font-size:1.7vh}body.tv .marca{margin-bottom:1vh;gap:1.6vw}body.tv .vsep{min-height:6vh}
 body.tv .lema{font-size:1.5vh}body.tv .clock .cdia{font-size:1.6vh}body.tv .clock .cdata{font-size:2.4vh}body.tv .clock .chora{font-size:6vh}
 body.tv .top{padding:1.4vh 2vw 1.2vh}
 body.tv .hd{margin:.37vh 0 .92vh;align-items:center}
@@ -159,7 +162,7 @@ body.tv .sair{font-size:1.47vh;min-height:3.68vh;right:1vw;bottom:.92vh}
 <body tabindex="-1" style="outline:none">
 <header class="hdr"><div class="top"><div class="wrap">
   <div class="marca">
-    <img class="logo" src="logo-unifm.png" alt="Universidade Fastfood Milionário">
+    <div class="brandrow"><img class="logo" src="logo-unifm.png" alt="UNIFM"><div class="bt"><b>Painel de Reuniões</b><span>Comercial · Closers</span></div></div>
     <div class="vsep"></div>
     <div class="lema">Pessoas<br>Negócios<br>Liberdade</div>
     <div class="spacer"></div>
