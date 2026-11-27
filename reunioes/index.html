@@ -5,38 +5,42 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Painel de Reuniões</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,500;0,600;0,700;0,800;0,900;1,800;1,900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
 /* VOICE: operacional, direto, quadro de comando do time comercial
    IDEA: o quadro branco da sala de vendas, passado a limpo — uma linha por reunião, hora grande, caixinha de status à esquerda
    PICTURE: a própria lista do dia, ordenada por horário, com os marcadores do quadro (✓, R, ✗)
-   COLOUR and TYPE: marca Fastfood Milionário — azul #10296a, amarelo #ffac03, faixa branca com a logo; Montserrat
+   COLOUR and TYPE: igual ao Painel de Resultados — azul #003caa, cartões #032d82, destaque #0a5cff, amarelo #f5c400, logo UNIFM; Roboto Condensed
    LAYOUT: faixa marinho com data e placar do dia; abaixo a lista; filtros por closer; diálogos para cadastrar e remarcar */
-:root{color-scheme:dark;--bg:#10296a;--ink:#eef2fb;--mut:#b8c5e4;--line:#2f55a8;--card:#183a85;--soft:#14327a;
---navy:#0b1f52;--gold:#ffac03;--goldtx:#0a2a6b;--goldS:#4a3512;--ok:#6ee7a0;--okS:#123d28;--bad:#ff8a80;--badS:#4a1f1b;--rem:#ffc46b;--remS:#4a3512}
+:root{color-scheme:dark;--bg:#003caa;--ink:#ffffff;--mut:rgba(255,255,255,.74);--line:rgba(255,255,255,.14);--card:#032d82;--soft:#02276f;--hi:#0a5cff;
+--navy:#032d82;--gold:#f5c400;--goldtx:#0b1b3f;--goldS:#4a3d0a;--ok:#6ee7a0;--okS:#0f4a35;--bad:#ff9d90;--badS:#5a1f2a;--rem:#ffc46b;--remS:#4a3512}
 *{box-sizing:border-box;min-width:0}
-body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Montserrat,system-ui,sans-serif;overflow-x:clip}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "Roboto Condensed","Arial Narrow",Roboto,system-ui,sans-serif;overflow-x:clip}
 button,input,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer}
 :focus-visible{outline:3px solid var(--gold);outline-offset:2px}
-.brandband{background:#fff;border-bottom:4px solid var(--gold)}
-.brandband .wrap{padding:10px max(4vw,16px);display:flex;align-items:center}
-.logo{display:block;height:56px;width:auto;max-width:100%}
-@media(max-width:480px){.logo{height:40px}}
-.top{background:var(--navy);color:#fff;padding:18px max(4vw,16px) 0}
+.top{background:var(--bg);color:#fff;padding:18px max(3vw,14px) 14px}
+.marca{display:flex;align-items:center;gap:clamp(12px,2vw,32px);flex-wrap:wrap;margin-bottom:14px}
+.logo{height:clamp(52px,7vw,110px);width:auto;display:block}
+.vsep{width:1px;align-self:stretch;min-height:56px;background:rgba(255,255,255,.35)}
+.lema{letter-spacing:.32em;font-size:clamp(11px,1.1vw,17px);line-height:1.8;text-transform:uppercase}
+.spacer{flex:1 1 0}
+.clock .cdia{font-size:clamp(13px,1.2vw,19px);letter-spacing:.04em;text-transform:capitalize}
+.clock .cdata{font-size:clamp(18px,1.9vw,30px);font-weight:600}
+.clock .chora{font-size:clamp(36px,4.6vw,72px);font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+@media(max-width:720px){.lema,.marca .vsep{display:none}.clock{text-align:right}}
 .wrap{max-width:1180px;margin:0 auto}
 .hd{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:14px;margin:8px 0 18px}
-h1{font:italic 900 clamp(28px,4.4vw,42px)/1.05 Montserrat,sans-serif;margin:0;text-wrap:balance}
+h1{font:800 clamp(22px,2.6vw,34px)/1.05 "Roboto Condensed",sans-serif;margin:0;text-transform:uppercase;letter-spacing:.04em;text-wrap:balance}
 .dnav{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-.dnav button,.dnav input{height:44px;border-radius:10px;border:1px solid #2f55a8;background:#183a85;color:#fff;padding:0 12px}
+.dnav button,.dnav input{height:44px;border-radius:10px;border:1px solid rgba(255,255,255,.18);background:#032d82;color:#fff;padding:0 12px}
 .dnav input{font-size:16px;color-scheme:dark}
 .dnav .hoje{background:var(--gold);border-color:var(--gold);color:var(--goldtx);font-weight:700}
-.kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));border-top:1px solid #2f55a8}
-.kpi{padding:14px 12px 16px;border-right:1px solid #2f55a8}
-.kpi:last-child{border-right:0}
-.kpi b{display:block;font:700 30px/1 Montserrat,sans-serif;white-space:nowrap}
-.kpi span{font-size:13px;color:#b8c5e4}
-.kpi.g b{color:var(--gold)}
+.kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:clamp(8px,1vw,14px)}
+.kpi{background:var(--card);border-radius:6px;padding:14px 10px;display:flex;flex-direction:column-reverse;align-items:center;justify-content:center;text-align:center;gap:6px}
+.kpi b{display:block;font:800 clamp(28px,3.4vw,54px)/1 "Roboto Condensed",sans-serif;white-space:nowrap;font-variant-numeric:tabular-nums}
+.kpi span{font-size:clamp(12px,1.2vw,18px);text-transform:uppercase;letter-spacing:.02em}
+.kpi.g{background:var(--hi)}
 .band{padding:20px max(4vw,16px) 48px}
 .bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;margin-bottom:14px}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
@@ -50,15 +54,15 @@ h1{font:italic 900 clamp(28px,4.4vw,42px)/1.05 Montserrat,sans-serif;margin:0;te
 .list{display:grid;gap:10px}
 .row{display:grid;grid-template-columns:100px 46px minmax(0,1fr) auto;gap:14px;align-items:start;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
 .row.nao_veio,.row.remarcada{background:var(--soft)}
-.hora{font:800 28px/1 Montserrat,sans-serif;white-space:nowrap;padding-top:4px}
-.box{width:44px;height:44px;border:2.5px solid #8db4ff;border-radius:8px;display:grid;place-items:center;background:var(--card);font:700 22px/1 Montserrat,sans-serif}
+.hora{font:800 28px/1 "Roboto Condensed",sans-serif;white-space:nowrap;padding-top:4px}
+.box{width:44px;height:44px;border:2.5px solid rgba(255,255,255,.8);border-radius:8px;display:grid;place-items:center;background:var(--card);font:700 22px/1 "Roboto Condensed",sans-serif}
 .box.realizada{color:var(--ink)}
 .box.venda{border-color:var(--ok);color:var(--ok);background:var(--okS)}
 .box.nao_veio{border-color:var(--bad);color:var(--bad);background:var(--badS)}
 .box.remarcada{border-color:var(--rem);color:var(--rem);background:var(--remS);border-radius:50%}
 .nm{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-weight:700;font-size:20px;line-height:1.2}
 .seg{display:inline-flex;gap:3px}
-.seg i{font:700 15px/1 Montserrat,sans-serif;font-style:normal;border:1.5px solid currentColor;border-radius:5px;padding:3px 6px}
+.seg i{font:700 15px/1 "Roboto Condensed",sans-serif;font-style:normal;border:1.5px solid currentColor;border-radius:5px;padding:3px 6px}
 .meta{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:6px;color:var(--mut);font-size:15px}
 .meta b{color:var(--ink);font-weight:600;white-space:nowrap}
 .tag{display:inline-block;font-size:13px;font-weight:700;padding:2px 8px;border-radius:6px;white-space:nowrap}
@@ -74,13 +78,13 @@ h1{font:italic 900 clamp(28px,4.4vw,42px)/1.05 Montserrat,sans-serif;margin:0;te
 .seg2.res button[aria-pressed=true][data-v=sem_venda]{background:var(--bad)}
 .cl{text-align:right}
 .cl small{display:block;font-size:12px;color:var(--mut)}
-.cl b{font:700 22px/1.1 Montserrat,sans-serif;white-space:nowrap}
+.cl b{font:700 22px/1.1 "Roboto Condensed",sans-serif;white-space:nowrap}
 .cl b.vazio{color:var(--bad);font-size:16px}
 .cl button{margin-top:8px;min-height:36px;border:1px solid var(--line);background:transparent;border-radius:8px;padding:0 10px;font-size:14px}
 .empty{padding:40px 20px;text-align:center;border:2px dashed var(--line);border-radius:14px;color:var(--mut)}
 dialog{border:0;border-radius:16px;padding:0;width:min(560px,94vw);background:var(--card);color:var(--ink);box-shadow:0 20px 60px #0006}
 dialog::backdrop{background:#0a1226aa}
-.dh{background:var(--navy);color:#fff;padding:16px 20px;font:700 24px/1.1 Montserrat,sans-serif}
+.dh{background:var(--navy);color:#fff;padding:16px 20px;font:700 24px/1.1 "Roboto Condensed",sans-serif}
 .db{padding:18px 20px;display:grid;gap:12px;max-height:70vh;overflow:auto}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 label{display:grid;gap:4px;font-size:14px;font-weight:600}
@@ -95,25 +99,24 @@ textarea{min-height:64px;resize:vertical}
 .toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--navy);color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none}
 .toast.on{opacity:1}
 @media(prefers-reduced-motion:reduce){.toast{transition:none}}
-.relogio{display:none;font:700 64px/1 Montserrat,sans-serif;color:var(--gold);white-space:nowrap}
 .row.prox{border:3px solid var(--gold);box-shadow:0 0 0 4px var(--goldS)}
 .row.prox .hora{color:var(--gold)}
 .tag.px{background:var(--gold);color:var(--goldtx)}
-.sair{display:none;position:fixed;right:14px;bottom:14px;min-height:44px;padding:0 14px;border-radius:10px;border:1px solid #2f55a8;background:#183a85;color:#fff;opacity:.35}
+.sair{display:none;position:fixed;right:14px;bottom:14px;min-height:44px;padding:0 14px;border-radius:10px;border:1px solid rgba(255,255,255,.18);background:#032d82;color:#fff;opacity:.35}
 .sair:hover,.sair:focus-visible{opacity:1}
 .tvacts,.dica{display:none}
 body.tv{color-scheme:dark;font-size:1.84vh}
 body.tv .wrap{max-width:none}
 body.tv .dnav,body.tv .bar,body.tv .ctrl,body.tv .cl button,body.tv #aviso,body.tv .cl small{display:none}
-body.tv .relogio,body.tv .sair{display:block}
+body.tv .sair{display:block}
 body.tv .hdr{position:sticky;top:0;z-index:5;box-shadow:0 .6vh 1.2vh #0006}
-body.tv .brandband{border-bottom-width:.4vh}body.tv .brandband .wrap{padding:.7vh 2vw}body.tv .logo{height:5vh}
-body.tv .top{padding:1.1vh 2vw 0}
+body.tv .hdr{background:var(--bg)}body.tv .logo{height:9vh}body.tv .marca{margin-bottom:1vh;gap:1.6vw}body.tv .vsep{min-height:6vh}
+body.tv .lema{font-size:1.5vh}body.tv .clock .cdia{font-size:1.6vh}body.tv .clock .cdata{font-size:2.4vh}body.tv .clock .chora{font-size:6vh}
+body.tv .top{padding:1.4vh 2vw 1.2vh}
 body.tv .hd{margin:.37vh 0 .92vh;align-items:center}
-body.tv h1{font-size:4.6vh}
-body.tv .relogio{font-size:5.3vh}
-body.tv .kpi{padding:.74vh 1vw .92vh}
-body.tv .kpi b{font-size:3.8vh}body.tv .kpi span{font-size:1.75vh}
+body.tv h1{font-size:2.8vh}
+body.tv .kpis{gap:.8vw}body.tv .kpi{padding:1vh .8vw;gap:.5vh}
+body.tv .kpi b{font-size:4.4vh}body.tv .kpi span{font-size:1.75vh}
 body.tv .band{padding:1.1vh 2vw 5.52vh}
 body.tv .list{display:block;column-gap:1vw}
 @media(min-width:1100px){body.tv .list{columns:2}}
@@ -122,7 +125,7 @@ body.tv .meta>span{flex:none}
 body.tv .row{grid-template-columns:11vh 4.05vh minmax(0,1fr) auto;gap:1.2vw;align-items:center;padding:.74vh 1vw;border-radius:.92vh}
 body.tv .hora{font-size:3.13vh;padding:0}
 body.tv .row.prox .hora{background:var(--gold);color:var(--goldtx);border-radius:.74vh;padding:.46vh 0;text-align:center}
-body.tv .box{width:4.05vh;height:4.05vh;font-size:2.48vh;border-width:.28vh;border-color:#8db4ff}
+body.tv .box{width:4.05vh;height:4.05vh;font-size:2.48vh;border-width:.28vh;border-color:rgba(255,255,255,.8)}
 body.tv .box.realizada{color:#eef2fb}
 body.tv .box.venda{border-color:var(--ok)}body.tv .box.nao_veio{border-color:var(--bad)}body.tv .box.remarcada{border-color:var(--rem)}
 body.tv .nm{font-size:2.48vh;gap:.6vw}
@@ -132,17 +135,17 @@ body.tv .meta{font-size:1.7vh;margin-top:.18vh;flex-wrap:nowrap;overflow:hidden;
 body.tv .cl b{font-size:2.58vh}
 body.tv .row.sel{outline:.37vh solid var(--gold);outline-offset:.28vh}
 body.tv .row.sel .tvacts{display:flex;flex-wrap:wrap;gap:.8vw;margin-top:.74vh}
-body.tv .tvacts button{min-height:4.23vh;padding:0 1.4vw;border-radius:.92vh;border:.23vh solid #2f55a8;background:#14327a;color:#eef2fb;font:700 2.12vh/1 Montserrat,sans-serif}
-body.tv .tvacts button[aria-pressed=true]{background:#2f55a8;border-color:#8db4ff}
+body.tv .tvacts button{min-height:4.23vh;padding:0 1.4vw;border-radius:.92vh;border:.23vh solid rgba(255,255,255,.18);background:#02276f;color:#eef2fb;font:700 2.12vh/1 "Roboto Condensed",sans-serif}
+body.tv .tvacts button[aria-pressed=true]{background:rgba(255,255,255,.18);border-color:rgba(255,255,255,.8)}
 body.tv .tvacts button[data-tv=venda][aria-pressed=true]{background:var(--okS);border-color:var(--ok);color:var(--ok)}
 body.tv .tvacts button[data-tv=nao_veio][aria-pressed=true]{background:var(--badS);border-color:var(--bad);color:var(--bad)}
 body.tv .tvacts button[data-tv=remarcar][aria-pressed=true]{background:var(--remS);border-color:var(--rem);color:var(--rem)}
 body.tv .tvacts button.on{background:var(--gold);border-color:var(--gold);color:var(--goldtx);transform:scale(1.06)}
-body.tv .dica{display:block;position:fixed;left:1vw;bottom:.92vh;padding:.55vh 1vw;border-radius:.92vh;background:#0b1f52e6;color:#b8c5e4;font-size:1.47vh}
+body.tv .dica{display:block;position:fixed;left:1vw;bottom:.92vh;padding:.55vh 1vw;border-radius:.92vh;background:#032d82ee;color:rgba(255,255,255,.74);font-size:1.47vh}
 body.tv .sair{font-size:1.47vh;min-height:3.68vh;right:1vw;bottom:.92vh}
 @media(prefers-reduced-motion:reduce){body.tv .tvacts button.on{transform:none}}
-@media(max-width:860px){.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.kpi:nth-child(3){border-right:0}.kpi:nth-child(-n+3){border-bottom:1px solid #2f55a8}}
-@media(max-width:480px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.kpi{border-bottom:1px solid #2f55a8}.kpi:nth-child(odd){border-right:1px solid #2f55a8}.kpi:nth-child(even){border-right:0}}
+@media(max-width:860px){.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:480px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:640px){
  .row{grid-template-columns:44px minmax(0,1fr);gap:10px 12px;padding:12px}
  .hora{grid-column:1/-1;font-size:28px;display:flex;justify-content:space-between;align-items:baseline}
@@ -154,8 +157,16 @@ body.tv .sair{font-size:1.47vh;min-height:3.68vh;right:1vw;bottom:.92vh}
 </style>
 </head>
 <body tabindex="-1" style="outline:none">
-<header class="hdr"><div class="brandband"><div class="wrap"><img class="logo" src="logo-ffm.png" alt="Fastfood Milionário"></div></div>
-<div class="top"><div class="wrap">
+<header class="hdr"><div class="top"><div class="wrap">
+  <div class="marca">
+    <img class="logo" src="logo-unifm.png" alt="Universidade Fastfood Milionário">
+    <div class="vsep"></div>
+    <div class="lema">Pessoas<br>Negócios<br>Liberdade</div>
+    <div class="spacer"></div>
+    <div class="clock"><div class="cdia" id="rel-dia"></div><div class="cdata" id="rel-data"></div><div class="chora" id="rel-hora"></div></div>
+    <div class="vsep"></div>
+    <div class="lema">Disciplina hoje.<br>Liberdade sempre.</div>
+  </div>
   <div class="hd">
     <h1 id="titulo">Reuniões do dia</h1>
     <div class="dnav">
@@ -164,7 +175,6 @@ body.tv .sair{font-size:1.47vh;min-height:3.68vh;right:1vw;bottom:.92vh}
       <button id="next" aria-label="Próximo dia">▶</button>
       <button id="hoje" class="hoje">Hoje</button>
     </div>
-    <div class="relogio" id="relogio" aria-live="off"></div>
   </div>
   <div class="kpis" id="kpis"></div>
 </div></div></header>
@@ -441,7 +451,7 @@ $('#bnova').addEventListener('click',()=>abrir(null));
 
 // ---------- modo TV ----------
 const tvOn=()=>location.hash==='#tv';
-const relogio=()=>{const d=new Date();$('#relogio').textContent=pad(d.getHours())+':'+pad(d.getMinutes())};
+const relogio=()=>{const d=new Date();$('#rel-hora').textContent=pad(d.getHours())+':'+pad(d.getMinutes());$('#rel-dia').textContent=d.toLocaleDateString('pt-BR',{weekday:'long'});$('#rel-data').textContent=d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric'})};
 function aplicaTV(){document.body.classList.toggle('tv',tvOn());if(tvOn())try{document.body.focus({preventScroll:true})}catch(_){};if(tvOn()){dia=iso(new Date());filtro=''}render();carregar()}
 window.addEventListener('hashchange',aplicaTV);
 $('#btv').addEventListener('click',()=>{location.hash='tv';try{const p=document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen();if(p&&p.catch)p.catch(()=>{})}catch(_){}});
